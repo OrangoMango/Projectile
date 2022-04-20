@@ -246,7 +246,7 @@ public class MainApplication extends Application {
 					}
 				}
 				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#ff0000", "#FFA3B2", player);
-				if (score >= 1700 && !bossFound && score >= bossCount+1500){
+				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
 					entities.add(boss);
@@ -489,7 +489,7 @@ public class MainApplication extends Application {
 			int scoreForBoss = score+(score <= 1700 ? 1700-score : 1500-(score-bossCount));
 			if (score < scoreForBoss){
 				gc.setFill(Color.web("#980F40"));
-				gc.fillRect(20, 110, 200*((double)score/scoreForBoss > 1.0 ? 1 : (double)score/scoreForBoss), 20);
+				gc.fillRect(20, 110, 200*(score > 1700 ? (score-bossScore)/1500.0 : score/1700.0), 20);
 				gc.setStroke(Color.web("#620929"));
 				gc.strokeRect(20, 110, 200, 20);
 			}
