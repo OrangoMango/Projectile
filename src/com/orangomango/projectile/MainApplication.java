@@ -71,7 +71,7 @@ public class MainApplication extends Application {
 		
 		gc.setFill(Color.BLACK);
 		gc.setFont(new Font("sans-serif", 30));
-		gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time\n- Go outside the screen to come up from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
+		gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
 		
 		Player player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6");
 		
@@ -246,12 +246,12 @@ public class MainApplication extends Application {
 					}
 				}
 				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#ff0000", "#FFA3B2", player);
-				if (score >= 1700 && !bossFound && score >= bossCount+1000){
+				if (score >= 1700 && !bossFound && score >= bossCount+1500){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
 					entities.add(boss);
 					stopAllSounds();
-					playSound(BOSS_BATTLE_SOUND, true, 0.35);
+					playSound(BOSS_BATTLE_SOUND, true, 0.35, false);
 				}
 				if (score < 500){
 					en.setHP(10); // You can one-shot them
@@ -348,7 +348,7 @@ public class MainApplication extends Application {
 							try {
 								Entity ent = entities.get(i);
 								if (exp.collided(ent)){
-									if (ent instanceof Enemy){
+									if (ent instanceof Enemy && !((Enemy)e.spawning)){
 										((Enemy)ent).takeDamage(exp.damage, i);
 									} else if (ent instanceof Boss){
 										((Boss)ent).takeDamage(exp.damage, i);
@@ -486,7 +486,7 @@ public class MainApplication extends Application {
 			}
 					
 			// Draw progress bar for boss
-			int scoreForBoss = score+(score <= 1700 ? 1700-score : 1000-(score-bossCount));
+			int scoreForBoss = score+(score <= 1700 ? 1700-score : 1500-(score-bossCount));
 			if (score < scoreForBoss){
 				gc.setFill(Color.web("#980F40"));
 				gc.fillRect(20, 110, 200*((double)score/scoreForBoss > 1.0 ? 1 : (double)score/scoreForBoss), 20);
@@ -503,9 +503,10 @@ public class MainApplication extends Application {
 		loop.play();
 	}
 	
-	public static void playSound(Media media){playSound(media, false, null);}
-	public static void playSound(Media sound, boolean loop, Double volume){
-		if (!audioAllowed && !loop) return;
+	public static void playSound(Media media, boolean loop, Double volume){playSound(media, loop, volume, true);}
+	public static void playSound(Media media){playSound(media, false, null, true);}
+	public static void playSound(Media sound, boolean loop, Double volume, boolean skip){
+		if (!audioAllowed && skip) return;
 		AudioClip ac = new AudioClip(sound.getSource());
 		clips.add(ac);
 		if (loop){

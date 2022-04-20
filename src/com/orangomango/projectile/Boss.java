@@ -15,6 +15,7 @@ public class Boss extends Entity{
 	public int damageHP;
 	public boolean drawDamage;
 	private boolean moving;
+	private boolean playerTookDamage;
 	private boolean superAllowed = true;
 	private boolean superDamage;
 	public static ArrayList<BossSuper> supers = new ArrayList<>();
@@ -43,7 +44,7 @@ public class Boss extends Entity{
 					this.damageHP = -(this.startHP-this.hp);
 					this.hp = this.startHP;
 				}
-				MainApplication.playSound(BOSS_HP_SOUND);
+				MainApplication.playSound(BOSS_HP_SOUND, false, null, false);
 				new Timer().schedule(new TimerTask(){
 					@Override
 					public void run(){
@@ -60,7 +61,7 @@ public class Boss extends Entity{
 						supers.remove(bs);
 					}
 				}, 1000);
-				MainApplication.playSound(BOSS_SUPER_SOUND);
+				MainApplication.playSound(BOSS_SUPER_SOUND, false, null, false);
 				superAllowed = false;
 				new Timer().schedule(new TimerTask(){
 					@Override
@@ -117,8 +118,15 @@ public class Boss extends Entity{
 						break;
 				}
 				double distance = Math.sqrt(Math.pow(this.x-player.getX(), 2)+Math.pow(this.y-player.getY(), 2));
-				if (distance <= 100){
+				if (distance <= 100 && !playerTookDamage){
 					player.takeDamage(15);
+					playerTookDamage = true;
+					new Timer().schedule(new TimerTask(){
+						@Override
+						public void run(){
+							playerTookDamage = false;
+						}
+					}, 500);
 				}
 			}));
 			mover.setCycleCount(15);
@@ -146,14 +154,13 @@ public class Boss extends Entity{
 		}, 750);
 		if (this.hp <= 0){
 			die(index);
-			MainApplication.playSound(EXTRA_LIFE_SOUND);
 			player.hp = 100;
-			MainApplication.playSound(EXTRA_LIFE_SOUND);
+			MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 			MainApplication.score += 100;
 			MainApplication.bossCount = MainApplication.score;
-			playSound(BOSS_DEATH_SOUND);
+			playSound(BOSS_DEATH_SOUND, false, null, false);
 			MainApplication.stopAllSounds();
-			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0);
+			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0, false);
 		}
 	}
 }

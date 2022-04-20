@@ -70,7 +70,7 @@ public class Player extends Entity{
 		}
 		if (this.hp <= 0){
 			System.out.println("YOU DIED");
-			MainApplication.playSound(DEATH_SOUND);
+			MainApplication.playSound(DEATH_SOUND, false, null, false);
 			new Timer().schedule(new TimerTask(){
 				@Override
 				public void run(){
