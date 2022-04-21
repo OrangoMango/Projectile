@@ -26,7 +26,7 @@ public class GameoverScreen extends Screen{
 		if (score > savedScore){
 			pm.updateHighScore("easy", score);
 		}
-		if (timePlayed < savedTime || savedTime == 0){
+		if (timePlayed > savedTime || savedTime == 0){
 			pm.updateBestTime("easy", timePlayed);
 		}
 	}
@@ -40,7 +40,7 @@ public class GameoverScreen extends Screen{
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> {
-			if (e.getCode() == KeyCode.SPACE){
+			if (e.getCode() == KeyCode.SPACE && displayFinished){
 				Platform.runLater(startPage);
 			}
 		});

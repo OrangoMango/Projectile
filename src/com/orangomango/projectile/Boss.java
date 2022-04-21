@@ -75,6 +75,7 @@ public class Boss extends Entity{
 				this.speed *= 1.5;
 				MainApplication.notification.setText("Boss is faster!");
 				MainApplication.notification.mustShow = true;
+				playSound(NOTIFICATION_SOUND, false, 1.0, false);
 			}
 			Timeline mover = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> {
 				switch (choice){

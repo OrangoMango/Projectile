@@ -75,6 +75,7 @@ public class MainApplication extends Application {
 	public static final Media CONFIRM_SOUND = new Media("file:///home/paul/Documents/confirm.wav");
 	public static final Media SELECT_SOUND = new Media("file:///home/paul/Documents/select.wav");
 	public static final Media SHOW_SOUND = new Media("file:///home/paul/Documents/show.wav");
+	public static final Media NOTIFICATION_SOUND = new Media("file:///home/paul/Documents/notification.wav");
 	
 	public static void main(String[] args){
 		launch(args);
@@ -573,6 +574,7 @@ public class MainApplication extends Application {
 				bossCheck = true;
 				notification.setText("Boss is arriving!");
 				notification.mustShow = true;
+				playSound(NOTIFICATION_SOUND, false, 1.0, false);
 			}
 			
 			// Draw timer
@@ -585,6 +587,7 @@ public class MainApplication extends Application {
 				hpCheck = true;
 				notification.setText("HP is low!");
 				notification.mustShow = true;
+				playSound(NOTIFICATION_SOUND, false, 1.0, false);
 			}
 			if (player.hp >= 70){
 				hpCheck = false;
