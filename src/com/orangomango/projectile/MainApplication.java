@@ -15,22 +15,34 @@ import javafx.util.Duration;
 import java.util.*;
 
 import com.orangomango.projectile.ui.*;
+import com.orangomango.projectile.ui.profile.*;
 
+/**
+ * MainApplication for the game. This class contains the main method
+ * Code entirly written by OrangoMango (orangomango.github.io)
+ * Licence MIT
+ * @author OrangoMango
+ * @version 1.0
+ */
 public class MainApplication extends Application {
 	
 	public static List<Entity> entities = Collections.synchronizedList(new ArrayList<Entity>());
 	private static List<Explosion> explosions = Collections.synchronizedList(new ArrayList<Explosion>());
 	private static ArrayList<AudioClip> clips = new ArrayList<>();
+	public static HashMap<String, Double> userGamedata = new HashMap<>();
 	public static final int SCREEN_WIDTH = 1000;
 	public static final int SCREEN_HEIGHT = 800;
 	public static final int FPS = 40;
 	public static Runnable startPage;
+	public static Runnable gameoverPage;
+	public static Runnable recordsPage;
 	
 	public static volatile boolean addingAllowed = true;
 	private static boolean audioAllowed = true;
 	public static int score;
 	private static int counter = 3;
 	private static boolean gameStarted;
+	public static volatile boolean threadRunning;
 	private static long explosionStart;
 	private static long rechargeStart;
 	private static long gameStart;
@@ -39,6 +51,13 @@ public class MainApplication extends Application {
 	private static BonusPoint point;
 	private static BonusPoint point2;
 	public static int bossCount;
+	public static int bulletCount;
+	public static int enemyDamageCount;
+	public static Notification notification;
+	private static boolean hpCheck;
+	private static boolean bossCheck;
+	
+	public static final String MAIN_FONT = "file:///home/paul/Documents/main_font.ttf";
 	
 	public static final Media SCORE_SOUND = new Media("file:///home/paul/Documents/score.wav");
 	public static final Media SHOOT_SOUND = new Media("file:///home/paul/Documents/shoot.wav");
@@ -55,30 +74,48 @@ public class MainApplication extends Application {
 	public static final Media MENU_BACKGROUND_SOUND = new Media("file:///home/paul/Documents/menu_background.wav");
 	public static final Media CONFIRM_SOUND = new Media("file:///home/paul/Documents/confirm.wav");
 	public static final Media SELECT_SOUND = new Media("file:///home/paul/Documents/select.wav");
+	public static final Media SHOW_SOUND = new Media("file:///home/paul/Documents/show.wav");
 	
 	public static void main(String[] args){
 		launch(args);
 	}
 	
-	@Override
-	public void start(Stage stage){
-		stage.setOnCloseRequest(cr -> System.exit(0));
-		stage.setResizable(false);
-		TilePane layout = new TilePane();
+	private static Canvas getCanvas(){
+		
+		// Reset static variables
+		score = 0;
+		bossCount = 0;
+		bulletCount = 0;
+		enemyDamageCount = 0;
+		explosionStart = 0;
+		rechargeStart = 0;
+		threadRunning = true;
+		gameStarted = false;
+		hpCheck = false;
+		bossCheck = false;
+		explosions.clear();
+		entities.clear();
+		bulletCount = 0;
+		enemyDamageCount = 0;
+		bossCount = 0;
+		
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		
+		notification = new Notification(gc);
+		
 		gc.setFill(Color.BLACK);
-		gc.setFont(new Font("sans-serif", 30));
+		gc.setFont(Font.loadFont(MAIN_FONT, 25));
 		gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
 		
-		Player player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6");
+		ProfileManager pm = new ProfileManager();
+		Player player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
 		
 		Random random = new Random();
 		
-		this.point = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20);
-		this.point2 = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20);
+		point = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20);
+		point2 = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20);
 		
 		entities.add(player);
 		
@@ -86,23 +123,35 @@ public class MainApplication extends Application {
 			switch (e.getCode()){
 				case W:
 					if (!gameStarted || paused) return;
-					player.moveY(-1);
-					//player.setY(player.getY()-player.getSpeed());
+					if (pm.getJSON().getInt("input") == 0){
+						player.moveY(-1);
+					} else {
+						player.setY(player.getY()-player.getSpeed());
+					}
 					break;
 				case A:
 					if (!gameStarted || paused) return;
-					player.moveX(-1);
-					//player.setX(player.getX()-player.getSpeed());
+					if (pm.getJSON().getInt("input") == 0){
+						player.moveX(-1);
+					} else {
+						player.setX(player.getX()-player.getSpeed());
+					}
 					break;
 				case S:
 					if (!gameStarted || paused) return;
-					player.moveY(1);
-					//player.setY(player.getY()+player.getSpeed());
+					if (pm.getJSON().getInt("input") == 0){
+						player.moveY(1);
+					} else {
+						player.setY(player.getY()+player.getSpeed());
+					}
 					break;
 				case D:
 					if (!gameStarted || paused) return;
-					player.moveX(1);
-					//player.setX(player.getX()+player.getSpeed());
+					if (pm.getJSON().getInt("input") == 0){
+						player.moveX(1);
+					} else {
+						player.setX(player.getX()+player.getSpeed());
+					}
 					break;
 				case SPACE:
 					if (paused) return;
@@ -110,19 +159,20 @@ public class MainApplication extends Application {
 						startSpawning(gc, player);
 						update(gc, player);
 						gameStarted = true;
-						playSound(BACKGROUND_SOUND, true, 1.0);
+						playSound(BACKGROUND_SOUND, true, 1.0, false);
 						gameStart = System.currentTimeMillis();
 					}
 					break;
 				case Q:
 					if (System.currentTimeMillis() < rechargeStart+25000 || paused || player.hp == 100) return;
 					rechargeStart = System.currentTimeMillis();
+					userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
 					if (player.hp+40 > 100){
 						player.hp = 100;
 					} else {
 						player.hp += 40;
 					}
-					playSound(EXTRA_LIFE_SOUND);
+					playSound(EXTRA_LIFE_SOUND, false, null, false);
 					break;
 				case P:
 					if (!paused){
@@ -172,11 +222,13 @@ public class MainApplication extends Application {
 			}
 			switch (e.getButton()){
 				case PRIMARY:
+					if (player.shootingAllowed) bulletCount++;
 					player.shoot(e.getX(), e.getY(), false);
 					break;
 				case SECONDARY:
 					if (System.currentTimeMillis() < explosionStart+4500 || !player.shootingAllowed) return;
 					explosionStart = System.currentTimeMillis();
+					userGamedata.put("explosions", userGamedata.getOrDefault("explosions", 0.0)+1);
 					player.shoot(e.getX(), e.getY(), true);
 					break;
 			}
@@ -190,11 +242,13 @@ public class MainApplication extends Application {
 			}
 			switch (e.getButton()){
 				case PRIMARY:
+					if (player.shootingAllowed) bulletCount++;
 					player.shoot(e.getX(), e.getY(), false);
 					break;
 				case SECONDARY:
 					if (System.currentTimeMillis() < explosionStart+4500 || !player.shootingAllowed) return;
 					explosionStart = System.currentTimeMillis();
+					userGamedata.put("explosions", userGamedata.getOrDefault("explosions", 0.0)+1);
 					player.shoot(e.getX(), e.getY(), true);
 					break;
 			}
@@ -206,14 +260,31 @@ public class MainApplication extends Application {
 			player.shooting = false;
 		});
 		
-		layout.getChildren().add(canvas);
+		return canvas;
+	}
+	
+	@Override
+	public void start(Stage stage){
+		stage.setOnCloseRequest(cr -> System.exit(0));
+		stage.setResizable(false);
+		
+		gameoverPage = () -> {
+			GameoverScreen screen = new GameoverScreen();
+			stage.setScene(screen.getScene());
+		};
 		
 		startPage = () -> {
 			HomeScreen homescreen = new HomeScreen();
 			HomeScreen.buttons.clear();
-			homescreen.startEvent = () -> stage.setScene(new Scene(layout, SCREEN_WIDTH, SCREEN_HEIGHT));
+			homescreen.startEvent = () -> stage.setScene(new Scene(new TilePane(getCanvas()), SCREEN_WIDTH, SCREEN_HEIGHT));
 			stage.setScene(homescreen.getScene());
 		};
+		
+		recordsPage = () -> {
+			RecordsScreen records = new RecordsScreen();
+			stage.setScene(records.getScene());
+		};
+
 		startPage.run();
 		stage.show();
 	}
@@ -236,7 +307,7 @@ public class MainApplication extends Application {
 			} catch (InterruptedException ex){
 				ex.printStackTrace();
 			}
-			while (true){
+			while (threadRunning){
 				if (paused || entities.size() == 7) continue;
 				boolean bossFound = false;
 				for (int i = 0; i < entities.size(); i++){
@@ -249,6 +320,7 @@ public class MainApplication extends Application {
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
+					bossCheck = false;
 					entities.add(boss);
 					stopAllSounds();
 					playSound(BOSS_BATTLE_SOUND, true, 0.35, false);
@@ -321,7 +393,8 @@ public class MainApplication extends Application {
 		}).start();
 	}
 	
-	private void update(GraphicsContext gc, Player player){
+	private static void update(GraphicsContext gc, Player player){
+		userGamedata.clear();
 		Random random = new Random();
 		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {
 			long now = System.currentTimeMillis();
@@ -342,13 +415,11 @@ public class MainApplication extends Application {
 					exp.explode();
 					if (exp.radius >= 150){
 						explosionIterator.remove();
-						//Iterator<Entity> entityIteratorE = entities.iterator();
-						//while (entityIteratorE.hasNext()){
 						for (int i = 0; i < entities.size(); i++){
 							try {
 								Entity ent = entities.get(i);
 								if (exp.collided(ent)){
-									if (ent instanceof Enemy && !((Enemy)e.spawning)){
+									if (ent instanceof Enemy && !((Enemy)ent).spawning){
 										((Enemy)ent).takeDamage(exp.damage, i);
 									} else if (ent instanceof Boss){
 										((Boss)ent).takeDamage(exp.damage, i);
@@ -365,20 +436,22 @@ public class MainApplication extends Application {
 					System.out.println("-- error (2.2)");
 				}
 			}
-			if (this.point.isOnPlayer(player)){
-				this.point.setX(random.nextInt(SCREEN_WIDTH-20)+10);
-				this.point.setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+			if (point.isOnPlayer(player)){
+				point.setX(random.nextInt(SCREEN_WIDTH-20)+10);
+				point.setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
 				score += 50;
-				playSound(SCORE_SOUND);
+				userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
+				playSound(SCORE_SOUND, false, null, false);
 			}
-			this.point.draw();
-			if (this.point2.isOnPlayer(player)){
-				this.point2.setX(random.nextInt(SCREEN_WIDTH-20)+10);
-				this.point2.setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+			point.draw();
+			if (point2.isOnPlayer(player)){
+				point2.setX(random.nextInt(SCREEN_WIDTH-20)+10);
+				point2.setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
 				score += 50;
-				playSound(SCORE_SOUND);
+				userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
+				playSound(SCORE_SOUND, false, null, false);
 			}
-			this.point2.draw();
+			point2.draw();
 			Iterator<Bullet> iterator = Player.bullets.iterator();
 			boolean removed = false;
 			while (iterator.hasNext()){
@@ -392,6 +465,7 @@ public class MainApplication extends Application {
 						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), 20) && !((Enemy)e).spawning){
 							if (!b.doExplosion){
 								((Enemy)e).takeDamage(10, i);
+								enemyDamageCount++;
 							}
 							if (!removed){
 								if (b.doExplosion){
@@ -405,6 +479,7 @@ public class MainApplication extends Application {
 						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), 20)){
 							if (!b.doExplosion){
 								((Boss)e).takeDamage(10, i);
+								enemyDamageCount++;
 							}
 							if (!removed){
 								if (b.doExplosion){
@@ -461,8 +536,9 @@ public class MainApplication extends Application {
 			gc.strokeRect(20, 85, 200, 15);
 			
 			// Draw score
+			userGamedata.put("score", (double)score);
 			gc.setFill(Color.WHITE);
-			gc.setFont(new Font("sans-serif", 30));
+			gc.setFont(Font.loadFont(MAIN_FONT, 35));
 			gc.fillText(Integer.toString(score), 230, 50);
 			
 			// Draw boss hp bar
@@ -489,22 +565,39 @@ public class MainApplication extends Application {
 			int scoreForBoss = score+(score <= 1700 ? 1700-score : 1500-(score-bossCount));
 			if (score < scoreForBoss){
 				gc.setFill(Color.web("#980F40"));
-				gc.fillRect(20, 110, 200*(score > 1700 ? (score-bossScore)/1500.0 : score/1700.0), 20);
+				gc.fillRect(20, 110, 200*(score > 1700 ? (score-bossCount)/1500.0 : score/1700.0), 20);
 				gc.setStroke(Color.web("#620929"));
 				gc.strokeRect(20, 110, 200, 20);
 			}
+			if (scoreForBoss-score <= 250 && !bossCheck){
+				bossCheck = true;
+				notification.setText("Boss is arriving!");
+				notification.mustShow = true;
+			}
 			
 			// Draw timer
-			gc.setFont(new Font("sans-serif", 25));
+			userGamedata.put("gameTime", (double)(now-gameStart));
+			gc.setFont(Font.loadFont(MAIN_FONT, 30));
 			gc.setFill(Color.WHITE);
-			gc.fillText(String.format("%s.%s.%s", (now-gameStart)/60000, ((now-gameStart)/1000)%60, (now-gameStart)%1000), 30, SCREEN_HEIGHT-20);		
+			gc.fillText(String.format("%s:%s", (now-gameStart)/60000, (now-gameStart)/1000%60), 30, SCREEN_HEIGHT-20);
+
+			if (player.hp <= 40 && !hpCheck){
+				hpCheck = true;
+				notification.setText("HP is low!");
+				notification.mustShow = true;
+			}
+			if (player.hp >= 70){
+				hpCheck = false;
+			}
+
+			// Show notification
+			notification.show();
+			
 		}));
 		loop.setCycleCount(Animation.INDEFINITE);
 		loop.play();
 	}
-	
-	public static void playSound(Media media, boolean loop, Double volume){playSound(media, loop, volume, true);}
-	public static void playSound(Media media){playSound(media, false, null, true);}
+
 	public static void playSound(Media sound, boolean loop, Double volume, boolean skip){
 		if (!audioAllowed && skip) return;
 		AudioClip ac = new AudioClip(sound.getSource());

@@ -73,6 +73,8 @@ public class Boss extends Entity{
 			if (this.hp <= this.startHP/2 && !this.superDamage){
 				this.superDamage = true;
 				this.speed *= 1.5;
+				MainApplication.notification.setText("Boss is faster!");
+				MainApplication.notification.mustShow = true;
 			}
 			Timeline mover = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), e -> {
 				switch (choice){
@@ -145,7 +147,7 @@ public class Boss extends Entity{
 		drawDamage = true;
 		super.takeDamage(damage);
 		this.damageHP = damage;
-		MainApplication.playSound(BOSS_HIT_SOUND);
+		MainApplication.playSound(BOSS_HIT_SOUND, false, null, false);
 		new Timer().schedule(new TimerTask(){
 			@Override
 			public void run(){
@@ -155,6 +157,7 @@ public class Boss extends Entity{
 		if (this.hp <= 0){
 			die(index);
 			player.hp = 100;
+			userGamedata.put("bosses", userGamedata.getOrDefault("bosses", 0.0)+1);
 			MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 			MainApplication.score += 100;
 			MainApplication.bossCount = MainApplication.score;

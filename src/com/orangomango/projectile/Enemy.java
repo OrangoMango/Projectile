@@ -48,9 +48,10 @@ public class Enemy extends Entity{
 		super.takeDamage(damage);
 		Random random = new Random();
 		if (this.hp <= 0){
-			die(index);
+			die(index);			
+			userGamedata.put("enemies", userGamedata.getOrDefault("enemies", 0.0)+1);
 			if (this.boss && random.nextInt(100) <= 15+this.damage2player){ // 15% probability + extra %
-				MainApplication.playSound(EXTRA_LIFE_SOUND);
+				MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 				if (player.hp <= 85){
 					player.hp += 10;
 				} else {
@@ -58,7 +59,7 @@ public class Enemy extends Entity{
 				}
 			}
 			MainApplication.score += 10;
-			playSound(SCORE_SOUND);
+			playSound(SCORE_SOUND, false, null, false);
 		}
 	}
 	

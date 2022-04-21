@@ -4,6 +4,8 @@ import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import static com.orangomango.projectile.MainApplication.MAIN_FONT;
+
 public class Selection {
 	private GraphicsContext gc;
 	private double x, y;
@@ -33,7 +35,7 @@ public class Selection {
 	
 	public void show(){
 		gc.setFill(Color.web(this.selected ? this.selectedColor : (this.choosed ? this.choosedColor : this.color)));
-		gc.setFont(new Font("sans-serif", 50));
+		gc.setFont(Font.loadFont(MAIN_FONT, 50));
 		gc.fillText(this.text, this.x, this.y);
 	}
 	
