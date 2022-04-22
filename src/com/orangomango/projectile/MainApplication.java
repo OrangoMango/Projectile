@@ -13,6 +13,7 @@ import javafx.scene.media.*;
 import javafx.util.Duration;
 
 import java.util.*;
+import java.io.File;
 
 import com.orangomango.projectile.ui.*;
 import com.orangomango.projectile.ui.profile.*;
@@ -57,28 +58,29 @@ public class MainApplication extends Application {
 	private static boolean hpCheck;
 	public static boolean bossCheck;
 	public static String difficulty;
+	public static boolean firstTime;
 	
-	public static final String MAIN_FONT = "file:///home/paul/Documents/main_font.ttf";
+	public static final String MAIN_FONT = "file://"+System.getProperty("user.home")+"/.projectile/assets/font/main_font.ttf";
 	
-	public static final Media SCORE_SOUND = new Media("file:///home/paul/Documents/score.wav");
-	public static final Media SHOOT_SOUND = new Media("file:///home/paul/Documents/shoot.wav");
-	public static final Media DAMAGE_SOUND = new Media("file:///home/paul/Documents/damage.wav");
-	public static final Media EXPLOSION_SOUND = new Media("file:///home/paul/Documents/explosion.wav");
-	public static final Media BACKGROUND_SOUND = new Media("file:///home/paul/Documents/background.mp3");
-	public static final Media DEATH_SOUND = new Media("file:///home/paul/Documents/death.wav");
-	public static final Media EXTRA_LIFE_SOUND = new Media("file:///home/paul/Documents/extra_life.wav");
-	public static final Media BOSS_DEATH_SOUND = new Media("file:///home/paul/Documents/boss_death.wav");
-	public static final Media BOSS_BATTLE_SOUND = new Media("file:///home/paul/Documents/boss_battle.wav");
-	public static final Media BOSS_HP_SOUND = new Media("file:///home/paul/Documents/boss_hp.wav");
-	public static final Media BOSS_SUPER_SOUND = new Media("file:///home/paul/Documents/boss_super.wav");
-	public static final Media BOSS_HIT_SOUND = new Media("file:///home/paul/Documents/boss_hit.wav");
-	public static final Media MENU_BACKGROUND_SOUND = new Media("file:///home/paul/Documents/menu_background.wav");
-	public static final Media CONFIRM_SOUND = new Media("file:///home/paul/Documents/confirm.wav");
-	public static final Media SELECT_SOUND = new Media("file:///home/paul/Documents/select.wav");
-	public static final Media SHOW_SOUND = new Media("file:///home/paul/Documents/show.wav");
-	public static final Media NOTIFICATION_SOUND = new Media("file:///home/paul/Documents/notification.wav");
-	public static final Media SCORE_LOST_SOUND = new Media("file:///home/paul/Documents/score_lost.wav");
-	
+	public static Media SCORE_SOUND;
+	public static Media SHOOT_SOUND;
+	public static Media DAMAGE_SOUND;
+	public static Media EXPLOSION_SOUND;
+	public static Media BACKGROUND_SOUND;
+	public static Media DEATH_SOUND;
+	public static Media EXTRA_LIFE_SOUND;
+	public static Media BOSS_DEATH_SOUND;
+	public static Media BOSS_BATTLE_SOUND;
+	public static Media BOSS_HP_SOUND;
+	public static Media BOSS_SUPER_SOUND;
+	public static Media BOSS_HIT_SOUND;
+	public static Media MENU_BACKGROUND_SOUND;
+	public static Media CONFIRM_SOUND;
+	public static Media SELECT_SOUND;
+	public static Media SHOW_SOUND;
+	public static Media NOTIFICATION_SOUND;
+	public static Media SCORE_LOST_SOUND;
+		
 	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
 	private static final int[] diffMedium = new int[]{15, 20, 25, 10, 20, 50, 60, 70, 70, 80, 900, 1900, 400, 400, 36000, 30000, 550, 22, 7};
 	private static final int[] diffHard = new int[]{20, 25, 30, 20, 30, 60, 70, 80, 80, 90, 850, 1850, 300, 300, 34000, 35000, 700, 30, 6};
@@ -88,6 +90,8 @@ public class MainApplication extends Application {
 	public static double enemySpeedDiff;
 	
 	public static void main(String[] args){
+		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
+		ProfileManager.setupDirectory();
 		launch(args);
 	}
 	
@@ -312,8 +316,31 @@ public class MainApplication extends Application {
 			stage.setScene(records.getScene());
 		};
 
-		startPage.run();
-		stage.show();
+		if (firstTime){
+			LoadingScreen ls = new LoadingScreen(stage);
+		} else {
+			SCORE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/score.wav");
+			SHOOT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/shoot.wav");
+			DAMAGE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/damage.wav");
+			System.out.println("Done 3");
+			EXPLOSION_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/explosion.wav");
+			BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/background.mp3");
+			DEATH_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/death.wav");
+			EXTRA_LIFE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/extra_life.wav");
+			BOSS_DEATH_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_death.wav");
+			BOSS_BATTLE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_battle.wav");
+			BOSS_HP_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_hp.wav");
+			BOSS_SUPER_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_super.wav");
+			BOSS_HIT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_hit.wav");
+			MENU_BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/menu_background.wav");
+			CONFIRM_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/confirm.wav");
+			SELECT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/select.wav");
+			SHOW_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/show.wav");
+			NOTIFICATION_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/notification.wav");
+			SCORE_LOST_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/score_lost.wav");
+			startPage.run();
+			stage.show();
+		}
 	}
 
 	private static void startSpawning(GraphicsContext gc, Player player){

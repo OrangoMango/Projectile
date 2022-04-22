@@ -3,6 +3,8 @@ package com.orangomango.projectile.ui.profile;
 import java.io.*;
 import org.json.*;
 
+import com.orangomango.projectile.MainApplication;
+
 public class ProfileManager {
 	private static String home = System.getProperty("user.home");
 	private JSONObject json;
@@ -16,12 +18,11 @@ public class ProfileManager {
 	public static void setupDirectory(){
 		checkAndCreateDir(new File(home+File.separator+".projectile"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"userData"));
+		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"));
+		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
+		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"font"));
 	}
-	
-	static {
-		setupDirectory();
-	}
-	
+
 	public ProfileManager(){
 		File userData = new File(home+File.separator+".projectile"+File.separator+"userData"+File.separator+"data.json");
 		String textData = null;
