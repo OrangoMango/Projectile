@@ -14,10 +14,12 @@ public class Enemy extends Entity{
 	public boolean spawning = true;
 	private double brightness;
 	private boolean boss;
+	private boolean dmgCooldown;
 	
 	public Enemy(GraphicsContext gc, double x, double y, String color, String damageColor, Player player){
 		super(gc, x, y, color, damageColor);
 		this.player = player;
+		this.speed = enemySpeedDiff;
 		new Thread(() -> {
 			for (double i = -1.0; i <= 0; i += 0.1){
 				brightness = i;
@@ -74,8 +76,15 @@ public class Enemy extends Entity{
 		double speedX = this.speed * Math.cos(angle);
 		double speedY = this.speed * Math.sin(angle);
 		if (Math.sqrt(Math.pow(this.x+speedX-this.player.x, 2)+Math.pow(this.y+speedY-this.player.y, 2)) <= 50){
-			if (!this.spawning){
+			if (!this.spawning && !this.dmgCooldown){
 				this.player.takeDamage(this.damage2player);
+				this.dmgCooldown = true;
+				new Timer().schedule(new TimerTask(){
+					@Override
+					public void run(){
+						dmgCooldown = false;
+					}
+				}, MainApplication.currentDiff[13]);
 			}
 		} else {
 			this.x += speedX;

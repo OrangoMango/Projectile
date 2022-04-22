@@ -21,14 +21,19 @@ public class GameoverScreen extends Screen{
 		int score = userGamedata.get("score").intValue();
 		int timePlayed = userGamedata.get("gameTime").intValue();
 		ProfileManager pm = new ProfileManager();
-		int savedScore = pm.getJSON().getJSONObject("highscore").getInt("easy");
-		int savedTime = pm.getJSON().getJSONObject("bestTime").getInt("easy");
+		int savedScore = pm.getJSON().getJSONObject("highscore").getInt(difficulty);
+		int savedTime = pm.getJSON().getJSONObject("bestTime").getInt(difficulty);
 		if (score > savedScore){
-			pm.updateHighScore("easy", score);
+			pm.updateHighScore(difficulty, score);
 		}
 		if (timePlayed > savedTime || savedTime == 0){
-			pm.updateBestTime("easy", timePlayed);
+			pm.updateBestTime(difficulty, timePlayed);
 		}
+		pm.updateStats("timePlayed", timePlayed, true);
+		pm.updateStats("roundsDone", 1, true);
+		pm.updateStats("bossesKilled", userGamedata.getOrDefault("bosses", 0.0).intValue(), true);
+		pm.updateStats("enemiesKilled", userGamedata.getOrDefault("enemies", 0.0).intValue(), true);
+		pm.updateStats("bonusTaken", userGamedata.getOrDefault("bonusPoints", 0.0).intValue(), true);
 	}
 	
 	@Override
@@ -72,7 +77,7 @@ public class GameoverScreen extends Screen{
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.setFill(Color.RED);
 		gc.setFont(Font.loadFont(MAIN_FONT, 75));
-		gc.fillText("GAME OVER", 100, 120);
+		gc.fillText("GAME OVER ("+difficulty+")", 50, 120);
 		gc.setStroke(Color.WHITE);
 		gc.setLineWidth(5);
 		gc.strokeRect(150, 200, 670, 400);

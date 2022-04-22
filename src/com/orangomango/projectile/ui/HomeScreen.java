@@ -19,8 +19,10 @@ public class HomeScreen extends Screen{
 	private static String finalText = "";
 	public Runnable startEvent;
 	private ProfileManager pm;
+	private String diff;
 	
 	public HomeScreen(){
+		stopAllSounds();
 		playSound(MENU_BACKGROUND_SOUND, true, 0.65, false);
 		buttons.clear();
 		finalText = "";
@@ -92,6 +94,7 @@ public class HomeScreen extends Screen{
 							if (selection.getText().equals("START") && this.startEvent != null){
 								stopAllSounds();
 								playSound(CONFIRM_SOUND, false, null, true);
+								difficulty = this.diff.toLowerCase();
 								this.startEvent.run();
 								return;
 							} else if (selection.getText().equals("TUTORIAL")){
@@ -195,7 +198,10 @@ public class HomeScreen extends Screen{
 				String k = keys[counter++];
 				builder.append(k);
 				builder.append(selection.getText()).append(" ");
-				if (k.equals(keys[1])){
+				if (k.equals(keys[0])){
+					this.diff = selection.getText();
+				}
+				else if (k.equals(keys[1])){
 					this.pm.updateInput(selection.getText().equals("SHORT PRESS") ? 0 : 1);
 				}
 			}

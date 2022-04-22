@@ -55,7 +55,8 @@ public class MainApplication extends Application {
 	public static int enemyDamageCount;
 	public static Notification notification;
 	private static boolean hpCheck;
-	private static boolean bossCheck;
+	public static boolean bossCheck;
+	public static String difficulty;
 	
 	public static final String MAIN_FONT = "file:///home/paul/Documents/main_font.ttf";
 	
@@ -76,6 +77,15 @@ public class MainApplication extends Application {
 	public static final Media SELECT_SOUND = new Media("file:///home/paul/Documents/select.wav");
 	public static final Media SHOW_SOUND = new Media("file:///home/paul/Documents/show.wav");
 	public static final Media NOTIFICATION_SOUND = new Media("file:///home/paul/Documents/notification.wav");
+	public static final Media SCORE_LOST_SOUND = new Media("file:///home/paul/Documents/score_lost.wav");
+	
+	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
+	private static final int[] diffMedium = new int[]{15, 20, 25, 10, 20, 50, 60, 70, 70, 80, 900, 1900, 400, 400, 36000, 30000, 550, 22, 7};
+	private static final int[] diffHard = new int[]{20, 25, 30, 20, 30, 60, 70, 80, 80, 90, 850, 1850, 300, 300, 34000, 35000, 700, 30, 6};
+	private static final int[] diffExtreme = new int[]{30, 35, 40, 30, 40, 70, 80, 90, 90, 100, 750, 1750, 300, 250, 30000, 40000, 850, 45, 5};	
+	public static int[] currentDiff;
+	
+	public static double enemySpeedDiff;
 	
 	public static void main(String[] args){
 		launch(args);
@@ -98,7 +108,20 @@ public class MainApplication extends Application {
 		entities.clear();
 		bulletCount = 0;
 		enemyDamageCount = 0;
-		bossCount = 0;
+		
+		if (difficulty.equals("easy")){
+			currentDiff = diffEasy;
+			enemySpeedDiff = 3;
+		} else if (difficulty.equals("medium")){
+			currentDiff = diffMedium;
+			enemySpeedDiff = 3.1;
+		} else if (difficulty.equals("hard")){
+			currentDiff = diffHard;
+			enemySpeedDiff = 3.2;
+		} else {
+			currentDiff = diffExtreme;
+			enemySpeedDiff = 3.3;
+		}
 		
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
@@ -162,10 +185,13 @@ public class MainApplication extends Application {
 						gameStarted = true;
 						playSound(BACKGROUND_SOUND, true, 1.0, false);
 						gameStart = System.currentTimeMillis();
+						point.startTimer();
+						point2.startTimer();
+						System.out.println(difficulty);
 					}
 					break;
 				case Q:
-					if (System.currentTimeMillis() < rechargeStart+25000 || paused || player.hp == 100) return;
+					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == 100) return;
 					rechargeStart = System.currentTimeMillis();
 					userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
 					if (player.hp+40 > 100){
@@ -289,19 +315,11 @@ public class MainApplication extends Application {
 		startPage.run();
 		stage.show();
 	}
-	
-	/**
-	 * Spawn enemies based on the player's score:
-	 * 0-500 Enemies with 10HP and 10DMG (50width)
-	 * 500-700 10% chance for a boss with 40HP and 15DMG (70width)
-	 * 700-1000 Boss -> 50HP and 15DMG
-	 * 1000-1500 Boss2 with 60HP 20DMG (85width) 7% chance
-	 * 1500+ Enemies -> 20HP and 15DMG. Boss -> 70HP and 60DMG. Boss2-> 70DMG
-	 */
+
 	private static void startSpawning(GraphicsContext gc, Player player){
 		Random random = new Random();
-		final int MIN = 1000;
-		final int MAX = 2000;
+		final int MIN = currentDiff[10];
+		final int MAX = currentDiff[11];
 		new Thread(() -> {
 			try {
 				Thread.sleep(5000); // Give player 5s time
@@ -309,7 +327,7 @@ public class MainApplication extends Application {
 				ex.printStackTrace();
 			}
 			while (threadRunning){
-				if (paused || entities.size() == 7) continue;
+				if (paused || entities.size() == currentDiff[18]) continue;
 				boolean bossFound = false;
 				for (int i = 0; i < entities.size(); i++){
 					if (entities.get(i) instanceof Boss){
@@ -321,55 +339,58 @@ public class MainApplication extends Application {
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
-					bossCheck = false;
 					entities.add(boss);
 					stopAllSounds();
 					playSound(BOSS_BATTLE_SOUND, true, 0.35, false);
 				}
 				if (score < 500){
-					en.setHP(10); // You can one-shot them
+					en.setHP(currentDiff[3]); // You can one-shot them
+					en.setDamage(currentDiff[0]);
 				} else if (score >= 500 && score < 700){
 					if (random.nextInt(100) <= 10 && !bossFound){ // Spawn mini-boss with 10% probability
-						en.setHP(40);
+						en.setHP(currentDiff[5]);
 						en.setWidth(70);
-						en.setDamage(15);
+						en.setDamage(currentDiff[1]);
 					} else {
 						en.setHP(10);
+						en.setDamage(currentDiff[0]);
 					}
 				} else if (score >= 700 && score < 1000){
 					if (random.nextInt(100) <= 10 && !bossFound){
-						en.setHP(50);
+						en.setHP(currentDiff[6]);
 						en.setWidth(70);
-						en.setDamage(15);
+						en.setDamage(currentDiff[0]);
 					} else {
-						en.setHP(10);
+						en.setHP(currentDiff[3]);
+						en.setDamage(currentDiff[1]);
 					}
 				} else if (score >= 1000 && score < 1500){
 					int number = random.nextInt(100);
 					if (number <= 7 && !bossFound){ // Spawn mini-boss2 with 7% probability
-						en.setHP(60);
+						en.setHP(currentDiff[8]);
 						en.setWidth(85);
-						en.setDamage(25);
+						en.setDamage(currentDiff[2]);
 					} else if (number > 7 && number <= 17 && !bossFound){
-						en.setHP(50);
+						en.setHP(currentDiff[6]);
 						en.setWidth(70);
 						en.setDamage(15);
 					} else {
-						en.setHP(10);
+						en.setHP(currentDiff[3]);
+						en.setDamage(currentDiff[0]);
 					}
 				} else {
 					int number = random.nextInt(100);
 					if (number <= 7 && !bossFound){
-						en.setHP(70);
+						en.setHP(currentDiff[9]);
 						en.setWidth(85);
 						en.setDamage(20);
 					} else if (number > 7 && number <= 17 && !bossFound){
-						en.setHP(60);
+						en.setHP(currentDiff[7]);
 						en.setWidth(70);
 						en.setDamage(20);
 					} else {
-						en.setHP(bossFound ? 10 : 20);
-						en.setDamage(15);
+						en.setHP(bossFound ? currentDiff[3] : currentDiff[4]);
+						en.setDamage(currentDiff[0]);
 					}
 				}
 				
@@ -400,7 +421,7 @@ public class MainApplication extends Application {
 		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {
 			long now = System.currentTimeMillis();
 			long cooldown = now-explosionStart < 4500 ? now-explosionStart : 4500;
-			long cooldown2 = now-rechargeStart < 25000 ? now-rechargeStart : 25000;
+			long cooldown2 = now-rechargeStart < currentDiff[15] ? now-rechargeStart : currentDiff[15];
 			
 			gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 			gc.setFill(Color.BLACK);
@@ -438,16 +459,16 @@ public class MainApplication extends Application {
 				}
 			}
 			if (point.isOnPlayer(player)){
-				point.setX(random.nextInt(SCREEN_WIDTH-20)+10);
-				point.setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+				point.setRandomPosition(random);
+				point.startTimer();
 				score += 50;
 				userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
 				playSound(SCORE_SOUND, false, null, false);
 			}
 			point.draw();
 			if (point2.isOnPlayer(player)){
-				point2.setX(random.nextInt(SCREEN_WIDTH-20)+10);
-				point2.setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+				point2.setRandomPosition(random);
+				point2.startTimer();
 				score += 50;
 				userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
 				playSound(SCORE_SOUND, false, null, false);
@@ -532,7 +553,7 @@ public class MainApplication extends Application {
 			
 			// Draw cooldown2 bar
 			gc.setFill(Color.web("#60EFC6"));
-			gc.fillRect(20, 85, 200*((int)cooldown2)/25000, 15);
+			gc.fillRect(20, 85, 200*((int)cooldown2)/currentDiff[15], 15);
 			gc.setStroke(Color.web("#0BA77A"));
 			gc.strokeRect(20, 85, 200, 15);
 			
@@ -570,7 +591,7 @@ public class MainApplication extends Application {
 				gc.setStroke(Color.web("#620929"));
 				gc.strokeRect(20, 110, 200, 20);
 			}
-			if (scoreForBoss-score <= 250 && !bossCheck){
+			if (scoreForBoss-score <= 100 && !bossCheck){
 				bossCheck = true;
 				notification.setText("Boss is arriving!");
 				notification.mustShow = true;

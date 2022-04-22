@@ -22,7 +22,7 @@ public class Boss extends Entity{
 	
 	public Boss(GraphicsContext gc, double x, double y, String color, String damageColor, Player player){
 		super(gc, x, y, color, damageColor);
-		this.hp = 450;
+		this.hp = currentDiff[16];
 		this.startHP = this.hp;
 		this.w = 100;
 		this.player = player;
@@ -122,14 +122,14 @@ public class Boss extends Entity{
 				}
 				double distance = Math.sqrt(Math.pow(this.x-player.getX(), 2)+Math.pow(this.y-player.getY(), 2));
 				if (distance <= 100 && !playerTookDamage){
-					player.takeDamage(15);
+					player.takeDamage(currentDiff[17]);
 					playerTookDamage = true;
 					new Timer().schedule(new TimerTask(){
 						@Override
 						public void run(){
 							playerTookDamage = false;
 						}
-					}, 500);
+					}, MainApplication.currentDiff[12]);
 				}
 			}));
 			mover.setCycleCount(15);
@@ -162,6 +162,7 @@ public class Boss extends Entity{
 			MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 			MainApplication.score += 100;
 			MainApplication.bossCount = MainApplication.score;
+			MainApplication.bossCheck = false;
 			playSound(BOSS_DEATH_SOUND, false, null, false);
 			MainApplication.stopAllSounds();
 			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0, false);

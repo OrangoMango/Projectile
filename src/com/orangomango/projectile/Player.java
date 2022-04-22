@@ -21,7 +21,7 @@ public class Player extends Entity{
 	
 	public Player(GraphicsContext gc, double x, double y, String color, String damageColor, ProfileManager pm){
 		super(gc, x, y, color, damageColor);
-		this.speed = pm.getJSON().getInt("input") == 0 ? 4 : 8;
+		this.speed = pm.getJSON().getInt("input") == 0 ? 4 : 6;
 	}
 	
 	public void moveX(int factor){
