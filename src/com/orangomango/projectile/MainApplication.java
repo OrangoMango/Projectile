@@ -322,7 +322,6 @@ public class MainApplication extends Application {
 			SCORE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/score.wav");
 			SHOOT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/shoot.wav");
 			DAMAGE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/damage.wav");
-			System.out.println("Done 3");
 			EXPLOSION_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/explosion.wav");
 			BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/background.mp3");
 			DEATH_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/death.wav");

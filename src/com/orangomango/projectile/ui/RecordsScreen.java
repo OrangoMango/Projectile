@@ -45,7 +45,7 @@ public class RecordsScreen extends Screen{
 		gc.setFill(Color.RED);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("highscore").getInt("easy")), 225-160, 200);
 		int time = pm.getJSON().getJSONObject("bestTime").getInt("easy");
-		gc.fillText(String.format("%s:%s:%s", time/3600000, time/60000%60, time/1000%60), 225-160, 290);
+		gc.fillText(String.format("%s:%s.%s", time/60000, time/1000%60, time%1000), 225-160, 290);
 		
 		// Medium
 		gc.setFill(Color.WHITE);
@@ -59,7 +59,7 @@ public class RecordsScreen extends Screen{
 		gc.setFill(Color.RED);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("highscore").getInt("medium")), 555-200, 200);
 		int time2 = pm.getJSON().getJSONObject("bestTime").getInt("medium");
-		gc.fillText(String.format("%s:%s:%s", time2/3600000, time2/60000%60, time2/1000%60), 555-200, 290);
+		gc.fillText(String.format("%s:%s.%s", time2/60000, time2/1000%60, time2%1000), 555-200, 290);
 		
 		// Hard
 		gc.setFill(Color.WHITE);
@@ -73,7 +73,7 @@ public class RecordsScreen extends Screen{
 		gc.setFill(Color.RED);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("highscore").getInt("hard")), 225-160, 535);
 		int time3 = pm.getJSON().getJSONObject("bestTime").getInt("hard");
-		gc.fillText(String.format("%s:%s:%s", time3/3600000, time3/60000%60, time3/1000%60), 225-160, 625);
+		gc.fillText(String.format("%s:%s.%s", time3/60000, time3/1000%60, time3%1000), 225-160, 625);
 		
 		// Extreme
 		gc.setFill(Color.WHITE);
@@ -87,7 +87,7 @@ public class RecordsScreen extends Screen{
 		gc.setFill(Color.RED);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("highscore").getInt("extreme")), 555-200, 535);
 		int time4 = pm.getJSON().getJSONObject("bestTime").getInt("extreme");
-		gc.fillText(String.format("%s:%s:%s", time4/3600000, time4/60000%60, time4/1000%60), 555-200, 625);
+		gc.fillText(String.format("%s:%s.%s", time4/60000, time4/1000%60, time4%1000), 555-200, 625);
 		
 		// General stats
 		gc.strokeRect(630, 65, 330, 615);

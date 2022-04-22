@@ -52,9 +52,6 @@ public class LoadingScreen{
 	public LoadingScreen(Stage exStage){
 		Stage stage = new Stage();
 		stage.setResizable(false);
-		stage.setOnCloseRequest(e -> {
-			System.exit(0);
-		});
 		GridPane pane = new GridPane();
 		pane.setVgap(10);
 		pane.setPadding(new Insets(10, 10, 10, 10));
@@ -113,6 +110,7 @@ public class LoadingScreen{
 				
 				Platform.runLater(() -> {
 					stage.close();
+					exStage.show();
 					startPage.run();
 				});
 				
