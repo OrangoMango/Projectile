@@ -57,6 +57,10 @@ public class Entity{
 		return this.y;
 	}
 	
+	public int getHP(){
+		return this.hp;
+	}
+	
 	public double getSpeed(){
 		return this.speed;
 	}
@@ -68,9 +72,7 @@ public class Entity{
 	
 	public void die(int index){
 		try {
-			MainApplication.addingAllowed = false;
 			MainApplication.entities.remove(index);
-			MainApplication.addingAllowed = true;
 		} catch (ConcurrentModificationException ex){
 			System.out.println("-- error");
 		}

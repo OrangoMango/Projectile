@@ -30,7 +30,7 @@ public class ProfileManager {
 			try {
 				userData.createNewFile();
 				BufferedWriter writer = new BufferedWriter(new FileWriter(userData));
-				textData = "{highscore:{easy:0; medium:0; hard:0; extreme:0;}; bestTime:{easy:0; medium:0; hard:0; extreme:0;}; stats:{timePlayed:0; roundsDone:0; bossesKilled:0; enemiesKilled:0; bonusTaken: 0;}; input: 0;}";
+				textData = "{highscore:{easy:0; medium:0; hard:0; extreme:0;}; bestTime:{easy:0; medium:0; hard:0; extreme:0;}; stats:{timePlayed:0; roundsDone:0; bossesKilled:0; enemiesKilled:0; bonusTaken: 0;}; input: 1; firstTimeBoss:true; tutorialComplete:false;}";
 				writer.write(textData);
 				writer.close();
 			} catch (IOException ex){
@@ -80,6 +80,16 @@ public class ProfileManager {
 	
 	public void updateStats(String key, int value, boolean add){
 		this.json.getJSONObject("stats").put(key, add ? this.json.getJSONObject("stats").getInt(key)+value : value);
+		updateOnFile();
+	}
+	
+	public void setFirstTimeBoss(boolean value){
+		this.json.put("firstTimeBoss", value);
+		updateOnFile();
+	}
+	
+	public void setTutorialComplete(boolean value){
+		this.json.put("tutorialComplete", value);
 		updateOnFile();
 	}
 }

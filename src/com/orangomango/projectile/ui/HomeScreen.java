@@ -20,6 +20,11 @@ public class HomeScreen extends Screen{
 	public Runnable startEvent;
 	private ProfileManager pm;
 	private String diff;
+	private static boolean doingTutorial;
+	private String[] texts = new String[]{"Well.. why are you here?", "You want to help me, right?", "Oh right, I'm Ruby. I need to escape\nfrom a black room...", "...but many enemies are attacking\nme.", "Use the right arrow to select the\ntutorial, and space to confirm"};
+	private int messagePosition;
+	private TutorialMessage message;
+	private boolean messageSkipped;
 	
 	public HomeScreen(){
 		stopAllSounds();
@@ -27,6 +32,7 @@ public class HomeScreen extends Screen{
 		buttons.clear();
 		finalText = "";
 		this.pm = new ProfileManager();
+		doingTutorial = !this.pm.getJSON().getBoolean("tutorialComplete");
 	}
 	
 	@Override
@@ -35,7 +41,9 @@ public class HomeScreen extends Screen{
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
 		GraphicsContext gc = canvas.getGraphicsContext2D();
-		
+		if (doingTutorial){
+			this.message = new TutorialMessage(gc, true, true, texts[messagePosition++]);
+		}
 		Cursor cursor = new Cursor(gc);
 		cursor.x = 70;
 		cursor.y = 300;
@@ -45,6 +53,7 @@ public class HomeScreen extends Screen{
 		canvas.setOnKeyPressed(event -> {
 			switch (event.getCode()){
 				case UP:
+					if (doingTutorial) return;
 					playSound(SELECT_SOUND, false, 1.0, true);
 					if (checkForSelectionWith(cursor, cursor.relX, cursor.relY-1)){
 						cursor.y -= 100;
@@ -54,6 +63,8 @@ public class HomeScreen extends Screen{
 					}
 					break;
 				case RIGHT:
+					if (doingTutorial && messagePosition < 5) return;
+					this.message = null;
 					playSound(SELECT_SOUND, false, 1.0, true);
 					if (checkForSelectionWith(cursor, cursor.relX+1, null)){
 						cursor.x += DISTANCE;
@@ -64,6 +75,7 @@ public class HomeScreen extends Screen{
 					}
 					break;
 				case DOWN:
+					if (doingTutorial) return;
 					playSound(SELECT_SOUND, false, 1.0, true);
 					if (checkForSelectionWith(cursor, cursor.relX, cursor.relY+1)){
 						cursor.y += 100;
@@ -73,6 +85,7 @@ public class HomeScreen extends Screen{
 					}
 					break;
 				case LEFT:
+					if (doingTutorial) return;
 					playSound(SELECT_SOUND, false, 1.0, true);
 					if (checkForSelectionWith(cursor, cursor.relX-1, null)){
 						cursor.x -= DISTANCE;
@@ -81,6 +94,23 @@ public class HomeScreen extends Screen{
 						cursor.relX--;
 						update(gc, cursor);
 					}
+					break;
+				case ENTER:
+					if (!doingTutorial || messageSkipped) return;
+					messageSkipped = true;
+					new Timer().schedule(new TimerTask(){
+						@Override
+						public void run(){
+							messageSkipped = false;
+						}
+					}, 500);
+					if (messagePosition == 5){
+						this.message = null;
+					} else {
+						message.setText(texts[messagePosition++]);
+					}
+					playSound(CONFIRM_SOUND, false, null, true);
+					update(gc, cursor);
 					break;
 				case SPACE:
 					if (cursor.relX == 0) break;
@@ -91,14 +121,15 @@ public class HomeScreen extends Screen{
 					}
 					for (Selection selection : buttons){
 						if (selection.relX == cursor.relX && selection.relY == cursor.relY && (selection.comesFromY == null || selection.comesFromY == cursor.fY)){
-							if (selection.getText().equals("START") && this.startEvent != null){
+							if (selection.getText().equals("START") || selection.getText().equals("TUTORIAL") && this.startEvent != null){
 								stopAllSounds();
 								playSound(CONFIRM_SOUND, false, null, true);
 								difficulty = this.diff.toLowerCase();
+								if (selection.getText().equals("TUTORIAL")){
+									playWithTutorial = true;
+								}
 								this.startEvent.run();
 								return;
-							} else if (selection.getText().equals("TUTORIAL")){
-								
 							} else if (selection.getText().equals("RECORDS")){
 								Platform.runLater(recordsPage);
 							} else {
@@ -120,8 +151,8 @@ public class HomeScreen extends Screen{
 		Selection controlsButton = new Selection(gc, "MOVEMENT", 120, 600, 0, 3, null, null);
 		
 		// Play
-		Selection startButton = new Selection(gc, "START", 120+DISTANCE, 300, 1, 0, 0, 0);
-		Selection tutorialButton = new Selection(gc, "TUTORIAL", 120+DISTANCE, 400, 1, 1, 0, 0);
+		Selection tutorialButton = new Selection(gc, "TUTORIAL", 120+DISTANCE, 300, 1, 0, 0, 0);
+		Selection startButton = new Selection(gc, "START", 120+DISTANCE, 400, 1, 1, 0, 0);
 		Selection recordsButton = new Selection(gc, "RECORDS", 120+DISTANCE, 500, 1, 2, 0, 0);
 		
 		// Difficulty
@@ -143,8 +174,8 @@ public class HomeScreen extends Screen{
 		buttons.add(difficultyButton);
 		buttons.add(helpButton);
 		buttons.add(controlsButton);
-		buttons.add(startButton);
 		buttons.add(tutorialButton);
+		buttons.add(startButton);
 		buttons.add(recordsButton);
 		buttons.add(easy);
 		buttons.add(medium);
@@ -185,6 +216,9 @@ public class HomeScreen extends Screen{
 			gc.setFill(Color.web("#B9C5E5"));
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
 			gc.fillText("Movement: WASD\nShoot: left-click\nShoot grenade (4.5sec): right-click\nPause/Resume: P\nRestore hp (25sec): Q", 150+DISTANCE-85, 300);
+		}
+		if (this.message != null){
+			this.message.show();
 		}
 	}
 	

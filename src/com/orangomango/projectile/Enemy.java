@@ -19,7 +19,8 @@ public class Enemy extends Entity{
 	public Enemy(GraphicsContext gc, double x, double y, String color, String damageColor, Player player){
 		super(gc, x, y, color, damageColor);
 		this.player = player;
-		this.speed = enemySpeedDiff;
+		System.out.println("tutorial? "+playWithTutorial);
+		this.speed = playWithTutorial ? 2 : enemySpeedDiff;
 		new Thread(() -> {
 			for (double i = -1.0; i <= 0; i += 0.1){
 				brightness = i;
@@ -76,7 +77,7 @@ public class Enemy extends Entity{
 		double speedX = this.speed * Math.cos(angle);
 		double speedY = this.speed * Math.sin(angle);
 		if (Math.sqrt(Math.pow(this.x+speedX-this.player.x, 2)+Math.pow(this.y+speedY-this.player.y, 2)) <= 50){
-			if (!this.spawning && !this.dmgCooldown){
+			if (!this.spawning && !this.dmgCooldown && !MainApplication.playWithTutorial){
 				this.player.takeDamage(this.damage2player);
 				this.dmgCooldown = true;
 				new Timer().schedule(new TimerTask(){
@@ -90,14 +91,14 @@ public class Enemy extends Entity{
 			this.x += speedX;
 			for (Entity en : MainApplication.entities){
 				if (en != this && collided(en)){
-					this.x -= speedX;
+					this.x -= speedX+2;
 					break;
 				}
 			}
 			this.y += speedY;
 			for (Entity en : MainApplication.entities){
 				if (en != this && collided(en)){
-					this.y -= speedY;
+					this.y -= speedY+2;
 					break;
 				}
 			}

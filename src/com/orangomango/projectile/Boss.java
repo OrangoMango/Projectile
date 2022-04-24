@@ -8,6 +8,7 @@ import javafx.util.Duration;
 import java.util.*;
 
 import static com.orangomango.projectile.MainApplication.*;
+import com.orangomango.projectile.ui.profile.*;
 
 public class Boss extends Entity{
 	private Player player;
@@ -166,6 +167,7 @@ public class Boss extends Entity{
 			playSound(BOSS_DEATH_SOUND, false, null, false);
 			MainApplication.stopAllSounds();
 			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0, false);
+			new ProfileManager().setFirstTimeBoss(false);
 		}
 	}
 }

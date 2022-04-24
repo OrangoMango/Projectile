@@ -37,8 +37,7 @@ public class MainApplication extends Application {
 	public static Runnable startPage;
 	public static Runnable gameoverPage;
 	public static Runnable recordsPage;
-	
-	public static volatile boolean addingAllowed = true;
+
 	private static boolean audioAllowed = true;
 	public static int score;
 	private static int counter = 3;
@@ -59,6 +58,12 @@ public class MainApplication extends Application {
 	public static boolean bossCheck;
 	public static String difficulty;
 	public static boolean firstTime;
+	
+	public static boolean playWithTutorial;
+	private static TutorialMessage tutorialMsg;
+	private static boolean showingTutorialMessage;
+	private static String[] messages = new String[]{"Use WASD to move and left-click to\nshoot. This can be changed later", "Use right-click to launch grenades\n- Your cooldown is limited", "Explosion will damage entities\n(including you) in that area", "Use Q to recharge your HP and\nP to pause/resume", "I think now you are ready to\ndefeat everyone!", "The bars at the top show your hp\nand progress for the boss..", "ah yes, collect the yellow points\nin time to earn extra points."};
+	private static volatile int dimIndex;
 	
 	public static final String MAIN_FONT = "file://"+System.getProperty("user.home")+"/.projectile/assets/font/main_font.ttf";
 	
@@ -95,6 +100,21 @@ public class MainApplication extends Application {
 		launch(args);
 	}
 	
+	private static void displayTutorialMessageAfter(String message, int delay, GraphicsContext gc, Player player){
+		new Timer().schedule(new TimerTask(){
+			@Override
+			public void run(){
+				loop.pause();
+				if (player.movement != null){
+					player.movement.pause();
+				}
+				tutorialMsg = new TutorialMessage(gc, true, true, message);
+				tutorialMsg.show();
+				showingTutorialMessage = true;
+			}
+		}, delay);
+	}
+	
 	private static Canvas getCanvas(){
 		
 		// Reset static variables
@@ -112,6 +132,8 @@ public class MainApplication extends Application {
 		entities.clear();
 		bulletCount = 0;
 		enemyDamageCount = 0;
+		dimIndex = 0;
+		showingTutorialMessage = false;
 		
 		if (difficulty.equals("easy")){
 			currentDiff = diffEasy;
@@ -133,24 +155,80 @@ public class MainApplication extends Application {
 		
 		notification = new Notification(gc);
 		
-		gc.setFill(Color.BLACK);
-		gc.setFont(Font.loadFont(MAIN_FONT, 25));
-		gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
-		
 		ProfileManager pm = new ProfileManager();
 		Player player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
 		
+		if (!playWithTutorial){
+			gc.setFill(Color.BLACK);
+			gc.setFont(Font.loadFont(MAIN_FONT, 25));
+			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
+		} else {
+			gameStarted = true;
+			update(gc, player);
+			playSound(BACKGROUND_SOUND, true, 1.0, false);
+			gameStart = System.currentTimeMillis();
+			// Start the timers and the spawn thread
+			displayTutorialMessageAfter(messages[dimIndex], 1200, gc, player);
+		}
+		
 		Random random = new Random();
 		
-		point = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20);
-		point2 = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20);
+		point = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20, playWithTutorial);
+		point.show = !playWithTutorial;
+		point2 = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20, playWithTutorial);
+		point2.show = !playWithTutorial;
 		
 		entities.add(player);
 		
 		canvas.setOnKeyPressed(e -> {
 			switch (e.getCode()){
+				case ENTER:
+					if (!showingTutorialMessage) return;
+					playSound(CONFIRM_SOUND, false, null, true);
+					tutorialMsg = null;
+					if (dimIndex == 0){
+						dimIndex++;
+						Enemy enemy = new Enemy(gc, 300, 100, "#ff0000", "#FFA3B2", player);
+						enemy.setHP(30);
+						entities.add(enemy);
+						displayTutorialMessageAfter(messages[dimIndex], 4500, gc, player);
+					} else if (dimIndex == 1){
+						dimIndex++;
+						new Timer().schedule(new TimerTask(){
+							@Override
+							public void run(){
+								Enemy enemy = new Enemy(gc, 240, 670, "#ff0000", "#FFA3B2", player);
+								enemy.setHP(10);
+								Enemy enemy2 = new Enemy(gc, 350, 670, "#ff0000", "#FFA3B2", player);
+								enemy2.setHP(10);
+								entities.add(enemy);
+								entities.add(enemy2);
+							}
+						}, 650);
+						displayTutorialMessageAfter(messages[dimIndex], 1500, gc, player);
+					} else if (dimIndex == 2){
+						dimIndex++;
+						displayTutorialMessageAfter(messages[dimIndex], 2400, gc, player);
+					} else if (dimIndex == 3){
+						dimIndex++;
+						displayTutorialMessageAfter(messages[dimIndex], 500, gc, player);
+					} else if (dimIndex >= 4 && dimIndex < 6){
+						if (dimIndex == 5){
+							point.show = true;
+							point2.show = true;
+							point.startTimer();
+							point2.startTimer();
+						}
+						displayTutorialMessageAfter(messages[++dimIndex], 500, gc, player);
+					}
+					loop.play();
+					if (player.movement != null){
+						player.movement.play();
+					}
+					showingTutorialMessage = false;
+					break;
 				case W:
-					if (!gameStarted || paused) return;
+					if (!gameStarted || paused || showingTutorialMessage) return;
 					if (pm.getJSON().getInt("input") == 0){
 						player.moveY(-1);
 					} else {
@@ -158,7 +236,7 @@ public class MainApplication extends Application {
 					}
 					break;
 				case A:
-					if (!gameStarted || paused) return;
+					if (!gameStarted || paused || showingTutorialMessage) return;
 					if (pm.getJSON().getInt("input") == 0){
 						player.moveX(-1);
 					} else {
@@ -166,7 +244,7 @@ public class MainApplication extends Application {
 					}
 					break;
 				case S:
-					if (!gameStarted || paused) return;
+					if (!gameStarted || paused || showingTutorialMessage) return;
 					if (pm.getJSON().getInt("input") == 0){
 						player.moveY(1);
 					} else {
@@ -174,7 +252,7 @@ public class MainApplication extends Application {
 					}
 					break;
 				case D:
-					if (!gameStarted || paused) return;
+					if (!gameStarted || paused || showingTutorialMessage) return;
 					if (pm.getJSON().getInt("input") == 0){
 						player.moveX(1);
 					} else {
@@ -195,7 +273,7 @@ public class MainApplication extends Application {
 					}
 					break;
 				case Q:
-					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == 100) return;
+					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == 100 || showingTutorialMessage) return;
 					rechargeStart = System.currentTimeMillis();
 					userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
 					if (player.hp+40 > 100){
@@ -206,6 +284,7 @@ public class MainApplication extends Application {
 					playSound(EXTRA_LIFE_SOUND, false, null, false);
 					break;
 				case P:
+					if (showingTutorialMessage) return;
 					if (!paused){
 						loop.pause();
 						if (player.movement != null){
@@ -246,7 +325,7 @@ public class MainApplication extends Application {
 		});
 		
 		canvas.setOnMousePressed(e -> {
-			if (!gameStarted || paused) return;
+			if (!gameStarted || paused || showingTutorialMessage) return;
 			if (!player.shooting){
 				player.shooting = true;
 				player.speed /= 2;
@@ -266,7 +345,7 @@ public class MainApplication extends Application {
 		});
 		
 		canvas.setOnMouseDragged(e -> {
-			if (!gameStarted || paused) return;
+			if (!gameStarted || paused || showingTutorialMessage) return;
 			if (!player.shooting){
 				player.shooting = true;
 				player.speed /= 2;
@@ -286,7 +365,7 @@ public class MainApplication extends Application {
 		});
 		
 		canvas.setOnMouseReleased(e -> {
-			if (!gameStarted || paused) return;
+			if (!gameStarted || paused || showingTutorialMessage) return;
 			player.speed *= 2;
 			player.shooting = false;
 		});
@@ -319,27 +398,31 @@ public class MainApplication extends Application {
 		if (firstTime){
 			LoadingScreen ls = new LoadingScreen(stage);
 		} else {
-			SCORE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/score.wav");
-			SHOOT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/shoot.wav");
-			DAMAGE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/damage.wav");
-			EXPLOSION_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/explosion.wav");
-			BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/background.mp3");
-			DEATH_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/death.wav");
-			EXTRA_LIFE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/extra_life.wav");
-			BOSS_DEATH_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_death.wav");
-			BOSS_BATTLE_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_battle.wav");
-			BOSS_HP_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_hp.wav");
-			BOSS_SUPER_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_super.wav");
-			BOSS_HIT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/boss_hit.wav");
-			MENU_BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/menu_background.wav");
-			CONFIRM_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/confirm.wav");
-			SELECT_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/select.wav");
-			SHOW_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/show.wav");
-			NOTIFICATION_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/notification.wav");
-			SCORE_LOST_SOUND = new Media("file://"+System.getProperty("user.home")+"/.projectile/assets/audio/score_lost.wav");
+			setupSounds();
 			startPage.run();
 			stage.show();
 		}
+	}
+	
+	public static void setupSounds(){
+		SCORE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/score.wav");
+		SHOOT_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/shoot.wav");
+		DAMAGE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/damage.wav");
+		EXPLOSION_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/explosion.wav");
+		BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/background.mp3");
+		DEATH_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/death.wav");
+		EXTRA_LIFE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/extra_life.wav");
+		BOSS_DEATH_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_death.wav");
+		BOSS_BATTLE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_battle.wav");
+		BOSS_HP_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_hp.wav");
+		BOSS_SUPER_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_super.wav");
+		BOSS_HIT_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_hit.wav");
+		MENU_BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/menu_background.wav");
+		CONFIRM_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/confirm.wav");
+		SELECT_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/select.wav");
+		SHOW_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/show.wav");
+		NOTIFICATION_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/notification.wav");
+		SCORE_LOST_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/score_lost.wav");
 	}
 
 	private static void startSpawning(GraphicsContext gc, Player player){
@@ -420,18 +503,7 @@ public class MainApplication extends Application {
 					}
 				}
 				
-				if (addingAllowed){
-					entities.add(en);
-				} else {
-					while (!addingAllowed){
-						entities.add(en);
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException ex){
-							ex.printStackTrace();
-						}
-					}
-				}
+				entities.add(en);
 				try {
 					Thread.sleep(random.nextInt(MAX-MIN)+MIN);
 				} catch (InterruptedException ex){
@@ -464,19 +536,18 @@ public class MainApplication extends Application {
 					if (exp.radius >= 150){
 						explosionIterator.remove();
 						for (int i = 0; i < entities.size(); i++){
-							try {
-								Entity ent = entities.get(i);
-								if (exp.collided(ent)){
-									if (ent instanceof Enemy && !((Enemy)ent).spawning){
-										((Enemy)ent).takeDamage(exp.damage, i);
-									} else if (ent instanceof Boss){
-										((Boss)ent).takeDamage(exp.damage, i);
-									} else {
-										ent.takeDamage(exp.damage);
-									}
+							Entity ent = entities.get(i);
+							if (exp.collided(ent)){
+								if (ent instanceof Enemy && !((Enemy)ent).spawning){
+									((Enemy)ent).takeDamage(exp.damage, i);
+								} else if (ent instanceof Boss){
+									((Boss)ent).takeDamage(exp.damage, i);
+								} else {
+									ent.takeDamage(exp.damage);
 								}
-							} catch (ConcurrentModificationException ex){
-								System.out.println("-- error (2.1)");
+								if (ent.getHP() <= 0){
+									i--;
+								}
 							}
 						}
 					}
@@ -507,6 +578,7 @@ public class MainApplication extends Application {
 				if (b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT){
 					iterator.remove();
 				}
+				int delAmount = 0;
 				for (int i = 0; i < entities.size(); i++){
 					try {
 						Entity e = entities.get(i);
@@ -538,6 +610,9 @@ public class MainApplication extends Application {
 								iterator.remove();
 								removed = true;
 							}
+						}
+						if (e.getHP() <= 0){
+							i--;
 						}
 					} catch (ConcurrentModificationException exc){
 						exc.printStackTrace();

@@ -12,13 +12,16 @@ public class BonusPoint{
 	private double x, y;
 	private long startTime;
 	private boolean timeCheck;
+	private boolean tutorial;
 	private static int TIME_TO_TAKE = 35000;
+	public boolean show = true;
 	
-	public BonusPoint(GraphicsContext gc, double x, double y){
+	public BonusPoint(GraphicsContext gc, double x, double y, boolean tutorial){
 		this.gc = gc;
 		this.x = x;
 		this.y = y;
 		this.startTime = System.currentTimeMillis();
+		this.tutorial = tutorial;
 		TIME_TO_TAKE = currentDiff[14];
 	}
 	
@@ -41,6 +44,7 @@ public class BonusPoint{
 	}
 	
 	public void draw(){
+		if (!show) return;
 		this.gc.setFill(Color.web("#F5E120"));
 		this.gc.fillOval(this.x-30/2, this.y-30/2, 30, 30);
 		this.gc.setFill(Color.web("#ABFF32"));
