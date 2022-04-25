@@ -246,9 +246,9 @@ public class MainApplication extends Application {
 					tutorialMsg = null;
 					if (bossDialog){
 						if (dimIndex == bossMessages.length){
+							threadRunning = true;
 							loop.play();
 							bossDialog = false;
-							threadRunning = true;
 							showingTutorialMessage = false;
 							pm.setFirstTimeBoss(false);
 						} else {
