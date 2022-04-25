@@ -151,9 +151,12 @@ public class HomeScreen extends Screen{
 		Selection controlsButton = new Selection(gc, "MOVEMENT", 120, 600, 0, 3, null, null);
 		
 		// Play
-		Selection tutorialButton = new Selection(gc, "TUTORIAL", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 400 : 300, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 1 : 0, 0, 0);
+		Selection tutorialButton = null;
+		if (!this.pm.getJSON().getBoolean("tutorialComplete")){
+			tutorialButton = new Selection(gc, "TUTORIAL", 120+DISTANCE, 300, 1, 0, 0, 0);
+		}
 		Selection startButton = new Selection(gc, "START", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 300 : 400, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 0 : 1, 0, 0);
-		Selection recordsButton = new Selection(gc, "RECORDS", 120+DISTANCE, 500, 1, 2, 0, 0);
+		Selection recordsButton = new Selection(gc, "RECORDS", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 400 : 500, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 1 : 2, 0, 0);
 		
 		// Difficulty
 		Selection easy = new Selection(gc, "EASY", 120+DISTANCE, 300, 1, 0, 0, 1);
@@ -174,7 +177,9 @@ public class HomeScreen extends Screen{
 		buttons.add(difficultyButton);
 		buttons.add(helpButton);
 		buttons.add(controlsButton);
-		buttons.add(tutorialButton);
+		if (!this.pm.getJSON().getBoolean("tutorialComplete")){
+			buttons.add(tutorialButton);
+		}
 		buttons.add(startButton);
 		buttons.add(recordsButton);
 		buttons.add(easy);
