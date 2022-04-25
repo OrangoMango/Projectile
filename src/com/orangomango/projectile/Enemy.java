@@ -19,7 +19,6 @@ public class Enemy extends Entity{
 	public Enemy(GraphicsContext gc, double x, double y, String color, String damageColor, Player player){
 		super(gc, x, y, color, damageColor);
 		this.player = player;
-		System.out.println("tutorial? "+playWithTutorial);
 		this.speed = playWithTutorial ? 2 : enemySpeedDiff;
 		new Thread(() -> {
 			for (double i = -1.0; i <= 0; i += 0.1){
@@ -76,7 +75,7 @@ public class Enemy extends Entity{
 		double angle = Math.atan2(this.player.y-this.y, this.player.x-this.x);
 		double speedX = this.speed * Math.cos(angle);
 		double speedY = this.speed * Math.sin(angle);
-		if (Math.sqrt(Math.pow(this.x+speedX-this.player.x, 2)+Math.pow(this.y+speedY-this.player.y, 2)) <= 50){
+		if (Math.sqrt(Math.pow(this.x+speedX-this.player.x, 2)+Math.pow(this.y+speedY-this.player.y, 2)) <= 65){
 			if (!this.spawning && !this.dmgCooldown && !MainApplication.playWithTutorial){
 				this.player.takeDamage(this.damage2player);
 				this.dmgCooldown = true;

@@ -109,7 +109,7 @@ public class RecordsScreen extends Screen{
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("bossesKilled")), 645, 380);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("enemiesKilled")), 645, 470);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("bonusTaken")), 645, 560);
-		gc.fillText("TBD", 645, 650);
+		gc.fillText("Coming soon", 645, 650);
 		
 		gc.setFill(Color.web("#FDE4C8"));
 		gc.fillText("Press SPACE to go back", 50, SCREEN_HEIGHT-40);

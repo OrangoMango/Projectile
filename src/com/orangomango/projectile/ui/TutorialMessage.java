@@ -11,6 +11,7 @@ public class TutorialMessage{
 	private boolean direction, speaker;
 	private String text;
 	private static double SPEAKER_WIDTH = 100;
+	private boolean alpha = true;
 	
 	public TutorialMessage(GraphicsContext gc, boolean direction, boolean speaker, String text){
 		this.gc = gc;
@@ -26,14 +27,20 @@ public class TutorialMessage{
 		this.text = value;
 	}
 	
+	public void setMakeAlpha(boolean value){
+		this.alpha = value;
+	}
+	
 	public void show(){
-		gc.save();
-		gc.setFill(Color.BLACK);
-		gc.setGlobalAlpha(0.75);
-		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		gc.restore();
+		if (this.alpha){
+			gc.save();
+			gc.setFill(Color.BLACK);
+			gc.setGlobalAlpha(0.75);
+			gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			gc.restore();
+		}
 		gc.setFill(Color.web(this.speaker ? "#5228FC" : "#F1AF16"));
-		double x = this.direction ? 50 : SCREEN_WIDTH-50-SPEAKER_WIDTH;
+		double x = this.direction ? 50 : SCREEN_WIDTH-30-SPEAKER_WIDTH;
 		if (this.speaker){
 			gc.fillOval(x, SCREEN_HEIGHT-60-SPEAKER_WIDTH, SPEAKER_WIDTH, SPEAKER_WIDTH);
 		} else {
@@ -41,7 +48,7 @@ public class TutorialMessage{
 		}
 		gc.setFill(Color.WHITE);
 		gc.fillRoundRect(200, SCREEN_HEIGHT-60-SPEAKER_WIDTH, 650, SPEAKER_WIDTH, 20, 20);
-		gc.setStroke(Color.BLACK);
+		gc.setStroke(this.speaker ? Color.web("#B8FEA3") : Color.web("#B1CA74"));
 		gc.setLineWidth(5);
 		gc.strokeRoundRect(200, SCREEN_HEIGHT-60-SPEAKER_WIDTH, 650, SPEAKER_WIDTH, 20, 20);
 		gc.setFont(Font.loadFont(MAIN_FONT, 30));

@@ -72,10 +72,13 @@ public class Player extends Entity{
 		}
 		if (this.hp <= 0 && !gameIsOver){
 			gameIsOver = true;
-			System.out.println("YOU DIED");
 			userGamedata.put("damageRatio", (double)MainApplication.enemyDamageCount/MainApplication.bulletCount);
 			MainApplication.playSound(DEATH_SOUND, false, null, false);
-			new Timer().schedule(new TimerTask(){
+			MainApplication.loop.stop();
+			MainApplication.threadRunning = false;
+			MainApplication.stopAllSounds();
+			MainApplication.gameoverPage.run();
+			/*new Timer().schedule(new TimerTask(){
 				@Override
 				public void run(){
 					MainApplication.loop.stop();
@@ -83,7 +86,7 @@ public class Player extends Entity{
 					MainApplication.stopAllSounds();
 					Platform.runLater(MainApplication.gameoverPage);
 				}
-			}, 1000);
+			}, 400);*/
 		}
 	}
 	

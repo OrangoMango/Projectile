@@ -1,18 +1,20 @@
 package com.orangomango.projectile;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.stage.Screen;
 import javafx.scene.Scene;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.*;
+import javafx.scene.text.Font;
 import javafx.animation.*;
 import javafx.scene.media.*;
 import javafx.util.Duration;
 
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.io.File;
 
 import com.orangomango.projectile.ui.*;
@@ -46,6 +48,7 @@ public class MainApplication extends Application {
 	private static long explosionStart;
 	private static long rechargeStart;
 	private static long gameStart;
+	private static long pausedTime;
 	public static Timeline loop;
 	private static volatile boolean paused;
 	private static BonusPoint point;
@@ -58,11 +61,16 @@ public class MainApplication extends Application {
 	public static boolean bossCheck;
 	public static String difficulty;
 	public static boolean firstTime;
+	public static boolean bossInGame;
+	private static boolean messageSkipped;
+	private static boolean doneAlpha;
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
 	private static boolean showingTutorialMessage;
-	private static String[] messages = new String[]{"Use WASD to move and left-click to\nshoot. This can be changed later", "Use right-click to launch grenades\n- Your cooldown is limited", "Explosion will damage entities\n(including you) in that area", "Use Q to recharge your HP and\nP to pause/resume", "I think now you are ready to\ndefeat everyone!", "The bars at the top show your hp\nand progress for the boss..", "ah yes, collect the yellow points\nin time to earn extra points."};
+	private static String[] messages = new String[]{"Use WASD to move and left-click to\nshoot. This can be changed later", "Use right-click to launch grenades\n- Your cooldown is limited", "Explosion will damage entities\n(including you) in that area", "Use Q to recharge your HP and\nP to pause/resume", "I think now you are ready to\ndefeat everyone!", "The bars at the top show your hp\nand progress for the boss..", "ah yes, collect the yellow points\nin time to earn extra points.", "You are done now.. You will\nlearn other tricks soon"};
+	private static String[] bossMessages = new String[]{"player;What shall I do now?!?", "boss;Hahaha you will not beat me!", "player;I must kill you, but you have\nsuper powers :(", "boss;I can spawn deadly lines and if my\nhp is over 50% I can recover it", "player;Anything else?", "boss;Don't worry I will not follow you,\nI'm too good", "player;haha let's see..", "player;Maybe I should use grenades to do\nmore damage.. And recharge my hp", "boss;I will kill you haha"};
+	private static boolean bossDialog;
 	private static volatile int dimIndex;
 	
 	public static final String MAIN_FONT = "file://"+System.getProperty("user.home")+"/.projectile/assets/font/main_font.ttf";
@@ -100,10 +108,25 @@ public class MainApplication extends Application {
 		launch(args);
 	}
 	
-	private static void displayTutorialMessageAfter(String message, int delay, GraphicsContext gc, Player player){
+	private static void displayTutorialMessageAfter(String message, int delay, BooleanSupplier condition, GraphicsContext gc, Player player){
 		new Timer().schedule(new TimerTask(){
 			@Override
 			public void run(){
+				boolean first = condition.getAsBoolean();
+				while (!condition.getAsBoolean()){
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException ex){
+						ex.printStackTrace();
+					}
+				}
+				if (!first){
+					try {
+						Thread.sleep(delay);
+					} catch (InterruptedException ex){
+						ex.printStackTrace();
+					}
+				}
 				loop.pause();
 				if (player.movement != null){
 					player.movement.pause();
@@ -113,6 +136,22 @@ public class MainApplication extends Application {
 				showingTutorialMessage = true;
 			}
 		}, delay);
+	}
+	
+	private static void rerollBossMessage(GraphicsContext gc){
+		String msg = bossMessages[dimIndex++];
+		String data1 = msg.split(";")[0];
+		String data2 = msg.split(";")[1];
+		loop.pause();
+		threadRunning = false;
+		tutorialMsg = new TutorialMessage(gc, data1.equals("player"), data1.equals("player"), data2);
+		if (doneAlpha){
+			tutorialMsg.setMakeAlpha(false);
+		} else {
+			doneAlpha = true;
+		}
+		tutorialMsg.show();
+		showingTutorialMessage = true;
 	}
 	
 	private static Canvas getCanvas(){
@@ -128,6 +167,10 @@ public class MainApplication extends Application {
 		gameStarted = false;
 		hpCheck = false;
 		bossCheck = false;
+		bossDialog = false;
+		bossInGame = false;
+		messageSkipped = false;
+		doneAlpha = false;
 		explosions.clear();
 		entities.clear();
 		bulletCount = 0;
@@ -149,9 +192,13 @@ public class MainApplication extends Application {
 			enemySpeedDiff = 3.3;
 		}
 		
+		if (playWithTutorial) currentDiff = diffEasy;
+		
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
 		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.setFill(Color.web("#CFFF59"));
+		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
 		notification = new Notification(gc);
 		
@@ -162,13 +209,16 @@ public class MainApplication extends Application {
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
 			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
+			if (!difficulty.equals("easy")){
+				gc.setFill(Color.RED);
+				gc.fillText("Warning: your difficulty is "+difficulty+". Enemies and boss\nare stronger and deal more damage", 70, 550);
+			}
 		} else {
 			gameStarted = true;
 			update(gc, player);
 			playSound(BACKGROUND_SOUND, true, 1.0, false);
 			gameStart = System.currentTimeMillis();
-			// Start the timers and the spawn thread
-			displayTutorialMessageAfter(messages[dimIndex], 1200, gc, player);
+			displayTutorialMessageAfter(messages[dimIndex], 1200, () -> true, gc, player);
 		}
 		
 		Random random = new Random();
@@ -183,49 +233,72 @@ public class MainApplication extends Application {
 		canvas.setOnKeyPressed(e -> {
 			switch (e.getCode()){
 				case ENTER:
+					if (messageSkipped) return;
+					messageSkipped = true;
+					new Timer().schedule(new TimerTask(){
+						@Override
+						public void run(){
+							messageSkipped = false;
+						}
+					}, 500);
 					if (!showingTutorialMessage) return;
 					playSound(CONFIRM_SOUND, false, null, true);
 					tutorialMsg = null;
-					if (dimIndex == 0){
-						dimIndex++;
-						Enemy enemy = new Enemy(gc, 300, 100, "#ff0000", "#FFA3B2", player);
-						enemy.setHP(30);
-						entities.add(enemy);
-						displayTutorialMessageAfter(messages[dimIndex], 4500, gc, player);
-					} else if (dimIndex == 1){
-						dimIndex++;
-						new Timer().schedule(new TimerTask(){
-							@Override
-							public void run(){
-								Enemy enemy = new Enemy(gc, 240, 670, "#ff0000", "#FFA3B2", player);
-								enemy.setHP(10);
-								Enemy enemy2 = new Enemy(gc, 350, 670, "#ff0000", "#FFA3B2", player);
-								enemy2.setHP(10);
-								entities.add(enemy);
-								entities.add(enemy2);
-							}
-						}, 650);
-						displayTutorialMessageAfter(messages[dimIndex], 1500, gc, player);
-					} else if (dimIndex == 2){
-						dimIndex++;
-						displayTutorialMessageAfter(messages[dimIndex], 2400, gc, player);
-					} else if (dimIndex == 3){
-						dimIndex++;
-						displayTutorialMessageAfter(messages[dimIndex], 500, gc, player);
-					} else if (dimIndex >= 4 && dimIndex < 6){
-						if (dimIndex == 5){
+					if (bossDialog){
+						if (dimIndex == bossMessages.length){
+							loop.play();
+							bossDialog = false;
+							threadRunning = true;
+							showingTutorialMessage = false;
+							pm.setFirstTimeBoss(false);
+						} else {
+							rerollBossMessage(gc);
+						}
+					} else {
+						BooleanSupplier cond = () -> entities.size() == 1; // This may be variable (maybe?)
+						int timeout = 1400;
+						if (dimIndex == 0){
+							Enemy enemy = new Enemy(gc, 300, 100, "#ff0000", "#FFA3B2", player);
+							enemy.setHP(30);
+							entities.add(enemy);
+							timeout = 5000;
+						} else if (dimIndex == 1){
+							Enemy enemy = new Enemy(gc, 240, 670, "#ff0000", "#FFA3B2", player);
+							enemy.setHP(10);
+							Enemy enemy2 = new Enemy(gc, 350, 670, "#ff0000", "#FFA3B2", player);
+							enemy2.setHP(10);
+							entities.add(enemy);
+							entities.add(enemy2);
+							timeout = 1200;
+						} else if (dimIndex == 2){
+							timeout = 1200;
+						} else if (dimIndex == 5){
 							point.show = true;
 							point2.show = true;
 							point.startTimer();
 							point2.startTimer();
+						} else if (dimIndex == 6){
+							timeout = 10000;
 						}
-						displayTutorialMessageAfter(messages[++dimIndex], 500, gc, player);
+						
+						if (dimIndex+1 <= messages.length-1){
+							displayTutorialMessageAfter(messages[++dimIndex], timeout, cond, gc, player);
+						} else {
+							// Finish the tutorial
+							new Timer().schedule(new TimerTask(){
+								@Override
+								public void run(){
+									pm.setTutorialComplete(true);
+									Platform.runLater(startPage);
+								}
+							}, 2000);
+						}
+						loop.play();
+						if (player.movement != null){
+							player.movement.play();
+						}
+						showingTutorialMessage = false;
 					}
-					loop.play();
-					if (player.movement != null){
-						player.movement.play();
-					}
-					showingTutorialMessage = false;
 					break;
 				case W:
 					if (!gameStarted || paused || showingTutorialMessage) return;
@@ -269,7 +342,6 @@ public class MainApplication extends Application {
 						gameStart = System.currentTimeMillis();
 						point.startTimer();
 						point2.startTimer();
-						System.out.println(difficulty);
 					}
 					break;
 				case Q:
@@ -287,6 +359,7 @@ public class MainApplication extends Application {
 					if (showingTutorialMessage) return;
 					if (!paused){
 						loop.pause();
+						pausedTime = System.currentTimeMillis();
 						if (player.movement != null){
 							player.movement.pause();
 						}
@@ -301,18 +374,25 @@ public class MainApplication extends Application {
 								text = counter+"..";
 								counter--;
 							}
-							/*gc.setTextAlign(TextAlignment.CENTER);
+							gc.setFill(Color.web("#FA8808"));
+							gc.fillRect(SCREEN_WIDTH/2-60, SCREEN_HEIGHT/2-60, 130, 130);
+							gc.setStroke(Color.web("#EED828"));
+							gc.strokeRect(SCREEN_WIDTH/2-60, SCREEN_HEIGHT/2-60, 130, 130);
 							gc.setFont(new Font("sans-serif", 60));
 							gc.setFill(Color.WHITE);
-							gc.fillText(text, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
-							*/
-							System.out.println(text);
+							gc.fillText(text, SCREEN_WIDTH/2-60+15, SCREEN_HEIGHT/2-60+90);
 						}));
 						resume.setCycleCount(4);
 						resume.setOnFinished(rE -> {
 							counter = 3;
 							paused = !paused;
 							gc.restore();
+							long timePaused = System.currentTimeMillis()-pausedTime;
+							gameStart += timePaused;
+							explosionStart += timePaused;
+							rechargeStart += timePaused;
+							point.addToStartTime(timePaused);
+							point2.addToStartTime(timePaused);
 							loop.play();
 							if (player.movement != null){
 								player.movement.play();
@@ -375,6 +455,7 @@ public class MainApplication extends Application {
 	
 	@Override
 	public void start(Stage stage){
+		stage.setTitle("Projectile by OrangoMango");
 		stage.setOnCloseRequest(cr -> System.exit(0));
 		stage.setResizable(false);
 		
@@ -444,13 +525,19 @@ public class MainApplication extends Application {
 						break;
 					}
 				}
+				bossInGame = bossFound;
 				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#ff0000", "#FFA3B2", player);
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
+					bossInGame = bossFound;
 					entities.add(boss);
 					stopAllSounds();
 					playSound(BOSS_BATTLE_SOUND, true, 0.35, false);
+					if (new ProfileManager().getJSON().getBoolean("firstTimeBoss")){
+						bossDialog = true;
+						rerollBossMessage(gc);
+					}
 				}
 				if (score < 500){
 					en.setHP(currentDiff[3]); // You can one-shot them

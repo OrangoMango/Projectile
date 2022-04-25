@@ -38,9 +38,6 @@ public class GameoverScreen extends Screen{
 	
 	@Override
 	public Scene getScene(){
-		
-		System.out.println(userGamedata);
-		
 		TilePane layout = new TilePane();
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);

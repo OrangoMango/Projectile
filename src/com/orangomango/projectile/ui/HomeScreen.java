@@ -151,8 +151,8 @@ public class HomeScreen extends Screen{
 		Selection controlsButton = new Selection(gc, "MOVEMENT", 120, 600, 0, 3, null, null);
 		
 		// Play
-		Selection tutorialButton = new Selection(gc, "TUTORIAL", 120+DISTANCE, 300, 1, 0, 0, 0);
-		Selection startButton = new Selection(gc, "START", 120+DISTANCE, 400, 1, 1, 0, 0);
+		Selection tutorialButton = new Selection(gc, "TUTORIAL", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 400 : 300, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 1 : 0, 0, 0);
+		Selection startButton = new Selection(gc, "START", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 300 : 400, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 0 : 1, 0, 0);
 		Selection recordsButton = new Selection(gc, "RECORDS", 120+DISTANCE, 500, 1, 2, 0, 0);
 		
 		// Difficulty
