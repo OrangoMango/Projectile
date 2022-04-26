@@ -5,7 +5,7 @@
 git clone https://github.com/OrangoMango/Projectile
 cd Projectile
 ```
-* Download JavaFX SDK for your OS [here](https://gluonhq.com/products/javafx/). Be sure to give as argument the `lib` folder
+* Download JavaFX SDK for your OS [here](https://gluonhq.com/products/javafx/) (v17+). Be sure to give as argument the `lib` folder
 ## Using Java Runtime Environment
 Exceute the `.jar` file with this command:
 ```bash
