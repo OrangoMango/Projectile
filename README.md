@@ -32,6 +32,7 @@ Execute the `run.sh` file:
 * Use grenades when there are many enemies near each others
 * You can kill enemies once the spawned completely and you can go outside the screen to get back from the other side.
 * There are 3 types of enemies: Enemy1 (at 0 score), Enemy2 (at 500 score with 10% chance), Enemy3 (at 1000 score with 7% chance)
+* **Survive as much time as possible and earn score**
 ## Controls
 * <Kbd>W</Kbd> <Kbd>A</Kbd> <Kbd>S</Kbd> <Kbd>D</Kbd> to move
   * **Short press mode**: Press once a key and you will travel in that direction until you press another key
