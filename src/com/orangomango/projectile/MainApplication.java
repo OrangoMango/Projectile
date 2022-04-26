@@ -51,8 +51,8 @@ public class MainApplication extends Application {
 	private static long pausedTime;
 	public static Timeline loop;
 	private static volatile boolean paused;
-	private static BonusPoint point;
-	private static BonusPoint point2;
+	public static BonusPoint point;
+	public static BonusPoint point2;
 	public static int bossCount;
 	public static int bulletCount;
 	public static int enemyDamageCount;
@@ -143,7 +143,7 @@ public class MainApplication extends Application {
 		String data1 = msg.split(";")[0];
 		String data2 = msg.split(";")[1];
 		loop.pause();
-		threadRunning = false;
+		paused = true;
 		tutorialMsg = new TutorialMessage(gc, data1.equals("player"), data1.equals("player"), data2);
 		if (doneAlpha){
 			tutorialMsg.setMakeAlpha(false);
@@ -246,7 +246,7 @@ public class MainApplication extends Application {
 					tutorialMsg = null;
 					if (bossDialog){
 						if (dimIndex == bossMessages.length){
-							threadRunning = true;
+							paused = false;
 							loop.play();
 							bossDialog = false;
 							showingTutorialMessage = false;

@@ -164,6 +164,8 @@ public class Boss extends Entity{
 			MainApplication.score += 100;
 			MainApplication.bossCount = MainApplication.score;
 			MainApplication.bossCheck = false;
+			MainApplication.point.startTimer();
+			MainApplication.point2.startTimer();
 			playSound(BOSS_DEATH_SOUND, false, null, false);
 			MainApplication.stopAllSounds();
 			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0, false);
