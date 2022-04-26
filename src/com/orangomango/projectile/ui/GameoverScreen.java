@@ -16,7 +16,7 @@ import com.orangomango.projectile.ui.profile.*;
 public class GameoverScreen extends Screen{
 	private volatile String displayText = "";
 	private volatile boolean displayFinished;
-	private boolean newHighscore;
+	private static boolean newHighscore;
 	
 	public GameoverScreen(){
 		int score = userGamedata.get("score").intValue();
@@ -27,6 +27,8 @@ public class GameoverScreen extends Screen{
 		if (score > savedScore){
 			pm.updateHighScore(difficulty, score);
 			newHighscore = true;
+		} else {
+			newHighscore = false;
 		}
 		if (timePlayed > savedTime || savedTime == 0){
 			pm.updateBestTime(difficulty, timePlayed);
@@ -94,7 +96,7 @@ public class GameoverScreen extends Screen{
 		StringBuilder builder = new StringBuilder();
 		builder.append("Score: ").append(userGamedata.get("score").intValue());
 		if (newHighscore){
-			builder.apppend(" (Highscore!)");
+			builder.append(" (Highscore!)");
 		}
 		builder.append("\n");
 		builder.append("Enemies killed: ").append(userGamedata.getOrDefault("enemies", 0.0).intValue()).append("\n");

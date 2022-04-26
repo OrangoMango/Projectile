@@ -264,9 +264,9 @@ public class MainApplication extends Application {
 							timeout = 5000;
 						} else if (dimIndex == 1){
 							Enemy enemy = new Enemy(gc, 240, 670, "#ff0000", "#FFA3B2", player);
-							enemy.setHP(10);
+							enemy.setHP(20);
 							Enemy enemy2 = new Enemy(gc, 350, 670, "#ff0000", "#FFA3B2", player);
-							enemy2.setHP(10);
+							enemy2.setHP(20);
 							entities.add(enemy);
 							entities.add(enemy2);
 							timeout = 1200;
@@ -289,9 +289,12 @@ public class MainApplication extends Application {
 								@Override
 								public void run(){
 									pm.setTutorialComplete(true);
+									playWithTutorial = false;
+									loop.stop();
+									threadRunning = false;
 									Platform.runLater(startPage);
 								}
-							}, 2000);
+							}, 1300);
 						}
 						loop.play();
 						if (player.movement != null){

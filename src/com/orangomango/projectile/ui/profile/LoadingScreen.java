@@ -40,7 +40,7 @@ public class LoadingScreen{
 		"audio/shoot.wav",
 		"audio/show.wav",
 		"font/main_font.ttf",
-		"image/projectile_logo"
+		"image/projectile_logo.png"
 	};
 	
 	private static void downloadFile(String link, String path) {

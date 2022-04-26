@@ -26,7 +26,7 @@ public class HomeScreen extends Screen{
 	private int messagePosition;
 	private TutorialMessage message;
 	private boolean messageSkipped;
-	private static Image LOGO_IMG = new Image("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/image/projectile_logo.png";);
+	private static Image LOGO_IMG = new Image("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/image/projectile_logo.png");
 	
 	public HomeScreen(){
 		stopAllSounds();
