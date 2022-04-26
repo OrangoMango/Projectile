@@ -6,6 +6,7 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.image.*;
 
 import java.util.*;
 import org.json.*;
@@ -25,6 +26,7 @@ public class HomeScreen extends Screen{
 	private int messagePosition;
 	private TutorialMessage message;
 	private boolean messageSkipped;
+	private static Image LOGO_IMG = new Image("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/image/projectile_logo.png";);
 	
 	public HomeScreen(){
 		stopAllSounds();
@@ -208,6 +210,8 @@ public class HomeScreen extends Screen{
 		gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.setFill(Color.web("#383535"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.drawImage(LOGO_IMG, 90, 30, 768, 200);
+		
 		cursor.show();
 		updateFinalText();
 		for (Selection selection : buttons){

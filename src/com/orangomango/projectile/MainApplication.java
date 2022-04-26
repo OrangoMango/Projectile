@@ -73,7 +73,7 @@ public class MainApplication extends Application {
 	private static boolean bossDialog;
 	private static volatile int dimIndex;
 	
-	public static final String MAIN_FONT = "file://"+System.getProperty("user.home")+"/.projectile/assets/font/main_font.ttf";
+	public static final String MAIN_FONT = "file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/font/main_font.ttf";
 	
 	public static Media SCORE_SOUND;
 	public static Media SHOOT_SOUND;
