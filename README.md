@@ -25,7 +25,7 @@
 # Wiki
 ## General
 * First boss: 1700 score, then every 1500
-* Player can recover hp by killing Enemy2 or Enemy3 (15 + enemy damage)% chance
+* Player can recover hp by killing Enemy2 or Enemy3,(15 + enemy damage)% chance
  
 | Key | Value |
 --- | ---
