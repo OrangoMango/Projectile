@@ -551,7 +551,7 @@ public class MainApplication extends Application {
 						en.setWidth(70);
 						en.setDamage(currentDiff[1]);
 					} else {
-						en.setHP(10);
+						en.setHP(currentDiff[3]);
 						en.setDamage(currentDiff[0]);
 					}
 				} else if (score >= 700 && score < 1000){
@@ -572,7 +572,7 @@ public class MainApplication extends Application {
 					} else if (number > 7 && number <= 17 && !bossFound){
 						en.setHP(currentDiff[6]);
 						en.setWidth(70);
-						en.setDamage(15);
+						en.setDamage(currentDiff[1]);
 					} else {
 						en.setHP(currentDiff[3]);
 						en.setDamage(currentDiff[0]);
@@ -586,7 +586,7 @@ public class MainApplication extends Application {
 					} else if (number > 7 && number <= 17 && !bossFound){
 						en.setHP(currentDiff[7]);
 						en.setWidth(70);
-						en.setDamage(20);
+						en.setDamage(currentDiff[2]);
 					} else {
 						en.setHP(bossFound ? currentDiff[3] : currentDiff[4]);
 						en.setDamage(currentDiff[0]);
