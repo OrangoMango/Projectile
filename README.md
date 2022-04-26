@@ -24,36 +24,39 @@
 * <Kbd>Right-Click</Kbd> to shoot grenades
 # Wiki
 ## General
-| Key | Value
+* First boss: 1700 score, then every 1500
+* Player can recover hp by killing Enemy2 or Enemy3 (15 + enemy damage)% chance
+ 
+| Key | Value |
 --- | ---
-| Player hp | 100
-| Bullet damage | 10
-| Explosion damage | 20
-| Player speed (input mode: 1) | 4
-| Player speed (input mode: 2) | 6
-| Player speed when shooting | 1/2
+| Player hp | 100 |
+| Bullet damage | 10 |
+| Explosion damage | 20 |
+| Player speed (input mode: 1) | 4 |
+| Player speed (input mode: 2) | 6 |
+| Player speed when shooting | 1/2 |
 ## Easy
 | Key | Value |
 --- | ---
-| Enemy damage | 10
-| Enemy2 damage | 15
-| Enemy3 damage | 20
-| Enemy hp | 10
-| Enemy hp (score > 1500) | 20
-| Enemy2 hp | 40
-| Enemy2 hp (score > 1000) | 50
-| Enemy2 hp (score > 1500) | 60
-| Enemy3 hp | 60
-| Enemy3 hp (score > 1500)| 70
-| Spawn cooldown | 1-2s
-| Boss damage to player cooldown | 0.5s
-| Enemy damage to player cooldown | 0.5s
-| Bonus point timer | 40s
-| Recharge hp cooldown | 25s
-| Boss hp | 450
-| Boss damage | 15
-| Max enemies in field | 8
-| Enemy speed | 3
+| Enemy damage | 10 |
+| Enemy2 damage | 15 |
+| Enemy3 damage | 20 |
+| Enemy hp | 10 |
+| Enemy hp (score > 1500) | 20 |
+| Enemy2 hp | 40 |
+| Enemy2 hp (score > 1000) | 50 |
+| Enemy2 hp (score > 1500) | 60 |
+| Enemy3 hp | 60 |
+| Enemy3 hp (score > 1500)| 70 |
+| Spawn cooldown | 1-2s |
+| Boss damage to player cooldown | 0.5s |
+| Enemy damage to player cooldown | 0.5s |
+| Bonus point timer | 40s |
+| Recharge hp cooldown | 25s |
+| Boss hp | 450 |
+| Boss damage | 15 |
+| Max enemies in field | 8 |
+| Enemy speed | 3 |
 ## Medium
 | Key | Value |
 --- | ---
