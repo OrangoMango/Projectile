@@ -1,4 +1,5 @@
-# Projectile
+# Projectile by OrangoMango
+![projectile_logo](https://user-images.githubusercontent.com/61402409/165325541-f4266a2a-9e57-4a32-95db-1ef07dd61d29.png)
 # How to run
 * Download the repository using this command:
 ```bash
