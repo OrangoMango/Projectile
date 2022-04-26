@@ -143,7 +143,6 @@ public class MainApplication extends Application {
 		String data1 = msg.split(";")[0];
 		String data2 = msg.split(";")[1];
 		loop.pause();
-		paused = true;
 		tutorialMsg = new TutorialMessage(gc, data1.equals("player"), data1.equals("player"), data2);
 		if (doneAlpha){
 			tutorialMsg.setMakeAlpha(false);
@@ -246,7 +245,6 @@ public class MainApplication extends Application {
 					tutorialMsg = null;
 					if (bossDialog){
 						if (dimIndex == bossMessages.length){
-							paused = false;
 							loop.play();
 							bossDialog = false;
 							showingTutorialMessage = false;
@@ -520,7 +518,7 @@ public class MainApplication extends Application {
 				ex.printStackTrace();
 			}
 			while (threadRunning){
-				if (paused || entities.size() == currentDiff[18]) continue;
+				if (paused || entities.size() == currentDiff[18] || bossDialog) continue;
 				boolean bossFound = false;
 				for (int i = 0; i < entities.size(); i++){
 					if (entities.get(i) instanceof Boss){
