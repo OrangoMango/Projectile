@@ -1,6 +1,23 @@
 # Projectile
 # How to run
-* ...
+* Download the repository using this command:
+```bash
+git clone https://github.com/OrangoMango/Projectile
+cd Projectile
+```
+* Download JavaFX SDK for your OS [here](https://gluonhq.com/products/javafx/). Be sure to give as argument the `lib` folder
+## Using Java Runtime Environment
+Exceute the `.jar` file with this command:
+```bash
+java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.base -jar game.jar
+```
+## Compiling the code
+Execute the `run.sh` file:
+```bash
+./run.sh /path/to/javafx/lib
+```
+## Using an executable
+...
 # How to play
 ## What to do
 * There are 4 difficulties: *easy*, *medium*, *hard*, *extreme*.
