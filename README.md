@@ -41,6 +41,9 @@ Execute the `run.sh` file:
 * <Kbd>Q</Kbd> to recharge your hp
 * <Kbd>Left-Click</Kbd> to shoot
 * <Kbd>Right-Click</Kbd> to shoot grenades
+# Screenshots
+<img src="https://user-images.githubusercontent.com/61402409/165313479-8a8abd87-d238-4c5d-abb8-566ada7a956e.png" width=400 height=300 /> <img src="https://user-images.githubusercontent.com/61402409/165313485-aeeb826e-2fea-47b5-9100-2d114becad42.png" width=400 height=300 /> <img src="https://user-images.githubusercontent.com/61402409/165313488-8814a380-84d9-4140-8237-7b52e4a12104.png" width=400 height=300 />
+<img src="https://user-images.githubusercontent.com/61402409/165313490-8fb93d6d-5782-4f43-b315-2cfe0de09a71.png" width=400 height=300 />
 # Wiki
 ## General
 * First boss: 1700 score, then every 1500
@@ -142,12 +145,3 @@ Execute the `run.sh` file:
 | Boss damage | 45
 | Max enemies in field | 5
 | Enemy speed | 3.3
-# Screenshots
-## Tutorial
-![game4](https://user-images.githubusercontent.com/61402409/165313479-8a8abd87-d238-4c5d-abb8-566ada7a956e.png)
-## Boss
-![game3](https://user-images.githubusercontent.com/61402409/165313485-aeeb826e-2fea-47b5-9100-2d114becad42.png)
-## Gameplay
-![game2](https://user-images.githubusercontent.com/61402409/165313488-8814a380-84d9-4140-8237-7b52e4a12104.png)
-## Menu
-![game1](https://user-images.githubusercontent.com/61402409/165313490-8fb93d6d-5782-4f43-b315-2cfe0de09a71.png)
