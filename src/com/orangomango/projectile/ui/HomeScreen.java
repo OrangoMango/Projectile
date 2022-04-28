@@ -26,7 +26,7 @@ public class HomeScreen extends Screen{
 	private int messagePosition;
 	private TutorialMessage message;
 	private boolean messageSkipped;
-	private static Image LOGO_IMG = new Image("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/image/projectile_logo.png");
+	private static Image LOGO_IMG = new Image("file://"+userHome+"/.projectile/assets/image/projectile_logo.png");
 	
 	public HomeScreen(){
 		stopAllSounds();
@@ -100,12 +100,7 @@ public class HomeScreen extends Screen{
 				case ENTER:
 					if (!doingTutorial || messageSkipped) return;
 					messageSkipped = true;
-					new Timer().schedule(new TimerTask(){
-						@Override
-						public void run(){
-							messageSkipped = false;
-						}
-					}, 500);
+					schedule(() -> messageSkipped = false, 500);
 					if (messagePosition == 5){
 						this.message = null;
 					} else {

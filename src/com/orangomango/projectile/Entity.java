@@ -28,12 +28,9 @@ public class Entity{
 		takingDamage = true;
 		this.hp -= damage;
 		this.color = this.damageColor;
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				takingDamage = false;
-				color = normalColor;
-			}
+		MainApplication.schedule(() -> {
+			takingDamage = false;
+			color = normalColor;
 		}, 300);
 	}
 	

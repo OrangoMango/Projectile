@@ -29,6 +29,8 @@ import com.orangomango.projectile.ui.profile.*;
  */
 public class MainApplication extends Application {
 	
+	public static String userHome = "";
+	
 	public static List<Entity> entities = Collections.synchronizedList(new ArrayList<Entity>());
 	private static List<Explosion> explosions = Collections.synchronizedList(new ArrayList<Explosion>());
 	private static ArrayList<AudioClip> clips = new ArrayList<>();
@@ -73,7 +75,7 @@ public class MainApplication extends Application {
 	private static boolean bossDialog;
 	private static volatile int dimIndex;
 	
-	public static final String MAIN_FONT = "file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/font/main_font.ttf";
+	public static final String MAIN_FONT;
 	
 	public static Media SCORE_SOUND;
 	public static Media SHOOT_SOUND;
@@ -102,6 +104,31 @@ public class MainApplication extends Application {
 	
 	public static double enemySpeedDiff;
 	
+	private static int threadCont = 0;
+	
+	static {
+		String home = System.getProperty("user.home");
+		if (home.contains("\\")){
+			home = "/"+home;
+		}
+		userHome = home.replace("\\", "/");
+		MAIN_FONT = "file://"+userHome+"/.projectile/assets/font/main_font.ttf";
+	}
+	
+	public static void schedule(Runnable r, int delay){
+		Thread t = new Thread(() -> {
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException ie){
+				ie.printStackTrace();
+			}
+			r.run();
+			//System.out.println("Rm a task, now "+Thread.getAllStackTraces().keySet().size());
+		}, "Schedule-"+(threadCont++));
+		t.start();
+		//System.out.println("\t\tSheduled a task");
+	}
+	
 	public static void main(String[] args){
 		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
 		ProfileManager.setupDirectory();
@@ -109,32 +136,29 @@ public class MainApplication extends Application {
 	}
 	
 	private static void displayTutorialMessageAfter(String message, int delay, BooleanSupplier condition, GraphicsContext gc, Player player){
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				boolean first = condition.getAsBoolean();
-				while (!condition.getAsBoolean()){
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException ex){
-						ex.printStackTrace();
-					}
+		MainApplication.schedule(() -> {
+			boolean first = condition.getAsBoolean();
+			while (!condition.getAsBoolean()){
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
 				}
-				if (!first){
-					try {
-						Thread.sleep(delay);
-					} catch (InterruptedException ex){
-						ex.printStackTrace();
-					}
-				}
-				loop.pause();
-				if (player.movement != null){
-					player.movement.pause();
-				}
-				tutorialMsg = new TutorialMessage(gc, true, true, message);
-				tutorialMsg.show();
-				showingTutorialMessage = true;
 			}
+			if (!first){
+				try {
+					Thread.sleep(delay);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
+				}
+			}
+			loop.pause();
+			if (player.movement != null){
+				player.movement.pause();
+			}
+			tutorialMsg = new TutorialMessage(gc, true, true, message);
+			tutorialMsg.show();
+			showingTutorialMessage = true;
 		}, delay);
 	}
 	
@@ -234,12 +258,7 @@ public class MainApplication extends Application {
 				case ENTER:
 					if (messageSkipped) return;
 					messageSkipped = true;
-					new Timer().schedule(new TimerTask(){
-						@Override
-						public void run(){
-							messageSkipped = false;
-						}
-					}, 500);
+					MainApplication.schedule(() -> messageSkipped = false, 500);
 					if (!showingTutorialMessage) return;
 					playSound(CONFIRM_SOUND, false, null, true);
 					tutorialMsg = null;
@@ -283,15 +302,12 @@ public class MainApplication extends Application {
 							displayTutorialMessageAfter(messages[++dimIndex], timeout, cond, gc, player);
 						} else {
 							// Finish the tutorial
-							new Timer().schedule(new TimerTask(){
-								@Override
-								public void run(){
-									pm.setTutorialComplete(true);
-									playWithTutorial = false;
-									loop.stop();
-									threadRunning = false;
-									Platform.runLater(startPage);
-								}
+							MainApplication.schedule(() -> {
+								pm.setTutorialComplete(true);
+								playWithTutorial = false;
+								loop.stop();
+								threadRunning = false;
+								Platform.runLater(startPage);
 							}, 1300);
 						}
 						loop.play();
@@ -487,24 +503,24 @@ public class MainApplication extends Application {
 	}
 	
 	public static void setupSounds(){
-		SCORE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/score.wav");
-		SHOOT_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/shoot.wav");
-		DAMAGE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/damage.wav");
-		EXPLOSION_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/explosion.wav");
-		BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/background.mp3");
-		DEATH_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/death.wav");
-		EXTRA_LIFE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/extra_life.wav");
-		BOSS_DEATH_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_death.wav");
-		BOSS_BATTLE_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_battle.wav");
-		BOSS_HP_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_hp.wav");
-		BOSS_SUPER_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_super.wav");
-		BOSS_HIT_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/boss_hit.wav");
-		MENU_BACKGROUND_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/menu_background.wav");
-		CONFIRM_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/confirm.wav");
-		SELECT_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/select.wav");
-		SHOW_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/show.wav");
-		NOTIFICATION_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/notification.wav");
-		SCORE_LOST_SOUND = new Media("file://"+System.getProperty("user.home").replace("\\", "/")+"/.projectile/assets/audio/score_lost.wav");
+		SCORE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score.wav");
+		SHOOT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/shoot.wav");
+		DAMAGE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/damage.wav");
+		EXPLOSION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/explosion.wav");
+		BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/background.mp3");
+		DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/death.wav");
+		EXTRA_LIFE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/extra_life.wav");
+		BOSS_DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_death.wav");
+		BOSS_BATTLE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_battle.wav");
+		BOSS_HP_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hp.wav");
+		BOSS_SUPER_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_super.wav");
+		BOSS_HIT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hit.wav");
+		MENU_BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/menu_background.wav");
+		CONFIRM_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/confirm.wav");
+		SELECT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/select.wav");
+		SHOW_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/show.wav");
+		NOTIFICATION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/notification.wav");
+		SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
 	}
 
 	private static void startSpawning(GraphicsContext gc, Player player){
@@ -518,6 +534,8 @@ public class MainApplication extends Application {
 				ex.printStackTrace();
 			}
 			while (threadRunning){
+				//Thread.getAllStackTraces().keySet().forEach(t -> System.out.println(t.getName()+"\t"+t.getState()+"\t"+t.isDaemon()));
+				//System.out.println("\n\n");
 				if (paused || entities.size() == currentDiff[18] || bossDialog) continue;
 				boolean bossFound = false;
 				for (int i = 0; i < entities.size(); i++){
@@ -817,6 +835,9 @@ public class MainApplication extends Application {
 		clips.add(ac);
 		if (loop){
 			ac.setCycleCount(AudioClip.INDEFINITE);
+			if (volume == null){
+				ac.setVolume(0.8);
+			}
 		} else {
 			ac.setVolume(0.9);
 		}
@@ -824,13 +845,14 @@ public class MainApplication extends Application {
 			ac.setVolume(volume);
 		}
 		ac.play();
-		audioAllowed = false;
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				audioAllowed = true;
-			}
-		}, 150);
+		/*
+		 * For an unknown reason the SHOW_SOUND must not have a cooldown,
+		 * otherwise the gameover screen may not show (there is too much lag)
+		 */
+		if (sound != SHOW_SOUND){
+			audioAllowed = false;
+			MainApplication.schedule(() -> audioAllowed = true, 150);
+		}
 	}
 	
 	public static void stopAllSounds(){

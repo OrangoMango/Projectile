@@ -45,12 +45,7 @@ public class Player extends Entity{
 	public void shoot(double shootX, double shootY, boolean explosion){
 		if (!this.shootingAllowed) return;
 		this.shootingAllowed = false;
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				shootingAllowed = true;
-			}
-		}, 230);
+		MainApplication.schedule(() -> shootingAllowed = true, 230);
 		Bullet b = new Bullet(this.gc, this.x, this.y, Math.atan2(shootY-this.y, shootX-this.x));
 		b.doExplosion = explosion;
 		bullets.add(b);
@@ -63,14 +58,10 @@ public class Player extends Entity{
 		if (!playingSound){
 			playSound(DAMAGE_SOUND, false, null, true);
 			playingSound = true;
-			new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				playingSound = false;
-			}
-		}, 500);
+			MainApplication.schedule(() -> playingSound = false, 500);
 		}
 		if (this.hp <= 0 && !gameIsOver){
+			System.out.println("YOU DIED");
 			gameIsOver = true;
 			userGamedata.put("damageRatio", (double)MainApplication.enemyDamageCount/MainApplication.bulletCount);
 			MainApplication.playSound(DEATH_SOUND, false, null, false);
@@ -78,15 +69,6 @@ public class Player extends Entity{
 			MainApplication.threadRunning = false;
 			MainApplication.stopAllSounds();
 			MainApplication.gameoverPage.run();
-			/*new Timer().schedule(new TimerTask(){
-				@Override
-				public void run(){
-					MainApplication.loop.stop();
-					MainApplication.threadRunning = false;
-					MainApplication.stopAllSounds();
-					Platform.runLater(MainApplication.gameoverPage);
-				}
-			}, 400);*/
 		}
 	}
 	

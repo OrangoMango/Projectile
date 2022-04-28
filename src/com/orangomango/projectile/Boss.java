@@ -46,30 +46,15 @@ public class Boss extends Entity{
 					this.hp = this.startHP;
 				}
 				MainApplication.playSound(BOSS_HP_SOUND, false, null, false);
-				new Timer().schedule(new TimerTask(){
-					@Override
-					public void run(){
-						drawDamage = false;
-					}
-				}, 750);
+				MainApplication.schedule(() -> drawDamage = false, 750);
 			}
 			if (random.nextInt(100) <= 9 && superAllowed){ // 9% chance for super power
 				BossSuper bs = new BossSuper(gc, this.x, this.y);
 				supers.add(bs);
-				new Timer().schedule(new TimerTask(){
-					@Override
-					public void run(){
-						supers.remove(bs);
-					}
-				}, 1000);
+				MainApplication.schedule(() -> supers.remove(bs), 1000);
 				MainApplication.playSound(BOSS_SUPER_SOUND, false, null, false);
 				superAllowed = false;
-				new Timer().schedule(new TimerTask(){
-					@Override
-					public void run(){
-						superAllowed = true;
-					}
-				}, 5000);
+				MainApplication.schedule(() -> superAllowed = true, 5000);
 			}
 			if (this.hp <= this.startHP/2 && !this.superDamage){
 				this.superDamage = true;
@@ -125,12 +110,7 @@ public class Boss extends Entity{
 				if (distance <= 100 && !playerTookDamage){
 					player.takeDamage(currentDiff[17]);
 					playerTookDamage = true;
-					new Timer().schedule(new TimerTask(){
-						@Override
-						public void run(){
-							playerTookDamage = false;
-						}
-					}, MainApplication.currentDiff[12]);
+					MainApplication.schedule(() -> playerTookDamage = false, MainApplication.currentDiff[12]);
 				}
 			}));
 			mover.setCycleCount(15);
@@ -150,12 +130,7 @@ public class Boss extends Entity{
 		super.takeDamage(damage);
 		this.damageHP = damage;
 		MainApplication.playSound(BOSS_HIT_SOUND, false, null, false);
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				drawDamage = false;
-			}
-		}, 750);
+		MainApplication.schedule(() -> drawDamage = false, 750);
 		if (this.hp <= 0){
 			die(index);
 			player.hp = 100;

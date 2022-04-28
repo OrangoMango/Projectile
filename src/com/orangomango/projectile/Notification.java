@@ -31,11 +31,6 @@ public class Notification {
 		gc.setFill(Color.web("#7B390E"));
 		gc.fillText(this.text, SCREEN_WIDTH-290, 52);
 		gc.restore();
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				mustShow = false;
-			}
-		}, 2000);
+		MainApplication.schedule(() -> mustShow = false, 2000);
 	}
 }

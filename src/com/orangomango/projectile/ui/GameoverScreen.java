@@ -9,6 +9,7 @@ import javafx.scene.text.Font;
 import javafx.scene.input.KeyCode;
 
 import java.text.DecimalFormat;
+import java.util.*;
 
 import static com.orangomango.projectile.MainApplication.*;
 import com.orangomango.projectile.ui.profile.*;
@@ -16,7 +17,7 @@ import com.orangomango.projectile.ui.profile.*;
 public class GameoverScreen extends Screen{
 	private volatile String displayText = "";
 	private volatile boolean displayFinished;
-	private static boolean newHighscore;
+	private static boolean newHighscore, newTime;
 	
 	public GameoverScreen(){
 		int score = userGamedata.get("score").intValue();
@@ -29,6 +30,11 @@ public class GameoverScreen extends Screen{
 			newHighscore = true;
 		} else {
 			newHighscore = false;
+		}
+		if (timePlayed > savedTime){
+			newTime = true;
+		} else {
+			newTime = false;
 		}
 		if (timePlayed > savedTime || savedTime == 0){
 			pm.updateBestTime(difficulty, timePlayed);
@@ -54,7 +60,7 @@ public class GameoverScreen extends Screen{
 		
 		drawCanvas(gc);
 		
-		new Thread(() -> {
+		schedule(() -> {
 			for (String text : getStringData().split("\n")){
 				displayText += text+"\n";
 				Platform.runLater(() -> drawCanvas(gc));
@@ -68,7 +74,7 @@ public class GameoverScreen extends Screen{
 			displayFinished = true;
 			Platform.runLater(() -> drawCanvas(gc));
 			playSound(SHOW_SOUND, false, null, false);
-		}).start();
+		}, 1000);
 		
 		return new Scene(new TilePane(canvas), SCREEN_WIDTH, SCREEN_HEIGHT);
 	}
@@ -81,7 +87,7 @@ public class GameoverScreen extends Screen{
 		gc.fillText("GAME OVER ("+difficulty+")", 50, 120);
 		gc.setStroke(Color.WHITE);
 		gc.setLineWidth(5);
-		gc.strokeRect(150, 200, 670, 400);
+		gc.strokeRect(150, 200, 710, 400);
 		gc.setFill(Color.web("#E7D6D6"));
 		gc.setFont(Font.loadFont(MAIN_FONT, 40));
 		gc.fillText(displayText, 160, 250);
@@ -101,7 +107,11 @@ public class GameoverScreen extends Screen{
 		builder.append("\n");
 		builder.append("Enemies killed: ").append(userGamedata.getOrDefault("enemies", 0.0).intValue()).append("\n");
 		int timePlayed = userGamedata.get("gameTime").intValue();
-		builder.append("Time played: ").append(String.format("%smin %ssec", timePlayed/60000, timePlayed/1000%60)).append("\n");
+		builder.append("Time played: ").append(String.format("%smin %ssec", timePlayed/60000, timePlayed/1000%60));
+		if (newTime){
+			builder.append(" (Best)");
+		}
+		builder.append("\n");
 		builder.append("Aim ratio: ").append(new DecimalFormat("##.####").format(userGamedata.get("damageRatio"))).append("\n");
 		builder.append("Bosses killed: ").append(userGamedata.getOrDefault("bosses", 0.0).intValue()).append("\n");
 		builder.append("Bonus points: ").append(userGamedata.getOrDefault("bonusPoints", 0.0).intValue()).append("\n");

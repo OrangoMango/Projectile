@@ -107,12 +107,7 @@ public class LoadingScreen{
 		pane.add(label, 0, 0);
 		pane.add(bar, 0, 1);
 		
-		new Timer().schedule(new TimerTask(){
-			@Override
-			public void run(){
-				new Thread(task).run();
-			}
-		}, 1000);
+		schedule(() -> new Thread(task).run(), 1000);
 		
 		stage.setScene(new Scene(pane, 400, 300));
 		stage.show();

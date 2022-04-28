@@ -79,12 +79,7 @@ public class Enemy extends Entity{
 			if (!this.spawning && !this.dmgCooldown && !MainApplication.playWithTutorial){
 				this.player.takeDamage(this.damage2player);
 				this.dmgCooldown = true;
-				new Timer().schedule(new TimerTask(){
-					@Override
-					public void run(){
-						dmgCooldown = false;
-					}
-				}, MainApplication.currentDiff[13]);
+				MainApplication.schedule(() -> dmgCooldown = false, MainApplication.currentDiff[13]);
 			}
 		} else {
 			this.x += speedX;
