@@ -59,6 +59,7 @@ Execute the `run.sh` file:
 | Player speed (input mode: 1) | 4 |
 | Player speed (input mode: 2) | 6 |
 | Player speed when shooting | 1/2 |
+| Bullet speed | 10 |
 ## Easy
 | Key | Value |
 --- | ---
