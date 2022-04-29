@@ -10,7 +10,7 @@ cd Projectile
 ## Using Java Runtime Environment
 Exceute the `.jar` file with this command:
 ```bash
-java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.base -jar game.jar
+java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.media -jar game.jar
 ```
 ## Compiling the code
 Execute the `run.sh` file:
@@ -18,7 +18,9 @@ Execute the `run.sh` file:
 ./run.sh /path/to/javafx/lib
 ```
 ## Using an executable
-...
+### Windows
+### Mac
+### Linux
 # How to play
 ## What to do
 * There are 4 difficulties: *easy*, *medium*, *hard*, *extreme*.
