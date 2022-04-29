@@ -32,7 +32,7 @@ Execute the `run.sh` file:
   | Kill the boss     | +100 Score
   | Miss a bonus point| -150 Score
 * Use grenades when there are many enemies near each others
-* You can kill enemies once the spawned completely and you can go outside the screen to get back from the other side.
+* You can kill enemies once they spawned completely and you can go outside the screen to get back from the other side.
 * There are 3 types of enemies: Enemy1 (at 0 score), Enemy2 (at 500 score with 10% chance), Enemy3 (at 1000 score with 7% chance)
 * **Survive as much time as possible and earn score**
 ## Controls
