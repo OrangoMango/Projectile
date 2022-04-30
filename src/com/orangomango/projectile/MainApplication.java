@@ -845,14 +845,8 @@ public class MainApplication extends Application {
 			ac.setVolume(volume);
 		}
 		ac.play();
-		/*
-		 * For an unknown reason the SHOW_SOUND must not have a cooldown,
-		 * otherwise the gameover screen may not show (there is too much lag)
-		 */
-		if (sound != SHOW_SOUND){
-			audioAllowed = false;
-			MainApplication.schedule(() -> audioAllowed = true, 150);
-		}
+		audioAllowed = false;
+		MainApplication.schedule(() -> audioAllowed = true, 150);
 	}
 	
 	public static void stopAllSounds(){
