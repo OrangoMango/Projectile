@@ -77,25 +77,32 @@ public class LoadingScreen{
 		pane.setPadding(new Insets(10, 10, 10, 10));
 		
 		Task task = new Task(){
-			protected Object call() throws Exception{
-				updateMessage("Downloading assets...");
-				Thread.sleep(500);
-				for (int i = 0; i < files.length; i++){
-					downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+files[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+files[i].replace("/", File.separator));
-					updateProgress(i, files.length);
-					updateMessage(files[i]+"... "+(new DecimalFormat("##.##").format((double)i/files.length*100))+"%");
+			protected Object call(){
+				try {
+					updateMessage("Downloading assets...");
+					Thread.sleep(500);
+					for (int i = 0; i < files.length; i++){
+						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+files[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+files[i].replace("/", File.separator));
+						updateProgress(i, files.length);
+						updateMessage(files[i]+"... "+(new DecimalFormat("##.##").format((double)i/files.length*100))+"%");
+					}
+					
+					updateProgress(files.length, files.length);
+					setupSounds();
+					updateMessage("Done");
+					
+					Platform.runLater(() -> {
+						stage.hide();
+						exStage.show();
+						startPage.run();
+					});
+				} catch (Exception e){
+					Alert alert = new Alert(Alert.AlertType.ERROR);
+					alert.setHeaderText("An error occured");
+					alert.setTitle("Unknown error");
+					alert.setContentText("An error occured while downloading, ("+e.getMessage()+").\nPlease try again later");
+					alert.showAndWait();
 				}
-				
-				updateProgress(files.length, files.length);
-				setupSounds();
-				updateMessage("Done");
-				
-				Platform.runLater(() -> {
-					stage.hide();
-					exStage.show();
-					startPage.run();
-				});
-				
 				return null;
 			}
 		};
