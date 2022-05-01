@@ -18,9 +18,7 @@ Execute the `run.sh` file:
 ./run.sh /path/to/javafx/lib
 ```
 ## Using an executable
-### Windows
-### Mac
-### Linux
+<a href="https://orangomango.itch.io/projectile"><img src="https://user-images.githubusercontent.com/61402409/166142237-3d734a9d-4f12-429e-a059-dfc3b74b4dca.png" width="552" height="167"></img></a>
 # How to play
 ## What to do
 * There are 4 difficulties: *easy*, *medium*, *hard*, *extreme*.
