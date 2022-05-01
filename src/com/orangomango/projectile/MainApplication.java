@@ -12,6 +12,8 @@ import javafx.scene.text.Font;
 import javafx.animation.*;
 import javafx.scene.media.*;
 import javafx.util.Duration;
+import javafx.event.EventHandler;
+import javafx.scene.input.*;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -35,7 +37,7 @@ public class MainApplication extends Application {
 	private static List<Explosion> explosions = Collections.synchronizedList(new ArrayList<Explosion>());
 	private static ArrayList<AudioClip> clips = new ArrayList<>();
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
-	public static final int SCREEN_WIDTH = 1000;
+	public static final int SCREEN_WIDTH =  1000;
 	public static final int SCREEN_HEIGHT = 800;
 	public static final int FPS = 40;
 	public static Runnable startPage;
@@ -66,6 +68,9 @@ public class MainApplication extends Application {
 	public static boolean bossInGame;
 	private static boolean messageSkipped;
 	private static boolean doneAlpha;
+	private static BulletConfig config;
+	private static double ammoDrawing;
+	private static Timeline reloading;
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -95,6 +100,8 @@ public class MainApplication extends Application {
 	public static Media SHOW_SOUND;
 	public static Media NOTIFICATION_SOUND;
 	public static Media SCORE_LOST_SOUND;
+	public static Media AMMO_RELOAD_SOUND;
+	public static Media NO_AMMO_SOUND;
 		
 	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
 	private static final int[] diffMedium = new int[]{15, 20, 25, 10, 20, 50, 60, 70, 70, 80, 900, 1900, 400, 400, 36000, 30000, 550, 22, 7};
@@ -200,6 +207,8 @@ public class MainApplication extends Application {
 		enemyDamageCount = 0;
 		dimIndex = 0;
 		showingTutorialMessage = false;
+		ammoDrawing = 0;
+		reloading = null;
 		
 		if (difficulty.equals("easy")){
 			currentDiff = diffEasy;
@@ -239,7 +248,7 @@ public class MainApplication extends Application {
 		} else {
 			gameStarted = true;
 			update(gc, player);
-			playSound(BACKGROUND_SOUND, true, 1.0, false);
+			playSound(BACKGROUND_SOUND, true, 0.9, false);
 			gameStart = System.currentTimeMillis();
 			displayTutorialMessageAfter(messages[dimIndex], 1200, () -> true, gc, player);
 		}
@@ -252,6 +261,11 @@ public class MainApplication extends Application {
 		point2.show = !playWithTutorial;
 		
 		entities.add(player);
+		
+		//config = new BulletConfig(null, null, null, new double[]{-15, 0, 15}, false, 10);
+		//config.setDamageOnDistance(40, 3, -2);
+		
+		config = new BulletConfig(null, null, null, new double[]{-10, 10}, false, 100, new int[]{5, 100});
 		
 		canvas.setOnKeyPressed(e -> {
 			switch (e.getCode()){
@@ -355,7 +369,7 @@ public class MainApplication extends Application {
 						startSpawning(gc, player);
 						update(gc, player);
 						gameStarted = true;
-						playSound(BACKGROUND_SOUND, true, 1.0, false);
+						playSound(BACKGROUND_SOUND, true, 0.9, false);
 						gameStart = System.currentTimeMillis();
 						point.startTimer();
 						point2.startTimer();
@@ -418,52 +432,73 @@ public class MainApplication extends Application {
 						resume.play();
 					}
 					break;
+				case R:
+					if (player.ammo == config.getAmmo()) return;
+					player.ammo = 0;
+					playSound(AMMO_RELOAD_SOUND, false, 1.0, false);
+					reloading = new Timeline(new KeyFrame(Duration.millis(300), evt -> {
+						ammoDrawing += 0.1;
+						//System.out.println(">><<");
+					}));
+					reloading.setOnFinished(evt -> {
+						player.ammo = config.getAmmo();
+						ammoDrawing = 0;
+					});
+					reloading.setCycleCount(10);
+					reloading.play();
+					break;
 			}
 		});
+
+		player.ammo = config.getAmmo();
 		
-		canvas.setOnMousePressed(e -> {
-			if (!gameStarted || paused || showingTutorialMessage) return;
+		// Shoot eventhandler
+		EventHandler<MouseEvent> eventHandler = e -> {
+			if (!gameStarted || paused || showingTutorialMessage || !player.shootingAllowed) return;
 			if (!player.shooting){
 				player.shooting = true;
-				player.speed /= 2;
+				player.speed = player.startSpeed/2;
 			}
-			switch (e.getButton()){
-				case PRIMARY:
-					if (player.shootingAllowed) bulletCount++;
-					player.shoot(e.getX(), e.getY(), false);
-					break;
-				case SECONDARY:
-					if (System.currentTimeMillis() < explosionStart+4500 || !player.shootingAllowed) return;
-					explosionStart = System.currentTimeMillis();
-					userGamedata.put("explosions", userGamedata.getOrDefault("explosions", 0.0)+1);
-					player.shoot(e.getX(), e.getY(), true);
-					break;
-			}
-		});
+			
+			
+			if (System.currentTimeMillis() < explosionStart+4500 && e.getButton() == MouseButton.SECONDARY) return;
+			
+			//BulletConfig config = new BulletConfig(15, 450, null, null, false);
+			//config.setDamageOnDistance(3, 40, 1);
+			
+			//BulletConfig config = new BulletConfig(10, 230, 10, new double[]{-10, 10}, true);
+			player.shootingAllowed = false;
+			schedule(() -> player.shootingAllowed = true, config.getCooldown()+config.getTiming()[0]*config.getTiming()[1]);
+			Timeline shot = new Timeline(new KeyFrame(Duration.millis(config.getTiming()[1]), evt -> {
+				for (int i = 0; i < config.getCount(); i++){
+					switch (e.getButton()){
+						case PRIMARY:
+							if (player.ammo == 0){
+								playSound(NO_AMMO_SOUND, false, null, false);
+								System.out.println("No ammo");
+								return;
+							}
+							bulletCount++;
+							player.shoot(e.getX(), e.getY(), false, config, i);
+							break;
+						case SECONDARY:
+							explosionStart = System.currentTimeMillis();
+							userGamedata.put("explosions", userGamedata.getOrDefault("explosions", 0.0)+1);
+							player.shoot(e.getX(), e.getY(), true, config, i);
+							break;
+					}
+				}
+			}));
+			shot.setCycleCount(config.getTiming()[0]);
+			shot.play();
+		};
 		
-		canvas.setOnMouseDragged(e -> {
-			if (!gameStarted || paused || showingTutorialMessage) return;
-			if (!player.shooting){
-				player.shooting = true;
-				player.speed /= 2;
-			}
-			switch (e.getButton()){
-				case PRIMARY:
-					if (player.shootingAllowed) bulletCount++;
-					player.shoot(e.getX(), e.getY(), false);
-					break;
-				case SECONDARY:
-					if (System.currentTimeMillis() < explosionStart+4500 || !player.shootingAllowed) return;
-					explosionStart = System.currentTimeMillis();
-					userGamedata.put("explosions", userGamedata.getOrDefault("explosions", 0.0)+1);
-					player.shoot(e.getX(), e.getY(), true);
-					break;
-			}
-		});
+		canvas.setOnMousePressed(eventHandler);
+		canvas.setOnMouseDragged(eventHandler);
 		
 		canvas.setOnMouseReleased(e -> {
 			if (!gameStarted || paused || showingTutorialMessage) return;
-			player.speed *= 2;
+			player.speed = player.startSpeed;
 			player.shooting = false;
 		});
 		
@@ -521,9 +556,15 @@ public class MainApplication extends Application {
 		SHOW_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/show.wav");
 		NOTIFICATION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/notification.wav");
 		SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
+		AMMO_RELOAD_SOUND = new Media("file:///home/paul/Documents/ammo_reload.wav");
+		NO_AMMO_SOUND = new Media("file:///home/paul/Documents/no_ammo.wav");
 	}
 
 	private static void startSpawning(GraphicsContext gc, Player player){
+		
+		// SPAWNING PAUSED FOR DEBUGGING
+		//if (true) return;
+		
 		Random random = new Random();
 		final int MIN = currentDiff[10];
 		final int MAX = currentDiff[11];
@@ -681,16 +722,23 @@ public class MainApplication extends Application {
 			boolean removed = false;
 			while (iterator.hasNext()){
 				Bullet b = iterator.next();
-				if (b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT){
+				if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
 					iterator.remove();
 				}
 				int delAmount = 0;
 				for (int i = 0; i < entities.size(); i++){
 					try {
 						Entity e = entities.get(i);
+						int dmg = b.config.willDoDamageOnDistance() ? b.config.getDamageData()[0]+b.config.getDamageData()[2]*b.getFrames() : b.config.getDamage();
+						if (b.config.willDoDamageOnDistance() && dmg > b.config.getDamageData()[1] && b.config.getDamageData()[1] > b.config.getDamageData()[0]){
+							dmg = b.config.getDamageData()[1];
+						} else if (dmg < 0){
+							dmg = 0;
+						}
 						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), 20) && !((Enemy)e).spawning){
 							if (!b.doExplosion){
-								((Enemy)e).takeDamage(10, i);
+								((Enemy)e).takeDamage(dmg, i);
+								System.out.println("Enemy took "+dmg+" damage");
 								enemyDamageCount++;
 							}
 							if (!removed){
@@ -704,7 +752,7 @@ public class MainApplication extends Application {
 							}
 						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), 20)){
 							if (!b.doExplosion){
-								((Boss)e).takeDamage(10, i);
+								((Boss)e).takeDamage(dmg, i);
 								enemyDamageCount++;
 							}
 							if (!removed){
@@ -768,7 +816,7 @@ public class MainApplication extends Application {
 			userGamedata.put("score", (double)score);
 			gc.setFill(Color.WHITE);
 			gc.setFont(Font.loadFont(MAIN_FONT, 35));
-			gc.fillText(Integer.toString(score), 230, 50);
+			gc.fillText(Integer.toString(score), 270, 50);
 			
 			// Draw boss hp bar
 			Boss bossFound = null;
@@ -804,6 +852,14 @@ public class MainApplication extends Application {
 				notification.mustShow = true;
 				playSound(NOTIFICATION_SOUND, false, 1.0, false);
 			}
+			
+			// Draw ammo
+			double ammoHeight = ammoDrawing == 0 ? 110*((double)player.ammo/config.getAmmo()) : 110*ammoDrawing;
+			gc.setFill(Color.web("#F4762B"));
+			gc.fillRect(230, 20+(110-ammoHeight), 30, ammoHeight);
+			gc.setStroke(Color.web("#FF2800"));
+			gc.setLineWidth(4);
+			gc.strokeRect(230, 20, 30, 110);
 			
 			// Draw timer
 			userGamedata.put("gameTime", (double)(now-gameStart));
@@ -846,7 +902,7 @@ public class MainApplication extends Application {
 		}
 		ac.play();
 		audioAllowed = false;
-		MainApplication.schedule(() -> audioAllowed = true, 150);
+		MainApplication.schedule(() -> audioAllowed = true, 100);
 	}
 	
 	public static void stopAllSounds(){

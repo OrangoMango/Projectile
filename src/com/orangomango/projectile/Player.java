@@ -17,11 +17,14 @@ public class Player extends Entity{
 	public boolean shooting;
 	private boolean playingSound;
 	private boolean gameIsOver;
+	public double startSpeed;
 	public static ArrayList<Bullet> bullets = new ArrayList<>();
+	public int ammo = 10;
 	
 	public Player(GraphicsContext gc, double x, double y, String color, String damageColor, ProfileManager pm){
 		super(gc, x, y, color, damageColor);
-		this.speed = pm.getJSON().getInt("input") == 0 ? 4 : 6;
+		this.startSpeed = pm.getJSON().getInt("input") == 0 ? 4 : 6;
+		this.speed = this.startSpeed;
 	}
 	
 	public void moveX(int factor){
@@ -42,11 +45,11 @@ public class Player extends Entity{
 		this.movement.play();
 	}
 	
-	public void shoot(double shootX, double shootY, boolean explosion){
-		if (!this.shootingAllowed) return;
-		this.shootingAllowed = false;
-		MainApplication.schedule(() -> shootingAllowed = true, 230);
-		Bullet b = new Bullet(this.gc, this.x, this.y, Math.atan2(shootY-this.y, shootX-this.x));
+	public void shoot(double shootX, double shootY, boolean explosion, BulletConfig config, int count){
+		if (count == config.getCount()-1){
+			ammo--;
+		}
+		Bullet b = new Bullet(this.gc, this.x, this.y, Math.atan2(shootY-this.y, shootX-this.x)+Math.toRadians(config.getAngles()[count]), config);
 		b.doExplosion = explosion;
 		bullets.add(b);
 		playSound(explosion ? EXPLOSION_SOUND : SHOOT_SOUND, false, null, true);

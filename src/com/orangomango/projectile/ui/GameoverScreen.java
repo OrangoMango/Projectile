@@ -74,7 +74,7 @@ public class GameoverScreen extends Screen{
 			displayFinished = true;
 			Platform.runLater(() -> drawCanvas(gc));
 			playSound(SHOW_SOUND, false, null, false);
-		}, 2250);
+		}, 2400);
 		
 		return new Scene(new TilePane(canvas), SCREEN_WIDTH, SCREEN_HEIGHT);
 	}

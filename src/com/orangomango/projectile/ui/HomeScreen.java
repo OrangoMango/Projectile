@@ -144,8 +144,8 @@ public class HomeScreen extends Screen{
 		
 		Selection playButton = new Selection(gc, "PLAY", 120, 300, 0, 0, null, null);
 		Selection difficultyButton = new Selection(gc, "DIFFICULTY", 120, 400, 0, 1, null, null);
-		Selection helpButton = new Selection(gc, "CONTROLS", 120, 500, 0, 2, null, null);
-		Selection controlsButton = new Selection(gc, "MOVEMENT", 120, 600, 0, 3, null, null);
+		Selection helpButton = new Selection(gc, "HELP", 120, 500, 0, 2, null, null);
+		Selection controlsButton = new Selection(gc, "CONTROLS", 120, 600, 0, 3, null, null);
 		
 		// Play
 		Selection tutorialButton = null;

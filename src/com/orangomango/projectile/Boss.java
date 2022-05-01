@@ -143,7 +143,7 @@ public class Boss extends Entity{
 			MainApplication.point2.startTimer();
 			playSound(BOSS_DEATH_SOUND, false, null, false);
 			MainApplication.stopAllSounds();
-			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0, false);
+			MainApplication.playSound(BACKGROUND_SOUND, true, 0.9, false);
 			new ProfileManager().setFirstTimeBoss(false);
 		}
 	}
