@@ -66,7 +66,7 @@ public class GameoverScreen extends Screen{
 				Platform.runLater(() -> drawCanvas(gc));
 				playSound(SHOW_SOUND, false, null, false);
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(500);
 				} catch (InterruptedException ex){
 					ex.printStackTrace();
 				}
@@ -74,7 +74,7 @@ public class GameoverScreen extends Screen{
 			displayFinished = true;
 			Platform.runLater(() -> drawCanvas(gc));
 			playSound(SHOW_SOUND, false, null, false);
-		}, 2400);
+		}, 2000);
 		
 		return new Scene(new TilePane(canvas), SCREEN_WIDTH, SCREEN_HEIGHT);
 	}

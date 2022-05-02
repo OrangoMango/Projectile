@@ -1,5 +1,7 @@
 package com.orangomango.projectile;
 
+import javafx.scene.media.Media;
+
 public class BulletConfig{
 	private int speed;
 	private int cooldown;
@@ -9,17 +11,24 @@ public class BulletConfig{
 	private int[] timing;
 	private boolean bounce;
 	private boolean damageOnDistance;
+	private boolean goPast;
 	private int minDamage, maxDamage, dpf;
 	private int ammo;
+	private int[] rechargeFrames;
+	private Media shootSound;
+	public boolean allowMultipleExplosions;
 	
-	public BulletConfig(Integer speed, Integer cooldown, Integer damage, double[] angles, boolean bounce, Integer ammo, int[] timing){
+	public BulletConfig(Integer speed, Integer cooldown, Integer damage, double[] angles, boolean bounce, Integer ammo, int[] timing, int[] rechargeFrames, boolean goPast, Media shootSound){
 		this.speed = speed == null ? 10 : speed;
 		this.cooldown = cooldown == null ? 230 : cooldown;
 		this.damage = damage == null ? 10 : damage;
 		this.bounce = bounce;
 		setAngles(angles == null ? new double[]{0} : angles);
 		this.ammo = ammo == null ? 10 : ammo;
-		this.timing = timing == null ? new int[]{1, 0} : timing;
+		this.timing = timing == null ? new int[]{1, 1} : timing;
+		this.rechargeFrames = rechargeFrames == null ? new int[]{300, 3000} : rechargeFrames;
+		this.shootSound = shootSound == null ? MainApplication.SHOOT_SOUND : shootSound;
+		this.goPast = goPast;
 	}
 	
 	// Damage on distance function
@@ -30,8 +39,16 @@ public class BulletConfig{
 		this.dpf = dpf;
 	}
 	
+	public Media getShootSound(){
+		return this.shootSound;
+	}
+	
 	public int[] getDamageData(){
 		return new int[]{this.minDamage, this.maxDamage, this.dpf};
+	}
+	
+	public int[] getRechargeFrames(){
+		return this.rechargeFrames;
 	}
 	
 	public int[] getTiming(){
@@ -44,6 +61,10 @@ public class BulletConfig{
 	
 	public boolean willDoDamageOnDistance(){
 		return this.damageOnDistance;
+	}
+	
+	public boolean willGoPast(){
+		return this.goPast;
 	}
 	
 	public void setAngles(double[] angles){

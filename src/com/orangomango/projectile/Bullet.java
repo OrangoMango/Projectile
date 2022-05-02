@@ -3,6 +3,8 @@ package com.orangomango.projectile;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
+import java.util.function.Predicate;
+
 public class Bullet{
 	private GraphicsContext gc;
 	private double angle; // In radians
@@ -11,6 +13,7 @@ public class Bullet{
 	public boolean doExplosion = false;
 	public BulletConfig config;
 	private int framesTravelled;
+	public Predicate<Entity> continueCond = e -> e instanceof Player;
 	
 	public Bullet(GraphicsContext gc, double x, double y, double angle, BulletConfig config){
 		this.gc = gc;

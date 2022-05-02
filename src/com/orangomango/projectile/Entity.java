@@ -7,11 +7,11 @@ import java.util.*;
 
 public class Entity{
 	protected GraphicsContext gc;
-	protected double x, y, w=50;
+	protected double x, y, w=35;
 	protected String color;
 	protected double speed = 3;
 	protected int hp = 100;
-	private boolean takingDamage;
+	protected int shield = 0;
 	private String normalColor, damageColor;
 	
 	public Entity(GraphicsContext gc, double x, double y, String color, String damageColor){
@@ -24,12 +24,13 @@ public class Entity{
 	}
 	
 	public void takeDamage(int damage){
-		if (takingDamage) return;
-		takingDamage = true;
-		this.hp -= damage;
+		this.shield -= damage;
+		if (this.shield < 0){
+			this.hp -= damage;
+			this.shield = 0;
+		}
 		this.color = this.damageColor;
 		MainApplication.schedule(() -> {
-			takingDamage = false;
 			color = normalColor;
 		}, 300);
 	}
@@ -56,6 +57,10 @@ public class Entity{
 	
 	public int getHP(){
 		return this.hp;
+	}
+	
+	public int getShield(){
+		return this.shield;
 	}
 	
 	public double getSpeed(){

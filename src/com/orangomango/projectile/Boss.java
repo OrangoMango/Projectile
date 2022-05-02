@@ -107,7 +107,7 @@ public class Boss extends Entity{
 						break;
 				}
 				double distance = Math.sqrt(Math.pow(this.x-player.getX(), 2)+Math.pow(this.y-player.getY(), 2));
-				if (distance <= 100 && !playerTookDamage){
+				if (distance <= 80 && !playerTookDamage){
 					player.takeDamage(currentDiff[17]);
 					playerTookDamage = true;
 					MainApplication.schedule(() -> playerTookDamage = false, MainApplication.currentDiff[12]);
@@ -133,7 +133,7 @@ public class Boss extends Entity{
 		MainApplication.schedule(() -> drawDamage = false, 750);
 		if (this.hp <= 0){
 			die(index);
-			player.hp = 100;
+			player.hp = player.getStartHP();
 			userGamedata.put("bosses", userGamedata.getOrDefault("bosses", 0.0)+1);
 			MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 			MainApplication.score += 100;
@@ -143,7 +143,7 @@ public class Boss extends Entity{
 			MainApplication.point2.startTimer();
 			playSound(BOSS_DEATH_SOUND, false, null, false);
 			MainApplication.stopAllSounds();
-			MainApplication.playSound(BACKGROUND_SOUND, true, 0.9, false);
+			MainApplication.playSound(BACKGROUND_SOUND, true, 1.0, false);
 			new ProfileManager().setFirstTimeBoss(false);
 		}
 	}

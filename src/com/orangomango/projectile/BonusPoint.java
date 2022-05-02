@@ -14,6 +14,7 @@ public class BonusPoint{
 	private boolean timeCheck;
 	private boolean tutorial;
 	private static int TIME_TO_TAKE = 35000;
+	private static int WIDTH = 20;
 	public boolean show = true;
 	
 	public BonusPoint(GraphicsContext gc, double x, double y, boolean tutorial){
@@ -50,15 +51,15 @@ public class BonusPoint{
 	public void draw(){
 		if (!show) return;
 		this.gc.setFill(Color.web("#F5E120"));
-		this.gc.fillOval(this.x-30/2, this.y-30/2, 30, 30);
+		this.gc.fillOval(this.x-WIDTH/2, this.y-WIDTH/2, WIDTH, WIDTH);
 		if (!MainApplication.bossInGame){
 			this.gc.setFill(Color.web("#ABFF32"));
 			double difference = (double)System.currentTimeMillis()-this.startTime;
-			this.gc.fillRect(this.x-30/2, this.y+30/2+5, 30*((difference)/TIME_TO_TAKE >= 1 ? 1 : (difference)/TIME_TO_TAKE), 5);
+			this.gc.fillRect(this.x-WIDTH/2, this.y+WIDTH/2+5, WIDTH*((difference)/TIME_TO_TAKE >= 1 ? 1 : (difference)/TIME_TO_TAKE), 5);
 			this.gc.setStroke(Color.GREEN);
 			this.gc.save();
 			this.gc.setLineWidth(0.65);
-			this.gc.strokeRect(this.x-30/2, this.y+30/2+5, 30, 5);
+			this.gc.strokeRect(this.x-WIDTH/2, this.y+WIDTH/2+5, WIDTH, 5);
 			this.gc.restore();
 			if (difference >= TIME_TO_TAKE*5/7 && !timeCheck){
 				timeCheck = true;

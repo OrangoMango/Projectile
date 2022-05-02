@@ -36,6 +36,8 @@ public class MainApplication extends Application {
 	public static List<Entity> entities = Collections.synchronizedList(new ArrayList<Entity>());
 	private static List<Explosion> explosions = Collections.synchronizedList(new ArrayList<Explosion>());
 	private static ArrayList<AudioClip> clips = new ArrayList<>();
+	private static ArrayList<FloatingText> floatingTexts = new ArrayList<>();
+	public static ArrayList<Drop> drops = new ArrayList<>();
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
 	public static final int SCREEN_WIDTH =  1000;
 	public static final int SCREEN_HEIGHT = 800;
@@ -102,6 +104,12 @@ public class MainApplication extends Application {
 	public static Media SCORE_LOST_SOUND;
 	public static Media AMMO_RELOAD_SOUND;
 	public static Media NO_AMMO_SOUND;
+	public static Media MACHINE_GUN_SOUND;
+	public static Media FAST_GUN_SOUND;
+	public static Media SNIPER_SOUND;
+	public static Media TRIPLE_GUN_SOUND;
+	public static Media SHOTGUN_SOUND;
+	public static Media DROP_SOUND;
 		
 	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
 	private static final int[] diffMedium = new int[]{15, 20, 25, 10, 20, 50, 60, 70, 70, 80, 900, 1900, 400, 400, 36000, 30000, 550, 22, 7};
@@ -202,7 +210,8 @@ public class MainApplication extends Application {
 		messageSkipped = false;
 		doneAlpha = false;
 		explosions.clear();
-		entities.clear();
+		floatingTexts.clear();
+		drops.clear();
 		bulletCount = 0;
 		enemyDamageCount = 0;
 		dimIndex = 0;
@@ -248,7 +257,7 @@ public class MainApplication extends Application {
 		} else {
 			gameStarted = true;
 			update(gc, player);
-			playSound(BACKGROUND_SOUND, true, 0.9, false);
+			playSound(BACKGROUND_SOUND, true, 1.0, false);
 			gameStart = System.currentTimeMillis();
 			displayTutorialMessageAfter(messages[dimIndex], 1200, () -> true, gc, player);
 		}
@@ -262,10 +271,22 @@ public class MainApplication extends Application {
 		
 		entities.add(player);
 		
-		//config = new BulletConfig(null, null, null, new double[]{-15, 0, 15}, false, 10);
-		//config.setDamageOnDistance(40, 3, -2);
+		//config = new BulletConfig(null, 50, 3, null, false, 100, null, new int[]{100, 30}, true, MACHINE_GUN_SOUND);
 		
-		config = new BulletConfig(null, null, null, new double[]{-10, 10}, false, 100, new int[]{5, 100});
+		// FAST_GUN_SOUND
+		
+		config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null);
+		
+		//config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, SNIPER_SOUND);
+		//config.setDamageOnDistance(5, 40, 1);
+		
+		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, TRIPLE_GUN_SOUND);
+		//config.allowMultipleExplosions = true;
+		
+		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, SHOTGUN_SOUND);
+		//config.setDamageOnDistance(30, 5, -1);
+		
+		//config = new BulletConfig(null, null, null, null, false, 50, null, null, false, null);
 		
 		canvas.setOnKeyPressed(e -> {
 			switch (e.getCode()){
@@ -289,14 +310,14 @@ public class MainApplication extends Application {
 						BooleanSupplier cond = () -> entities.size() == 1; // This may be variable (maybe?)
 						int timeout = 1400;
 						if (dimIndex == 0){
-							Enemy enemy = new Enemy(gc, 300, 100, "#ff0000", "#FFA3B2", player);
+							Enemy enemy = new Enemy(gc, 300, 100, "#ff0000", "#FFA3B2", player, false);
 							enemy.setHP(30);
 							entities.add(enemy);
 							timeout = 5000;
 						} else if (dimIndex == 1){
-							Enemy enemy = new Enemy(gc, 240, 670, "#ff0000", "#FFA3B2", player);
+							Enemy enemy = new Enemy(gc, 240, 670, "#ff0000", "#FFA3B2", player, false);
 							enemy.setHP(20);
-							Enemy enemy2 = new Enemy(gc, 350, 670, "#ff0000", "#FFA3B2", player);
+							Enemy enemy2 = new Enemy(gc, 350, 670, "#ff0000", "#FFA3B2", player, false);
 							enemy2.setHP(20);
 							entities.add(enemy);
 							entities.add(enemy2);
@@ -369,18 +390,18 @@ public class MainApplication extends Application {
 						startSpawning(gc, player);
 						update(gc, player);
 						gameStarted = true;
-						playSound(BACKGROUND_SOUND, true, 0.9, false);
+						playSound(BACKGROUND_SOUND, true, 1.0, false);
 						gameStart = System.currentTimeMillis();
 						point.startTimer();
 						point2.startTimer();
 					}
 					break;
 				case Q:
-					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == 100 || showingTutorialMessage) return;
+					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
 					rechargeStart = System.currentTimeMillis();
 					userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
-					if (player.hp+40 > 100){
-						player.hp = 100;
+					if (player.hp+40 > player.getStartHP()){
+						player.hp = player.getStartHP();
 					} else {
 						player.hp += 40;
 					}
@@ -393,6 +414,9 @@ public class MainApplication extends Application {
 						pausedTime = System.currentTimeMillis();
 						if (player.movement != null){
 							player.movement.pause();
+						}
+						if (reloading != null){
+							reloading.pause();
 						}
 						paused = !paused;
 					} else {
@@ -428,24 +452,15 @@ public class MainApplication extends Application {
 							if (player.movement != null){
 								player.movement.play();
 							}
+							if (reloading != null){
+								reloading.play();
+							}
 						});
 						resume.play();
 					}
 					break;
 				case R:
-					if (player.ammo == config.getAmmo()) return;
-					player.ammo = 0;
-					playSound(AMMO_RELOAD_SOUND, false, 1.0, false);
-					reloading = new Timeline(new KeyFrame(Duration.millis(300), evt -> {
-						ammoDrawing += 0.1;
-						//System.out.println(">><<");
-					}));
-					reloading.setOnFinished(evt -> {
-						player.ammo = config.getAmmo();
-						ammoDrawing = 0;
-					});
-					reloading.setCycleCount(10);
-					reloading.play();
+					reloadAmmo(player);
 					break;
 			}
 		});
@@ -462,11 +477,7 @@ public class MainApplication extends Application {
 			
 			
 			if (System.currentTimeMillis() < explosionStart+4500 && e.getButton() == MouseButton.SECONDARY) return;
-			
-			//BulletConfig config = new BulletConfig(15, 450, null, null, false);
-			//config.setDamageOnDistance(3, 40, 1);
-			
-			//BulletConfig config = new BulletConfig(10, 230, 10, new double[]{-10, 10}, true);
+
 			player.shootingAllowed = false;
 			schedule(() -> player.shootingAllowed = true, config.getCooldown()+config.getTiming()[0]*config.getTiming()[1]);
 			Timeline shot = new Timeline(new KeyFrame(Duration.millis(config.getTiming()[1]), evt -> {
@@ -474,14 +485,15 @@ public class MainApplication extends Application {
 					switch (e.getButton()){
 						case PRIMARY:
 							if (player.ammo == 0){
-								playSound(NO_AMMO_SOUND, false, null, false);
-								System.out.println("No ammo");
+								playSound(NO_AMMO_SOUND, false, null, true);
+								reloadAmmo(player);
 								return;
 							}
 							bulletCount++;
 							player.shoot(e.getX(), e.getY(), false, config, i);
 							break;
 						case SECONDARY:
+							if (System.currentTimeMillis() < explosionStart+4500 && !config.allowMultipleExplosions) return;
 							explosionStart = System.currentTimeMillis();
 							userGamedata.put("explosions", userGamedata.getOrDefault("explosions", 0.0)+1);
 							player.shoot(e.getX(), e.getY(), true, config, i);
@@ -505,6 +517,23 @@ public class MainApplication extends Application {
 		return canvas;
 	}
 	
+	private static void reloadAmmo(Player player){
+		if (player.ammo == config.getAmmo() || reloading != null || paused || showingTutorialMessage) return;
+		player.ammo = 0;
+		playSound(AMMO_RELOAD_SOUND, false, 1.0, false);
+		reloading = new Timeline(new KeyFrame(Duration.millis(config.getRechargeFrames()[0]), evt -> {
+			ammoDrawing += 1.0/config.getRechargeFrames()[1];
+			//System.out.println(">><<");
+		}));
+		reloading.setOnFinished(evt -> {
+			player.ammo = config.getAmmo();
+			ammoDrawing = 0;
+			reloading = null;
+		});
+		reloading.setCycleCount(config.getRechargeFrames()[1]);
+		reloading.play();
+	}
+		
 	@Override
 	public void start(Stage stage){
 		stage.setTitle("Projectile by OrangoMango");
@@ -558,10 +587,16 @@ public class MainApplication extends Application {
 		SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
 		AMMO_RELOAD_SOUND = new Media("file:///home/paul/Documents/ammo_reload.wav");
 		NO_AMMO_SOUND = new Media("file:///home/paul/Documents/no_ammo.wav");
+		MACHINE_GUN_SOUND = new Media("file:///home/paul/Documents/machine_gun.wav");
+		FAST_GUN_SOUND = new Media("file:///home/paul/Documents/fast_gun.wav");
+		SNIPER_SOUND = new Media("file:///home/paul/Documents/sniper.wav");
+		TRIPLE_GUN_SOUND = new Media("file:///home/paul/Documents/triple_gun.mp3");
+		SHOTGUN_SOUND = new Media("file:///home/paul/Documents/shotgun.wav");
+		DROP_SOUND = new Media("file:///home/paul/Documents/drop.wav");
 	}
 
 	private static void startSpawning(GraphicsContext gc, Player player){
-		
+
 		// SPAWNING PAUSED FOR DEBUGGING
 		//if (true) return;
 		
@@ -586,7 +621,8 @@ public class MainApplication extends Application {
 					}
 				}
 				bossInGame = bossFound;
-				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#ff0000", "#FFA3B2", player);
+				boolean shoots = random.nextInt(100) <= 20 && score >= 650 ? true : false;
+				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, shoots ? "#90F501" : "#ff0000", shoots ? "#E1FDB8" : "#FFA3B2", player, shoots);
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
@@ -599,13 +635,17 @@ public class MainApplication extends Application {
 						rerollBossMessage(gc);
 					}
 				}
+				
+				final int width1 = 55;
+				final int width2 = 65;
+				
 				if (score < 500){
 					en.setHP(currentDiff[3]); // You can one-shot them
 					en.setDamage(currentDiff[0]);
 				} else if (score >= 500 && score < 700){
 					if (random.nextInt(100) <= 10 && !bossFound){ // Spawn mini-boss with 10% probability
 						en.setHP(currentDiff[5]);
-						en.setWidth(70);
+						en.setWidth(width1);
 						en.setDamage(currentDiff[1]);
 					} else {
 						en.setHP(currentDiff[3]);
@@ -614,7 +654,7 @@ public class MainApplication extends Application {
 				} else if (score >= 700 && score < 1000){
 					if (random.nextInt(100) <= 10 && !bossFound){
 						en.setHP(currentDiff[6]);
-						en.setWidth(70);
+						en.setWidth(width1);
 						en.setDamage(currentDiff[0]);
 					} else {
 						en.setHP(currentDiff[3]);
@@ -624,11 +664,11 @@ public class MainApplication extends Application {
 					int number = random.nextInt(100);
 					if (number <= 7 && !bossFound){ // Spawn mini-boss2 with 7% probability
 						en.setHP(currentDiff[8]);
-						en.setWidth(85);
+						en.setWidth(width2);
 						en.setDamage(currentDiff[2]);
 					} else if (number > 7 && number <= 17 && !bossFound){
 						en.setHP(currentDiff[6]);
-						en.setWidth(70);
+						en.setWidth(width1);
 						en.setDamage(currentDiff[1]);
 					} else {
 						en.setHP(currentDiff[3]);
@@ -638,11 +678,11 @@ public class MainApplication extends Application {
 					int number = random.nextInt(100);
 					if (number <= 7 && !bossFound){
 						en.setHP(currentDiff[9]);
-						en.setWidth(85);
+						en.setWidth(width2);
 						en.setDamage(20);
 					} else if (number > 7 && number <= 17 && !bossFound){
 						en.setHP(currentDiff[7]);
-						en.setWidth(70);
+						en.setWidth(width1);
 						en.setDamage(currentDiff[2]);
 					} else {
 						en.setHP(bossFound ? currentDiff[3] : currentDiff[4]);
@@ -672,6 +712,15 @@ public class MainApplication extends Application {
 			gc.setFill(Color.BLACK);
 			gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 			
+			Iterator<Drop> dropIterator = drops.iterator();
+			while (dropIterator.hasNext()){
+				Drop drop = dropIterator.next();
+				drop.draw(gc);
+				if (drop.onPlayer(player)){
+					playSound(DROP_SOUND, false, null, false);
+					dropIterator.remove();
+				}
+			}
 			for (int i = 0; i < entities.size(); i++){
 				entities.get(i).draw();
 			}
@@ -692,6 +741,7 @@ public class MainApplication extends Application {
 								} else {
 									ent.takeDamage(exp.damage);
 								}
+								floatingTexts.add(new FloatingText("-"+exp.damage, ent.getX(), ent.getY()));
 								if (ent.getHP() <= 0){
 									i--;
 								}
@@ -719,8 +769,8 @@ public class MainApplication extends Application {
 			}
 			point2.draw();
 			Iterator<Bullet> iterator = Player.bullets.iterator();
-			boolean removed = false;
 			while (iterator.hasNext()){
+				boolean removed = false;
 				Bullet b = iterator.next();
 				if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
 					iterator.remove();
@@ -735,10 +785,11 @@ public class MainApplication extends Application {
 						} else if (dmg < 0){
 							dmg = 0;
 						}
+						if (b.continueCond.test(e)) continue;
 						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), 20) && !((Enemy)e).spawning){
 							if (!b.doExplosion){
 								((Enemy)e).takeDamage(dmg, i);
-								System.out.println("Enemy took "+dmg+" damage");
+								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
 								enemyDamageCount++;
 							}
 							if (!removed){
@@ -747,12 +798,13 @@ public class MainApplication extends Application {
 									explosion.damage = 20;
 									explosions.add(explosion);
 								}
-								iterator.remove();
+								if (!b.config.willGoPast() || b.doExplosion) iterator.remove();
 								removed = true;
 							}
 						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), 20)){
 							if (!b.doExplosion){
 								((Boss)e).takeDamage(dmg, i);
+								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
 								enemyDamageCount++;
 							}
 							if (!removed){
@@ -761,7 +813,16 @@ public class MainApplication extends Application {
 									explosion.damage = 20;
 									explosions.add(explosion);
 								}
-								iterator.remove();
+								if (!b.config.willGoPast() || b.doExplosion) iterator.remove();
+								removed = true;
+							}
+						} else if (e.collided(b.getX(), b.getY(), 20)){
+							if (!b.doExplosion){
+								e.takeDamage(dmg);
+								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
+							}
+							if (!removed){
+								if (!b.config.willGoPast() || b.doExplosion) iterator.remove();
 								removed = true;
 							}
 						}
@@ -792,9 +853,20 @@ public class MainApplication extends Application {
 				}
 			}
 			
+			Iterator<FloatingText> floatingIterator = floatingTexts.iterator();
+			while (floatingIterator.hasNext()){
+				FloatingText ft = floatingIterator.next();
+				ft.draw(gc);
+				if (ft.getMovements() == 20){
+					floatingIterator.remove();
+				}
+			}
+			
 			// Draw hp bar
-			gc.setFill(Color.web(getHPColor(player.hp)));
-			gc.fillRect(20, 20, 200*player.hp/100 <= 0 ? 0 : 200*player.hp/100, 30);
+			gc.setFill(Color.web(getHPColor(player.hp, player.getStartHP())));
+			gc.fillRect(20, 20, 200*player.hp/player.getStartHP() <= 0 ? 0 : 200*player.hp/player.getStartHP(), 30);
+			gc.setFill(Color.web("#0148F5"));
+			gc.fillRect(20, 20, 200*player.shield/player.getStartShield() <= 0 ? 0 : 200*player.shield/player.getStartShield(), 30);
 			gc.setStroke(Color.web("#41D4DD"));
 			gc.setLineWidth(4);
 			gc.strokeRect(20, 20, 200, 30);
@@ -902,7 +974,7 @@ public class MainApplication extends Application {
 		}
 		ac.play();
 		audioAllowed = false;
-		MainApplication.schedule(() -> audioAllowed = true, 100);
+		MainApplication.schedule(() -> audioAllowed = true, 75);
 	}
 	
 	public static void stopAllSounds(){
@@ -920,14 +992,15 @@ public class MainApplication extends Application {
 	 * 50-70 Dark green
 	 * 70-100 Lime
 	 */
-	private static String getHPColor(int hp){
-		if (hp >= 0 && hp < 10){
+	private static String getHPColor(int hp, int max){
+		double value = (double)hp/max*100;
+		if (value >= 0 && value < 10){
 			return "#F52F20";
-		} else if (hp >= 10 && hp < 30){
+		} else if (value >= 10 && value < 30){
 			return "#E48B40";
-		} else if (hp >= 30 && hp < 50){
+		} else if (value >= 30 && value < 50){
 			return "#EDDD34";
-		} else if (hp >= 50 && hp < 70){
+		} else if (value >= 50 && value < 70){
 			return "#569B21";
 		} else {
 			return "#65E85C";
