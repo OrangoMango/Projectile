@@ -89,10 +89,11 @@ public class Enemy extends Entity{
 		double distance2player = Math.sqrt(Math.pow(this.x+speedX-this.player.x, 2)+Math.pow(this.y+speedY-this.player.y, 2));
 		if (distance2player <= 350 && this.shoots){
 			if (this.shootingAllowed && System.currentTimeMillis() >= this.spawnStart+1200){
-				BulletConfig bcf = new BulletConfig((int)Math.round(damage2player*1.5), 500, null, null, false, null, null, null, false, MainApplication.SHOOT_SOUND);
+				BulletConfig bcf = new BulletConfig(15, 630, (int)Math.round(damage2player*1.5), null, false, null, null, null, false, null);
 				Bullet bullet = new Bullet(gc, this.x, this.y, Math.atan2(this.player.y-this.y, this.player.x-this.x), bcf);
 				bullet.continueCond = e -> !(e instanceof Player);
 				Player.bullets.add(bullet);
+				MainApplication.playSound(bcf.getShootSound(), false, null, true);
 				shootingAllowed = false;
 				MainApplication.schedule(() -> shootingAllowed = true, bcf.getCooldown());
 			}

@@ -84,7 +84,7 @@ public class Player extends Entity{
 			MainApplication.entities.clear();
 			MainApplication.threadRunning = false;
 			MainApplication.stopAllSounds();
-			MainApplication.gameoverPage.run();
+			MainApplication.schedule(() -> Platform.runLater(MainApplication.gameoverPage), 1500);
 		}
 	}
 	

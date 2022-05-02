@@ -271,14 +271,14 @@ public class MainApplication extends Application {
 		
 		entities.add(player);
 		
-		//config = new BulletConfig(null, 50, 3, null, false, 100, null, new int[]{100, 30}, true, MACHINE_GUN_SOUND);
+		//config = new BulletConfig(null, 70, 3, null, false, 60, null, new int[]{100, 55}, true, MACHINE_GUN_SOUND);
 		
 		// FAST_GUN_SOUND
 		
-		config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null);
+		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null);
 		
-		//config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, SNIPER_SOUND);
-		//config.setDamageOnDistance(5, 40, 1);
+		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, SNIPER_SOUND);
+		config.setDamageOnDistance(5, 40, 1);
 		
 		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, TRIPLE_GUN_SOUND);
 		//config.allowMultipleExplosions = true;
@@ -509,7 +509,7 @@ public class MainApplication extends Application {
 		canvas.setOnMouseDragged(eventHandler);
 		
 		canvas.setOnMouseReleased(e -> {
-			if (!gameStarted || paused || showingTutorialMessage) return;
+			if (!gameStarted || paused || showingTutorialMessage || reloading != null) return;
 			player.speed = player.startSpeed;
 			player.shooting = false;
 		});
@@ -520,6 +520,7 @@ public class MainApplication extends Application {
 	private static void reloadAmmo(Player player){
 		if (player.ammo == config.getAmmo() || reloading != null || paused || showingTutorialMessage) return;
 		player.ammo = 0;
+		player.speed = player.startSpeed/2;
 		playSound(AMMO_RELOAD_SOUND, false, 1.0, false);
 		reloading = new Timeline(new KeyFrame(Duration.millis(config.getRechargeFrames()[0]), evt -> {
 			ammoDrawing += 1.0/config.getRechargeFrames()[1];
@@ -528,6 +529,7 @@ public class MainApplication extends Application {
 		reloading.setOnFinished(evt -> {
 			player.ammo = config.getAmmo();
 			ammoDrawing = 0;
+			player.speed = player.startSpeed;
 			reloading = null;
 		});
 		reloading.setCycleCount(config.getRechargeFrames()[1]);
@@ -974,7 +976,7 @@ public class MainApplication extends Application {
 		}
 		ac.play();
 		audioAllowed = false;
-		MainApplication.schedule(() -> audioAllowed = true, 75);
+		MainApplication.schedule(() -> audioAllowed = true, 120);
 	}
 	
 	public static void stopAllSounds(){
