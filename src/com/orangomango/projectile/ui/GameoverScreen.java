@@ -76,6 +76,7 @@ public class GameoverScreen extends Screen{
 			playSound(SHOW_SOUND, false, null, false);
 		}, 1200);
 		
+		System.out.println("Drawing gameover screen: "+SCREEN_WIDTH+"x"+SCREEN_HEIGHT);
 		return new Scene(new TilePane(canvas), SCREEN_WIDTH, SCREEN_HEIGHT);
 	}
 	

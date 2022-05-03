@@ -38,12 +38,14 @@ public class MainApplication extends Application {
 	private static ArrayList<FloatingText> floatingTexts = new ArrayList<>();
 	public static ArrayList<Drop> drops = new ArrayList<>();
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
-	public static final int SCREEN_WIDTH =  1000;
-	public static final int SCREEN_HEIGHT = 800;
+	public static int SCREEN_WIDTH =  1000;
+	public static int SCREEN_HEIGHT = 800;
 	public static final int FPS = 40;
 	public static Runnable startPage;
 	public static Runnable gameoverPage;
 	public static Runnable recordsPage;
+	private static Canvas currentCanvas;
+	private static Stage currentStage;
 
 	private static boolean audioAllowed = true;
 	public static int score;
@@ -217,6 +219,10 @@ public class MainApplication extends Application {
 		showingTutorialMessage = false;
 		ammoDrawing = 0;
 		reloading = null;
+
+		if (!currentStage.isFullScreen()){
+			currentStage.setFullScreenExitHint("Press F to exit fullscreen");
+		}
 		
 		if (difficulty.equals("easy")){
 			currentDiff = diffEasy;
@@ -236,6 +242,7 @@ public class MainApplication extends Application {
 		
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
+		currentCanvas = canvas;
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(Color.web("#CFFF59"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -270,17 +277,17 @@ public class MainApplication extends Application {
 		
 		entities.add(player);
 		
-		//config = new BulletConfig(null, 70, 3, null, false, 60, null, new int[]{100, 55}, true, MACHINE_GUN_SOUND);
+		//config = new BulletConfig(null, 70, 3, null, false, 60, null, new int[]{100, 55}, true, 350.0, 50, MACHINE_GUN_SOUND);
 		
 		// FAST_GUN_SOUND
 		
 		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null, null, null);
 		
-		//config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 600.0, 3, SNIPER_SOUND);
-		//config.setDamageOnDistance(5, 40, 1);
+		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 640.0, 3, SNIPER_SOUND);
+		config.setDamageOnDistance(5, 40, 1);
 		
-		config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, null, null, TRIPLE_GUN_SOUND);
-		config.allowMultipleExplosions = true;
+		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, null, null, TRIPLE_GUN_SOUND);
+		//config.allowMultipleExplosions = true;
 		
 		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, 150.0, 10, SHOTGUN_SOUND);
 		//config.setDamageOnDistance(30, 5, -2);
@@ -461,6 +468,9 @@ public class MainApplication extends Application {
 				case R:
 					reloadAmmo(player);
 					break;
+				case F:
+					currentStage.setFullScreen(!currentStage.isFullScreen());
+					break;
 			}
 		});
 
@@ -538,25 +548,46 @@ public class MainApplication extends Application {
 		
 	@Override
 	public void start(Stage stage){
+		currentStage = stage;
 		stage.setTitle("Projectile by OrangoMango");
 		stage.setOnCloseRequest(cr -> System.exit(0));
-		stage.setResizable(false);
+		stage.widthProperty().addListener((o, oldV, newV) -> {
+			SCREEN_WIDTH = newV.intValue();
+			if (currentCanvas != null) currentCanvas.setWidth(SCREEN_WIDTH);
+		});
+		stage.heightProperty().addListener((o, oldV, newV) -> {
+			SCREEN_HEIGHT = newV.intValue();
+			if (currentCanvas != null) currentCanvas.setHeight(SCREEN_HEIGHT);
+		});
 		
 		gameoverPage = () -> {
 			GameoverScreen screen = new GameoverScreen();
+			boolean isFullScreen = stage.isFullScreen();
+			stage.setFullScreenExitHint("");
 			stage.setScene(screen.getScene());
+			stage.setFullScreen(isFullScreen);
 		};
 		
 		startPage = () -> {
 			HomeScreen homescreen = new HomeScreen();
 			HomeScreen.buttons.clear();
-			homescreen.startEvent = () -> stage.setScene(new Scene(new TilePane(getCanvas()), SCREEN_WIDTH, SCREEN_HEIGHT));
+			boolean isFullScreen = stage.isFullScreen();
+			stage.setFullScreenExitHint("");
+			homescreen.startEvent = () -> {
+				boolean isFullScreen2 = stage.isFullScreen();
+				stage.setScene(new Scene(new TilePane(getCanvas()), SCREEN_WIDTH, SCREEN_HEIGHT));
+				stage.setFullScreen(isFullScreen2);
+			};
 			stage.setScene(homescreen.getScene());
+			stage.setFullScreen(isFullScreen);
 		};
 		
 		recordsPage = () -> {
 			RecordsScreen records = new RecordsScreen();
+			boolean isFullScreen = stage.isFullScreen();
+			stage.setFullScreenExitHint("");
 			stage.setScene(records.getScene());
+			stage.setFullScreen(isFullScreen);
 		};
 
 		if (firstTime){
@@ -951,7 +982,7 @@ public class MainApplication extends Application {
 			userGamedata.put("gameTime", (double)(now-gameStart));
 			gc.setFont(Font.loadFont(MAIN_FONT, 30));
 			gc.setFill(Color.WHITE);
-			gc.fillText(String.format("%s:%s", (now-gameStart)/60000, (now-gameStart)/1000%60), 30, SCREEN_HEIGHT-20);
+			gc.fillText(String.format("%s:%s", (now-gameStart)/60000, (now-gameStart)/1000%60), 30, SCREEN_HEIGHT-30);
 
 			if (player.hp <= 40 && !hpCheck){
 				hpCheck = true;
