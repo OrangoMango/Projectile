@@ -40,6 +40,10 @@ public class Bullet{
 		return this.framesTravelled;
 	}
 	
+	public double getSpeed(){
+		return this.speed;
+	}
+	
 	public void travel(){
 		this.gc.setFill(Color.web(doExplosion ? "#B65656" : "#867070"));
 		this.gc.fillOval(this.x-20/2, this.y-20/2, 20, 20);

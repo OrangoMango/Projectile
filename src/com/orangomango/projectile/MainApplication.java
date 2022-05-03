@@ -277,14 +277,14 @@ public class MainApplication extends Application {
 		
 		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null);
 		
-		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, SNIPER_SOUND);
+		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 600.0, null, SNIPER_SOUND);
 		config.setDamageOnDistance(5, 40, 1);
 		
 		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, TRIPLE_GUN_SOUND);
 		//config.allowMultipleExplosions = true;
 		
-		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, SHOTGUN_SOUND);
-		//config.setDamageOnDistance(30, 5, -1);
+		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, 150.0, 10, SHOTGUN_SOUND);
+		//config.setDamageOnDistance(30, 5, -2);
 		
 		//config = new BulletConfig(null, null, null, null, false, 50, null, null, false, null);
 		
@@ -518,10 +518,11 @@ public class MainApplication extends Application {
 	}
 	
 	private static void reloadAmmo(Player player){
-		if (player.ammo == config.getAmmo() || reloading != null || paused || showingTutorialMessage) return;
+		if (player.ammo == config.getAmmo() || reloading != null || paused || showingTutorialMessage || config.ammoAmount == 0) return;
 		player.ammo = 0;
 		player.speed = player.startSpeed/2;
 		playSound(AMMO_RELOAD_SOUND, false, 1.0, false);
+		config.ammoAmount--;
 		reloading = new Timeline(new KeyFrame(Duration.millis(config.getRechargeFrames()[0]), evt -> {
 			ammoDrawing += 1.0/config.getRechargeFrames()[1];
 			//System.out.println(">><<");
@@ -815,8 +816,10 @@ public class MainApplication extends Application {
 									explosion.damage = 20;
 									explosions.add(explosion);
 								}
-								if (!b.config.willGoPast() || b.doExplosion) iterator.remove();
-								removed = true;
+								if (!b.config.willGoPast() || b.doExplosion){
+									iterator.remove();
+									removed = true;
+								}
 							}
 						} else if (e.collided(b.getX(), b.getY(), 20)){
 							if (!b.doExplosion){
@@ -824,8 +827,10 @@ public class MainApplication extends Application {
 								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
 							}
 							if (!removed){
-								if (!b.config.willGoPast() || b.doExplosion) iterator.remove();
-								removed = true;
+								if (!b.config.willGoPast() || b.doExplosion){
+									iterator.remove();
+									removed = true;
+								}
 							}
 						}
 						if (e.getHP() <= 0){
@@ -835,6 +840,12 @@ public class MainApplication extends Application {
 						exc.printStackTrace();
 						System.out.println("-- error (3)");
 						System.exit(0);
+					}
+				}
+				if (b.getFrames()*b.getSpeed() >= b.config.getMaxDistance() && !b.doExplosion){
+					if (!removed){
+						iterator.remove();
+						removed = true;
 					}
 				}
 				b.travel();
@@ -928,12 +939,14 @@ public class MainApplication extends Application {
 			}
 			
 			// Draw ammo
-			double ammoHeight = ammoDrawing == 0 ? 110*((double)player.ammo/config.getAmmo()) : 110*ammoDrawing;
+			double ammoHeight = ammoDrawing == 0 ? 90*player.ammo/config.getAmmo() : 90*ammoDrawing;
 			gc.setFill(Color.web("#F4762B"));
-			gc.fillRect(230, 20+(110-ammoHeight), 30, ammoHeight);
+			gc.fillRect(230, 20+(90-ammoHeight), 30, ammoHeight);
+			gc.fillRect(230, 115, 30*config.ammoAmount/config.getStartAmmoAmount(), 15);
 			gc.setStroke(Color.web("#FF2800"));
 			gc.setLineWidth(4);
-			gc.strokeRect(230, 20, 30, 110);
+			gc.strokeRect(230, 20, 30, 90);
+			gc.strokeRect(230, 116, 30, 14);
 			
 			// Draw timer
 			userGamedata.put("gameTime", (double)(now-gameStart));

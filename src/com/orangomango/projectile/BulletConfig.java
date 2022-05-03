@@ -17,8 +17,11 @@ public class BulletConfig{
 	private int[] rechargeFrames;
 	private Media shootSound;
 	public boolean allowMultipleExplosions;
+	private double maxDistance;
+	public int ammoAmount;
+	private int startAmmoAmount;
 	
-	public BulletConfig(Integer speed, Integer cooldown, Integer damage, double[] angles, boolean bounce, Integer ammo, int[] timing, int[] rechargeFrames, boolean goPast, Media shootSound){
+	public BulletConfig(Integer speed, Integer cooldown, Integer damage, double[] angles, boolean bounce, Integer ammo, int[] timing, int[] rechargeFrames, boolean goPast, Double maxDistance, Integer ammoAmount, Media shootSound){
 		this.speed = speed == null ? 10 : speed;
 		this.cooldown = cooldown == null ? 230 : cooldown;
 		this.damage = damage == null ? 10 : damage;
@@ -29,6 +32,9 @@ public class BulletConfig{
 		this.rechargeFrames = rechargeFrames == null ? new int[]{300, 3000} : rechargeFrames;
 		this.shootSound = shootSound == null ? MainApplication.SHOOT_SOUND : shootSound;
 		this.goPast = goPast;
+		this.maxDistance = maxDistance == null ? 300 : maxDistance;
+		this.ammoAmount = ammoAmount == null ? 5 : ammoAmount;
+		this.startAmmoAmount = this.ammoAmount;
 	}
 	
 	// Damage on distance function
@@ -39,8 +45,16 @@ public class BulletConfig{
 		this.dpf = dpf;
 	}
 	
+	public int getStartAmmoAmount(){
+		return this.startAmmoAmount;
+	}
+	
 	public Media getShootSound(){
 		return this.shootSound;
+	}
+	
+	public double getMaxDistance(){
+		return this.maxDistance;
 	}
 	
 	public int[] getDamageData(){
