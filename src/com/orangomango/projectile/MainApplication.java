@@ -3,7 +3,6 @@ package com.orangomango.projectile;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
-import javafx.stage.Screen;
 import javafx.scene.Scene;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
@@ -24,8 +23,8 @@ import com.orangomango.projectile.ui.profile.*;
 
 /**
  * MainApplication for the game. This class contains the main method
- * Code entirly written by OrangoMango (orangomango.github.io)
- * Licence MIT
+ * Code entirely written by OrangoMango (orangomango.github.io)
+ * License MIT
  * @author OrangoMango
  * @version 1.0
  */
@@ -275,13 +274,13 @@ public class MainApplication extends Application {
 		
 		// FAST_GUN_SOUND
 		
-		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null);
+		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null, null, null);
 		
-		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 600.0, null, SNIPER_SOUND);
-		config.setDamageOnDistance(5, 40, 1);
+		//config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 600.0, 3, SNIPER_SOUND);
+		//config.setDamageOnDistance(5, 40, 1);
 		
-		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, TRIPLE_GUN_SOUND);
-		//config.allowMultipleExplosions = true;
+		config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, null, null, TRIPLE_GUN_SOUND);
+		config.allowMultipleExplosions = true;
 		
 		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, 150.0, 10, SHOTGUN_SOUND);
 		//config.setDamageOnDistance(30, 5, -2);

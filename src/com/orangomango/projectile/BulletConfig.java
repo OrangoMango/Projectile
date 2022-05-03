@@ -32,7 +32,7 @@ public class BulletConfig{
 		this.rechargeFrames = rechargeFrames == null ? new int[]{300, 3000} : rechargeFrames;
 		this.shootSound = shootSound == null ? MainApplication.SHOOT_SOUND : shootSound;
 		this.goPast = goPast;
-		this.maxDistance = maxDistance == null ? 300 : maxDistance;
+		this.maxDistance = maxDistance == null ? 450 : maxDistance;
 		this.ammoAmount = ammoAmount == null ? 5 : ammoAmount;
 		this.startAmmoAmount = this.ammoAmount;
 	}
