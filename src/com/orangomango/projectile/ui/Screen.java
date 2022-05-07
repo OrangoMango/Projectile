@@ -1,10 +1,10 @@
 package com.orangomango.projectile.ui;
 
-import javafx.scene.Scene;
+import javafx.scene.layout.TilePane;
 
 /**
  * Screen default vars
  */
 public abstract class Screen{
-	public abstract Scene getScene();
+	public abstract TilePane getScene();
 }

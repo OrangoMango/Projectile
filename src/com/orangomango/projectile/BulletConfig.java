@@ -29,7 +29,7 @@ public class BulletConfig{
 		setAngles(angles == null ? new double[]{0} : angles);
 		this.ammo = ammo == null ? 10 : ammo;
 		this.timing = timing == null ? new int[]{1, 1} : timing;
-		this.rechargeFrames = rechargeFrames == null ? new int[]{300, 3000} : rechargeFrames;
+		this.rechargeFrames = rechargeFrames == null ? new int[]{300, 10} : rechargeFrames;
 		this.shootSound = shootSound == null ? MainApplication.SHOOT_SOUND : shootSound;
 		this.goPast = goPast;
 		this.maxDistance = maxDistance == null ? 450 : maxDistance;

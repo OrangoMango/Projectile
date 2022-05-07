@@ -38,7 +38,7 @@ public class MainApplication extends Application {
 	private static ArrayList<FloatingText> floatingTexts = new ArrayList<>();
 	public static ArrayList<Drop> drops = new ArrayList<>();
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
-	public static int SCREEN_WIDTH =  1000;
+	public static int SCREEN_WIDTH =  1000; // those values are used also in other files
 	public static int SCREEN_HEIGHT = 800;
 	public static final int FPS = 40;
 	public static Runnable startPage;
@@ -148,6 +148,7 @@ public class MainApplication extends Application {
 	public static void main(String[] args){
 		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
 		ProfileManager.setupDirectory();
+		setupSounds();
 		launch(args);
 	}
 	
@@ -551,6 +552,7 @@ public class MainApplication extends Application {
 		currentStage = stage;
 		stage.setTitle("Projectile by OrangoMango");
 		stage.setOnCloseRequest(cr -> System.exit(0));
+		stage.setScene(new Scene(new TilePane(new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT)), SCREEN_WIDTH, SCREEN_HEIGHT));
 		stage.widthProperty().addListener((o, oldV, newV) -> {
 			SCREEN_WIDTH = newV.intValue();
 			if (currentCanvas != null) currentCanvas.setWidth(SCREEN_WIDTH);
@@ -562,32 +564,24 @@ public class MainApplication extends Application {
 		
 		gameoverPage = () -> {
 			GameoverScreen screen = new GameoverScreen();
-			boolean isFullScreen = stage.isFullScreen();
 			stage.setFullScreenExitHint("");
-			stage.setScene(screen.getScene());
-			stage.setFullScreen(isFullScreen);
+			stage.getScene().setRoot(screen.getScene());
 		};
 		
 		startPage = () -> {
 			HomeScreen homescreen = new HomeScreen();
 			HomeScreen.buttons.clear();
-			boolean isFullScreen = stage.isFullScreen();
 			stage.setFullScreenExitHint("");
 			homescreen.startEvent = () -> {
-				boolean isFullScreen2 = stage.isFullScreen();
-				stage.setScene(new Scene(new TilePane(getCanvas()), SCREEN_WIDTH, SCREEN_HEIGHT));
-				stage.setFullScreen(isFullScreen2);
+				stage.getScene().setRoot(new TilePane(getCanvas()));
 			};
-			stage.setScene(homescreen.getScene());
-			stage.setFullScreen(isFullScreen);
+			stage.getScene().setRoot(homescreen.getScene());
 		};
 		
 		recordsPage = () -> {
 			RecordsScreen records = new RecordsScreen();
-			boolean isFullScreen = stage.isFullScreen();
 			stage.setFullScreenExitHint("");
-			stage.setScene(records.getScene());
-			stage.setFullScreen(isFullScreen);
+			stage.getScene().setRoot(records.getScene());
 		};
 
 		if (firstTime){

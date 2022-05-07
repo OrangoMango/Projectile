@@ -1,7 +1,6 @@
 package com.orangomango.projectile.ui;
 
 import javafx.application.Platform;
-import javafx.scene.Scene;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
@@ -14,7 +13,7 @@ import com.orangomango.projectile.ui.profile.*;
 public class RecordsScreen extends Screen{
 
 	@Override
-	public Scene getScene(){
+	public TilePane getScene(){
 		TilePane layout = new TilePane();
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
@@ -115,6 +114,6 @@ public class RecordsScreen extends Screen{
 		gc.fillText("Press SPACE to go back", 50, SCREEN_HEIGHT-40);
 
 		layout.getChildren().add(canvas);
-		return new Scene(layout, SCREEN_WIDTH, SCREEN_HEIGHT);
+		return layout;
 	}
 }

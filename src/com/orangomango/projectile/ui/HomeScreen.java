@@ -1,7 +1,7 @@
 package com.orangomango.projectile.ui;
 
 import javafx.application.Platform;
-import javafx.scene.Scene;
+import javafx.stage.Stage;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
@@ -12,6 +12,7 @@ import java.util.*;
 import org.json.*;
 
 import static com.orangomango.projectile.MainApplication.*;
+import com.orangomango.projectile.gunbuilder.MainApp;
 import com.orangomango.projectile.ui.profile.*;
 
 public class HomeScreen extends Screen{
@@ -38,7 +39,7 @@ public class HomeScreen extends Screen{
 	}
 	
 	@Override
-	public Scene getScene(){
+	public TilePane getScene(){
 		TilePane layout = new TilePane();
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
@@ -129,6 +130,8 @@ public class HomeScreen extends Screen{
 								return;
 							} else if (selection.getText().equals("RECORDS")){
 								Platform.runLater(recordsPage);
+							} else if (selection.getText().equals("BUILDER")){
+								new MainApp().start(new Stage());
 							} else {
 								selection.choosed = true;
 							}
@@ -154,6 +157,7 @@ public class HomeScreen extends Screen{
 		}
 		Selection startButton = new Selection(gc, "START", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 300 : 400, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 0 : 1, 0, 0);
 		Selection recordsButton = new Selection(gc, "RECORDS", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 400 : 500, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 1 : 2, 0, 0);
+		Selection gunBuilderButton = new Selection(gc, "BUILDER", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 500 : 600, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 2 : 3, 0, 0);
 		
 		// Difficulty
 		Selection easy = new Selection(gc, "EASY", 120+DISTANCE, 300, 1, 0, 0, 1);
@@ -179,6 +183,7 @@ public class HomeScreen extends Screen{
 		}
 		buttons.add(startButton);
 		buttons.add(recordsButton);
+		buttons.add(gunBuilderButton);
 		buttons.add(easy);
 		buttons.add(medium);
 		buttons.add(hard);
@@ -189,7 +194,7 @@ public class HomeScreen extends Screen{
 		updateFinalText();
 		update(gc, cursor);
 		
-		return new Scene(new TilePane(canvas), SCREEN_WIDTH, SCREEN_HEIGHT);
+		return new TilePane(canvas);
 	}
 	
 	private static boolean checkForSelectionWith(Cursor cursor, int x, Integer y){
@@ -205,6 +210,10 @@ public class HomeScreen extends Screen{
 		gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.setFill(Color.web("#383535"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		
+		gc.save();
+		gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
+		
 		gc.drawImage(LOGO_IMG, 90, 30, 768, 200);
 		
 		cursor.show();
@@ -224,6 +233,7 @@ public class HomeScreen extends Screen{
 		if (this.message != null){
 			this.message.show();
 		}
+		gc.restore();
 	}
 	
 	private void updateFinalText(){

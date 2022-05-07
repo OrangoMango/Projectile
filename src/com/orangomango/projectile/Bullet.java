@@ -14,6 +14,8 @@ public class Bullet{
 	public BulletConfig config;
 	private int framesTravelled;
 	public Predicate<Entity> continueCond = e -> e instanceof Player;
+	public int WIDTH = MainApplication.SCREEN_WIDTH;
+	public int HEIGHT = MainApplication.SCREEN_HEIGHT;
 	
 	public Bullet(GraphicsContext gc, double x, double y, double angle, BulletConfig config){
 		this.gc = gc;
@@ -47,7 +49,7 @@ public class Bullet{
 	public void travel(){
 		this.gc.setFill(Color.web(doExplosion ? "#B65656" : "#867070"));
 		this.gc.fillOval(this.x-20/2, this.y-20/2, 20, 20);
-		if ((getX() <= 0 || getX() >= MainApplication.SCREEN_WIDTH || getY() <= 0 || getY() >= MainApplication.SCREEN_HEIGHT) && config.willBounce()){
+		if ((getX() <= 0 || getX() >= WIDTH || getY() <= 0 || getY() >= HEIGHT) && config.willBounce()){
 			double ang = 180-this.angle*2;
 			this.angle += Math.toRadians(ang);
 		}

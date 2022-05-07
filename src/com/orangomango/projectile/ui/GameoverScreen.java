@@ -1,7 +1,6 @@
 package com.orangomango.projectile.ui;
 
 import javafx.application.Platform;
-import javafx.scene.Scene;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
@@ -47,7 +46,7 @@ public class GameoverScreen extends Screen{
 	}
 	
 	@Override
-	public Scene getScene(){
+	public TilePane getScene(){
 		TilePane layout = new TilePane();
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
@@ -77,12 +76,14 @@ public class GameoverScreen extends Screen{
 		}, 1200);
 		
 		System.out.println("Drawing gameover screen: "+SCREEN_WIDTH+"x"+SCREEN_HEIGHT);
-		return new Scene(new TilePane(canvas), SCREEN_WIDTH, SCREEN_HEIGHT);
+		return new TilePane(canvas);
 	}
 	
 	private void drawCanvas(GraphicsContext gc){
 		gc.setFill(Color.web("#929292"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.save();
+		gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
 		gc.setFill(Color.RED);
 		gc.setFont(Font.loadFont(MAIN_FONT, 75));
 		gc.fillText("GAME OVER ("+difficulty+")", 50, 120);
@@ -97,6 +98,7 @@ public class GameoverScreen extends Screen{
 			gc.setFont(Font.loadFont(MAIN_FONT, 33));
 			gc.fillText("Press SPACE to continue", 150, 670);
 		}
+		gc.restore();
 	}
 	
 	private static String getStringData(){
