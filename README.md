@@ -1,10 +1,12 @@
 # Projectile by OrangoMango
 ![projectile_logo](https://user-images.githubusercontent.com/61402409/165325541-f4266a2a-9e57-4a32-95db-1ef07dd61d29.png)
 # How to run
-* Download the repository using this command:
+* Download the repository using these commands:
 ```bash
-git clone https://github.com/OrangoMango/Projectile
-cd Projectile
+wget https://github.com/OrangoMango/Projectile/archive/refs/heads/main.zip
+unzip main.zip
+rm main.zip
+cd Projectile-main
 ```
 * Download JavaFX SDK for your OS [here](https://gluonhq.com/products/javafx/) (v17+). Be sure to give as argument the `lib` folder
 ## Using Java Runtime Environment
