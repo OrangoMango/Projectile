@@ -1,6 +1,8 @@
 package com.orangomango.projectile;
 
 import javafx.scene.media.Media;
+import java.util.Arrays;
+import java.lang.reflect.*;
 
 public class BulletConfig{
 	private int speed;
@@ -20,8 +22,13 @@ public class BulletConfig{
 	private double maxDistance;
 	public int ammoAmount;
 	private int startAmmoAmount;
+	private Rarity rarity;
 	
-	public BulletConfig(Integer speed, Integer cooldown, Integer damage, double[] angles, boolean bounce, Integer ammo, int[] timing, int[] rechargeFrames, boolean goPast, Double maxDistance, Integer ammoAmount, Media shootSound){
+	public static enum Rarity{
+		COMMON, RARE, EPIC, MYTHIC, LEGGENDARY;
+	}
+	
+	public BulletConfig(Integer speed, Integer cooldown, Integer damage, double[] angles, boolean bounce, Integer ammo, int[] timing, int[] rechargeFrames, boolean goPast, Double maxDistance, Integer ammoAmount, Media shootSound, Rarity rar){
 		this.speed = speed == null ? 10 : speed;
 		this.cooldown = cooldown == null ? 230 : cooldown;
 		this.damage = damage == null ? 10 : damage;
@@ -35,6 +42,7 @@ public class BulletConfig{
 		this.maxDistance = maxDistance == null ? 450 : maxDistance;
 		this.ammoAmount = ammoAmount == null ? 5 : ammoAmount;
 		this.startAmmoAmount = this.ammoAmount;
+		this.rarity = rar;
 	}
 	
 	// Damage on distance function
@@ -108,5 +116,52 @@ public class BulletConfig{
 	
 	public int getCount(){
 		return this.count;
+	}
+	
+	private static String printList(double[] list){
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < list.length; i++){
+			builder.append(list[i]);
+			if (i != list.length-1){
+				builder.append(", ");
+			}
+		}
+		return builder.toString();
+	}
+	
+	private static String printList(int[] list){
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < list.length; i++){
+			builder.append(list[i]);
+			if (i != list.length-1){
+				builder.append(", ");
+			}
+		}
+		return builder.toString();
+	}
+	
+	private static String getFieldName(String path){
+		try {
+			for (Field field : MainApplication.class.getDeclaredFields()){
+				if (field.getName().contains("SOUND") && ((Media)field.get(null)).getSource().equals(path)){
+					return field.getName();
+				}
+			}
+		} catch (Exception exc){
+			exc.printStackTrace();
+		}
+		return path;
+	}
+	
+	@Override
+	public String toString(){
+		String soundName = getFieldName(this.shootSound.getSource());
+		if (soundName.startsWith("file://")){
+			soundName = "new Media("+soundName+")";
+		} else {
+			soundName = "MainApplication."+soundName;
+		}
+		
+		return String.format("BulletConfig(%s, %s, %s, new double[]{%s}, %s, %s, new int[]{%s}, new int[]{%s}, %s, %s, %s, %s, BulletConfig.Rarity.%s)", this.speed, this.cooldown, this.damage, printList(this.angles), this.bounce, this.ammo, printList(this.timing), printList(this.rechargeFrames), this.goPast, this.maxDistance, this.ammoAmount, soundName, this.rarity);
 	}
 }

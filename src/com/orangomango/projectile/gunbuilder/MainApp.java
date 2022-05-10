@@ -124,7 +124,7 @@ public class MainApp extends Application{
         });
         gc = canvas.getGraphicsContext2D();
         
-        this.config = new BulletConfig(null, null, null, null, false, null, null, null, false, null, null, null);
+        this.config = new BulletConfig(null, null, null, null, false, null, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
         this.currentAmmo = this.config.getAmmo();
         this.currentAmount = this.config.ammoAmount;
         
@@ -137,7 +137,7 @@ public class MainApp extends Application{
                 }
                 return;
             }
-            if (this.shooting || (this.currentAmmo == 0 && ev.getButton() == MouseButton.PRIMARY) || this.reloading) return;
+            if (this.shooting || (this.currentAmmo == 0 && ev.getButton() != MouseButton.PRIMARY) || this.reloading) return;
             if (ev.getButton() == MouseButton.PRIMARY) this.shootStart = System.currentTimeMillis();
             Timeline shot = new Timeline(new KeyFrame(Duration.millis(this.config.getTiming()[1]), e -> {
                 for (int i = 0; i < this.config.getCount(); i++){
@@ -193,6 +193,7 @@ public class MainApp extends Application{
         Button browse = new Button("Browse..");
         browse.setOnAction(ev -> {
             FileChooser fc = new FileChooser();
+            fc.setInitialDirectory(new File(System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
             File foundFile = fc.showOpenDialog(stage);
             if (foundFile != null){
                 boolean add = foundFile.getAbsolutePath().startsWith("/");
@@ -204,6 +205,13 @@ public class MainApp extends Application{
             this.modified = true;
         });
         grid.add(browse, 2, 2);
+        ComboBox<String> rarity = new ComboBox<>();
+        rarity.setTooltip(new Tooltip("Gun rarity"));
+        rarity.getItems().addAll("common", "rare", "epic", "mythic", "leggendary");
+        rarity.getSelectionModel().select(0);
+        Label rar = new Label("Rarity: ");
+        grid.add(rar, 0, cont);
+        grid.add(rarity, 1, cont++);
         CheckBox bounce = new CheckBox("Bounce");
         CheckBox goPast = new CheckBox("Go past");
         CheckBox multi = new CheckBox("Multiple explosions");
@@ -248,7 +256,7 @@ public class MainApp extends Application{
                         angl[count++] = Double.parseDouble(p);
                     }
                 }
-                this.config = new BulletConfig(speed, cooldown, damage, angl, bounce.isSelected(), ammo, timing, rechargeFrames, goPast.isSelected(), maxDistance, ammoAmount, media);
+                this.config = new BulletConfig(speed, cooldown, damage, angl, bounce.isSelected(), ammo, timing, rechargeFrames, goPast.isSelected(), maxDistance, ammoAmount, media, BulletConfig.Rarity.valueOf(rarity.getSelectionModel().getSelectedItem().toUpperCase()));
                 this.currentAmmo = this.config.getAmmo();
                 this.currentAmount = this.config.ammoAmount;
                 this.config.allowMultipleExplosions = multi.isSelected();
@@ -268,6 +276,14 @@ public class MainApp extends Application{
             }
         });
         Button print = new Button("Print");
+        print.setOnAction(ev -> {
+            System.out.println(this.config);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Current created gun");
+            alert.setHeaderText("Your gun");
+            alert.setContentText(this.config.toString());
+            alert.showAndWait();
+        });
         Button saveBtn = new Button("Save gun");
         HBox hbox = new HBox(3, test, print, saveBtn);
         grid.add(hbox, 1, cont++);
@@ -279,11 +295,32 @@ public class MainApp extends Application{
         MenuBar bar = new MenuBar();
         Menu file = new Menu("File");
         MenuItem newFile = new MenuItem("New");
+        newFile.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+        newFile.setOnAction(ev -> {
+            for (TextField tf : fields){
+                tf.setText("");
+            }
+            bounce.setSelected(false);
+            goPast.setSelected(false);
+            multi.setSelected(false);
+            rarity.getSelectionModel().select(0);
+            canvas.setDisable(false);
+            this.modified = false;
+        });
         MenuItem saveFile = new MenuItem("Save");
         MenuItem openFile = new MenuItem("Open");
-        file.getItems().addAll(newFile, saveFile, openFile);
+        MenuItem resetGuns = new MenuItem("Reset guns");
+        resetGuns.setOnAction(ev -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Gun reset");
+            alert.setHeaderText("Reset all saved guns?");
+            alert.setContentText("Are you sure that you want to delete all guns saved in this session?");
+            alert.showAndWait();
+        });
+        file.getItems().addAll(newFile, saveFile, openFile, new SeparatorMenuItem(), resetGuns);
         Menu help = new Menu("Help");
         MenuItem helpItem = new MenuItem("Help");
+        helpItem.setAccelerator(new KeyCodeCombination(KeyCode.H, KeyCombination.CONTROL_DOWN));
         help.getItems().add(helpItem);
         bar.getMenus().addAll(file, help);
         
@@ -295,7 +332,7 @@ public class MainApp extends Application{
         stage.setTitle("GunBuilder v"+VERSION);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setResizable(false);
-        stage.setScene(new Scene(getLayout(stage), 850, 500));
+        stage.setScene(new Scene(getLayout(stage), 850, 540));
         stage.show();
     }
     

@@ -284,7 +284,7 @@ public class MainApplication extends Application {
 		
 		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null, null, null);
 		
-		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 640.0, 3, SNIPER_SOUND);
+		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 640.0, 3, SNIPER_SOUND, BulletConfig.Rarity.COMMON);
 		config.setDamageOnDistance(5, 40, 1);
 		
 		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, null, null, TRIPLE_GUN_SOUND);
@@ -571,8 +571,10 @@ public class MainApplication extends Application {
 		startPage = () -> {
 			HomeScreen homescreen = new HomeScreen();
 			HomeScreen.buttons.clear();
+			stage.setResizable(false);
 			stage.setFullScreenExitHint("");
 			homescreen.startEvent = () -> {
+				stage.setResizable(true);
 				stage.getScene().setRoot(new TilePane(getCanvas()));
 			};
 			stage.getScene().setRoot(homescreen.getScene());
@@ -580,6 +582,7 @@ public class MainApplication extends Application {
 		
 		recordsPage = () -> {
 			RecordsScreen records = new RecordsScreen();
+			stage.setResizable(false);
 			stage.setFullScreenExitHint("");
 			stage.getScene().setRoot(records.getScene());
 		};
@@ -825,8 +828,10 @@ public class MainApplication extends Application {
 									explosion.damage = 20;
 									explosions.add(explosion);
 								}
-								if (!b.config.willGoPast() || b.doExplosion) iterator.remove();
-								removed = true;
+								if (!b.config.willGoPast() || b.doExplosion){
+									iterator.remove();
+									removed = true;
+								}
 							}
 						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), 20)){
 							if (!b.doExplosion){
