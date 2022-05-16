@@ -1,3 +1,5 @@
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/OrangoMango/Projectile?include_prereleases&label=Latest%20version&style=for-the-badge) ![GitHub Release Date](https://img.shields.io/github/release-date/OrangoMango/Projectile?label=Release%20date&style=for-the-badge)
+![GitHub commits since tagged version](https://img.shields.io/github/commits-since/OrangoMango/Projectile/latest?style=for-the-badge) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/OrangoMango/Projectile?style=for-the-badge) ![GitHub last commit](https://img.shields.io/github/last-commit/OrangoMango/Projectile?style=for-the-badge)
 # Projectile by OrangoMango
 ![projectile_logo](https://user-images.githubusercontent.com/61402409/165325541-f4266a2a-9e57-4a32-95db-1ef07dd61d29.png)
 # How to run
