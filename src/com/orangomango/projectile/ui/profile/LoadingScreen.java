@@ -49,6 +49,7 @@ public class LoadingScreen{
 		"machine_gun.gbs",
 		"normal_gun.gbs",
 		"pirce_gun.gbs",
+		"small_gun.gbs",
 		"shotgun_epic.gbs",
 		"sniper_common.gbs",
 		"sniper_epic.gbs",

@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 public class Player{
 	private GraphicsContext gc;
 	private double x = 100, y = 400;
+	public static double w = 30;
 	
 	public Player(GraphicsContext gc){
 		this.gc = gc;
@@ -21,6 +22,6 @@ public class Player{
 	
 	public void draw(){
 		this.gc.setFill(Color.RED);
-		this.gc.fillOval(this.x-30/2, this.y-30/2, 30, 30);
+		this.gc.fillOval(this.x-w/2, this.y-w/2, w, w);
 	}
 }

@@ -68,7 +68,19 @@ public class Enemy extends Entity{
 				}
 			}
 			if (random.nextInt(100) <= 6){
-				Drop drop = new Drop(this.x, this.y, "#14F7C4");
+				Random randomN = new Random();
+				int prob = randomN.nextInt(100)+1;
+				BulletConfig.Rarity gotRarity = null;
+				if (prob <= BulletConfig.Rarity.COMMON.getChance()){
+					gotRarity = BulletConfig.Rarity.COMMON;
+				}
+				if (prob <= BulletConfig.Rarity.EPIC.getChance()){
+					gotRarity = BulletConfig.Rarity.EPIC;
+				}
+				if (prob <= BulletConfig.Rarity.LEGGENDARY.getChance()){
+					gotRarity = BulletConfig.Rarity.LEGGENDARY;
+				}
+				Drop drop = new Drop(this.x, this.y, gotRarity);
 				MainApplication.drops.add(drop);
 			}
 			MainApplication.score += totalDamage;
@@ -89,7 +101,7 @@ public class Enemy extends Entity{
 		double distance2player = Math.sqrt(Math.pow(this.x+speedX-this.player.x, 2)+Math.pow(this.y+speedY-this.player.y, 2));
 		if (distance2player <= 350 && this.shoots){
 			if (this.shootingAllowed && System.currentTimeMillis() >= this.spawnStart+1200){
-				BulletConfig bcf = new BulletConfig(15, 630, (int)Math.round(damage2player*1.25), null, false, null, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
+				BulletConfig bcf = new BulletConfig(15, 700, (int)Math.round(damage2player*0.65), null, false, null, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
 				bcf.loadMedia();
 				Bullet bullet = new Bullet(gc, this.x, this.y, Math.atan2(this.player.y-this.y, this.player.x-this.x), bcf);
 				bullet.continueCond = e -> !(e instanceof Player);

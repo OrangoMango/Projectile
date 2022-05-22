@@ -15,6 +15,7 @@ import javafx.animation.*;
 import javafx.util.Duration;
 import javafx.stage.FileChooser;
 import javafx.scene.media.Media;
+import javafx.scene.web.WebView;
 
 import java.util.*;
 import java.io.*;
@@ -100,6 +101,8 @@ public class MainApp extends Application{
     public VBox getLayout(Stage stage){
         VBox layout = new VBox();
         
+        stage.setOnCloseRequest(r -> Bullet.w = Bullet.startW);
+        
         SplitPane pane = new SplitPane();
         Canvas canvas = new Canvas(300, 450);
         canvas.setFocusTraversable(true);
@@ -122,6 +125,15 @@ public class MainApp extends Application{
                     rc.play();
                     break;
             }
+        });
+        canvas.setOnScroll(se -> {
+            double deltaY = se.getDeltaY();
+            double factor = 1.05;
+            if (se.getDeltaY() < 0){
+                factor = 0.90;
+            }
+            Bullet.w *= factor;
+            Player.w *= factor;
         });
         gc = canvas.getGraphicsContext2D();
         
@@ -433,6 +445,14 @@ public class MainApp extends Application{
         Menu help = new Menu("Help");
         MenuItem helpItem = new MenuItem("Help");
         helpItem.setAccelerator(new KeyCodeCombination(KeyCode.F1));
+        helpItem.setOnAction(ev -> {
+            Dialog<ButtonType> dialog = new Dialog<>();
+            WebView wv = new WebView();
+            wv.getEngine().load("https://github.com/OrangoMango/Projectile");
+            dialog.getDialogPane().setContent(wv);
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+            dialog.showAndWait();
+        });
         help.getItems().add(helpItem);
         bar.getMenus().addAll(file, help);
         

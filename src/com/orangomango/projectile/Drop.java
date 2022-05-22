@@ -6,11 +6,27 @@ import javafx.scene.paint.Color;
 public class Drop{
 	private double x, y;
 	private String color;
+	private BulletConfig.Rarity rarity;
 	
-	public Drop(double x, double y, String color){
+	public Drop(double x, double y, BulletConfig.Rarity rarity){
 		this.x = x;
 		this.y = y;
-		this.color = color;
+		this.rarity = rarity;
+		switch (this.rarity){
+			case COMMON:
+				this.color = "#14F7C4";
+				break;
+			case EPIC:
+				this.color = "#8200FF";
+				break;
+			case LEGGENDARY:
+				this.color = "#FFE100";
+				break;
+		}
+	}
+	
+	public BulletConfig.Rarity getRarity(){
+		return this.rarity;
 	}
 	
 	public void draw(GraphicsContext gc){

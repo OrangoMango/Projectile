@@ -76,6 +76,7 @@ public class MainApplication extends Application {
 	private static Timeline reloading;
 	private static ArrayList<BulletConfig> availableGuns = new ArrayList<>();
 	private static int savedAmmo;
+	private static boolean showingPause;
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -316,6 +317,7 @@ public class MainApplication extends Application {
 		//config.setDamageOnDistance(30, 5, -2);
 		
 		//config = new BulletConfig(null, null, null, null, false, 150000, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
+		//config.loadMedia();
 		
 		config = availableGuns.get(3);
 
@@ -427,6 +429,10 @@ public class MainApplication extends Application {
 						point2.startTimer();
 					}
 					break;
+				case E:
+					config = availableGuns.get(5);
+					config.ammoAmount = config.getStartAmmoAmount();
+					player.ammo = config.getAmmo();
 				case Q:
 					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
 					rechargeStart = System.currentTimeMillis();
@@ -451,6 +457,8 @@ public class MainApplication extends Application {
 						}
 						paused = !paused;
 					} else {
+						if (showingPause) return;
+						showingPause = true;
 						gc.save();
 						Timeline resume = new Timeline(new KeyFrame(Duration.millis(1000), rE -> {
 							String text;
@@ -486,6 +494,7 @@ public class MainApplication extends Application {
 							if (reloading != null){
 								reloading.play();
 							}
+							showingPause = false;
 						});
 						resume.play();
 					}
@@ -786,17 +795,7 @@ public class MainApplication extends Application {
 					playSound(DROP_SOUND, false, null, false);
 					dropIterator.remove();
 					Random randomN = new Random();
-					int prob = randomN.nextInt(101)+1;
-					BulletConfig.Rarity gotRarity = null;
-					if (prob <= BulletConfig.Rarity.COMMON.getChance()){
-						gotRarity = BulletConfig.Rarity.COMMON;
-					}
-					if (prob <= BulletConfig.Rarity.EPIC.getChance()){
-						gotRarity = BulletConfig.Rarity.EPIC;
-					}
-					if (prob <= BulletConfig.Rarity.LEGGENDARY.getChance()){
-						gotRarity = BulletConfig.Rarity.LEGGENDARY;
-					}
+					BulletConfig.Rarity gotRarity = drop.getRarity(); 
 					if (player.shield <= player.getStartShield()-25){
 						player.shield += 25;
 					} else {
@@ -886,7 +885,7 @@ public class MainApplication extends Application {
 							dmg = 0;
 						}
 						if (b.continueCond.test(e)) continue;
-						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), 20) && !((Enemy)e).spawning){
+						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
 							if (!b.doExplosion){
 								((Enemy)e).takeDamage(dmg, i);
 								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
@@ -903,7 +902,7 @@ public class MainApplication extends Application {
 									removed = true;
 								}
 							}
-						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), 20)){
+						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
 							if (!b.doExplosion){
 								((Boss)e).takeDamage(dmg, i);
 								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
@@ -920,7 +919,7 @@ public class MainApplication extends Application {
 									removed = true;
 								}
 							}
-						} else if (e.collided(b.getX(), b.getY(), 20)){
+						} else if (e.collided(b.getX(), b.getY(), Bullet.w)){
 							if (!b.doExplosion){
 								e.takeDamage(dmg);
 								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
