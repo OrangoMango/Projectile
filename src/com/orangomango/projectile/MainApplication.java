@@ -16,7 +16,7 @@ import javafx.scene.input.*;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
-import java.io.File;
+import java.io.*;
 
 import com.orangomango.projectile.ui.*;
 import com.orangomango.projectile.ui.profile.*;
@@ -74,6 +74,7 @@ public class MainApplication extends Application {
 	private static BulletConfig config;
 	private static double ammoDrawing;
 	private static Timeline reloading;
+	private static ArrayList<BulletConfig> availableGuns = new ArrayList<>();
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -86,7 +87,7 @@ public class MainApplication extends Application {
 	public static final String MAIN_FONT;
 	
 	public static Media SCORE_SOUND;
-	public static Media SHOOT_SOUND;
+	public static Media SHOOT_SOUND; // TBD
 	public static Media DAMAGE_SOUND;
 	public static Media EXPLOSION_SOUND;
 	public static Media BACKGROUND_SOUND;
@@ -105,6 +106,8 @@ public class MainApplication extends Application {
 	public static Media SCORE_LOST_SOUND;
 	public static Media AMMO_RELOAD_SOUND;
 	public static Media NO_AMMO_SOUND;
+	
+	// TBD
 	public static Media MACHINE_GUN_SOUND;
 	public static Media FAST_GUN_SOUND;
 	public static Media SNIPER_SOUND;
@@ -192,6 +195,21 @@ public class MainApplication extends Application {
 		}
 		tutorialMsg.show();
 		showingTutorialMessage = true;
+	}
+	
+	public static void loadGuns(){
+		try {
+			for (String name : LoadingScreen.guns){
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(userHome+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"+File.separator+name)));
+				BulletConfig bc = (BulletConfig)ois.readObject();
+				bc.loadMedia();
+				availableGuns.add(bc);
+				ois.close();
+			}
+		} catch (IOException|ClassNotFoundException e){
+			e.printStackTrace();
+		}
+		System.out.println(availableGuns);
 	}
 	
 	private static Canvas getCanvas(){
@@ -284,17 +302,19 @@ public class MainApplication extends Application {
 		
 		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null, null, null);
 		
-		config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 640.0, 3, SNIPER_SOUND, BulletConfig.Rarity.COMMON);
-		config.setDamageOnDistance(5, 40, 1);
+		//config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 640.0, 3, SNIPER_SOUND.getSource(), BulletConfig.Rarity.COMMON);
+		//config.setDamageOnDistance(5, 40, 1);
 		
 		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, null, null, TRIPLE_GUN_SOUND);
 		//config.allowMultipleExplosions = true;
 		
-		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, 150.0, 10, SHOTGUN_SOUND);
+		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, 150.0, 10, SHOTGUN_SOUND, BulletConfig.Rarity.COMMON);
 		//config.setDamageOnDistance(30, 5, -2);
 		
-		//config = new BulletConfig(null, null, null, null, false, 50, null, null, false, null);
+		//config = new BulletConfig(null, null, null, null, false, 150000, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
 		
+		config = availableGuns.get(3);
+
 		canvas.setOnKeyPressed(e -> {
 			switch (e.getCode()){
 				case ENTER:
@@ -591,6 +611,7 @@ public class MainApplication extends Application {
 			LoadingScreen ls = new LoadingScreen(stage);
 		} else {
 			setupSounds();
+			loadGuns();
 			startPage.run();
 			stage.show();
 		}
@@ -652,6 +673,7 @@ public class MainApplication extends Application {
 				}
 				bossInGame = bossFound;
 				boolean shoots = random.nextInt(100) <= 20 && score >= 650 ? true : false;
+				shoots = shoots && !bossInGame;
 				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, shoots ? "#90F501" : "#ff0000", shoots ? "#E1FDB8" : "#FFA3B2", player, shoots);
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
@@ -749,6 +771,39 @@ public class MainApplication extends Application {
 				if (drop.onPlayer(player)){
 					playSound(DROP_SOUND, false, null, false);
 					dropIterator.remove();
+					Random randomN = new Random();
+					int prob = randomN.nextInt(101)+1;
+					BulletConfig.Rarity gotRarity = null;
+					if (prob <= BulletConfig.Rarity.COMMON.getChance()){
+						gotRarity = BulletConfig.Rarity.COMMON;
+					}
+					if (prob <= BulletConfig.Rarity.EPIC.getChance()){
+						gotRarity = BulletConfig.Rarity.EPIC;
+					}
+					if (prob <= BulletConfig.Rarity.LEGGENDARY.getChance()){
+						gotRarity = BulletConfig.Rarity.LEGGENDARY;
+					}
+					if (player.shield <= player.getStartShield()-25){
+						player.shield += 25;
+					} else {
+						player.shield = player.getStartShield();
+					}
+					System.out.println(gotRarity);
+					ArrayList<BulletConfig> list = new ArrayList<>();
+					for (BulletConfig conf : availableGuns){
+						//System.out.println("> "+conf.getRarity());
+						if (conf.getRarity() == gotRarity){
+							list.add(conf);
+						}
+					}
+					config = list.get(randomN.nextInt(list.size()));
+					config.ammoAmount = config.getStartAmmoAmount();
+					player.ammo = config.getAmmo();
+					System.out.println(config.ammoAmount+"/"+config.getStartAmmoAmount());
+					System.out.println(config);
+					FloatingText ftext = new FloatingText(config.toString().replace("_", " "), drop.getX(), drop.getY());
+					ftext.movementTime = 30;
+					floatingTexts.add(ftext);
 				}
 			}
 			for (int i = 0; i < entities.size(); i++){
@@ -804,6 +859,7 @@ public class MainApplication extends Application {
 				Bullet b = iterator.next();
 				if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
 					iterator.remove();
+					removed = true;
 				}
 				int delAmount = 0;
 				for (int i = 0; i < entities.size(); i++){
@@ -822,12 +878,12 @@ public class MainApplication extends Application {
 								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
 								enemyDamageCount++;
 							}
+							if (b.doExplosion){
+								Explosion explosion = new Explosion(gc, b.getX(), b.getY());
+								explosion.damage = 20;
+								explosions.add(explosion);
+							}
 							if (!removed){
-								if (b.doExplosion){
-									Explosion explosion = new Explosion(gc, b.getX(), b.getY());
-									explosion.damage = 20;
-									explosions.add(explosion);
-								}
 								if (!b.config.willGoPast() || b.doExplosion){
 									iterator.remove();
 									removed = true;
@@ -839,12 +895,12 @@ public class MainApplication extends Application {
 								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
 								enemyDamageCount++;
 							}
+							if (b.doExplosion){
+								Explosion explosion = new Explosion(gc, b.getX(), b.getY());
+								explosion.damage = 20;
+								explosions.add(explosion);
+							}
 							if (!removed){
-								if (b.doExplosion){
-									Explosion explosion = new Explosion(gc, b.getX(), b.getY());
-									explosion.damage = 20;
-									explosions.add(explosion);
-								}
 								if (!b.config.willGoPast() || b.doExplosion){
 									iterator.remove();
 									removed = true;
@@ -889,7 +945,7 @@ public class MainApplication extends Application {
 						if (ent instanceof Enemy){
 							((Enemy)ent).takeDamage(25, j);
 						} else if (ent instanceof Player){
-							ent.takeDamage(5);
+							ent.takeDamage(2);
 						}
 					}
 				}
@@ -899,7 +955,7 @@ public class MainApplication extends Application {
 			while (floatingIterator.hasNext()){
 				FloatingText ft = floatingIterator.next();
 				ft.draw(gc);
-				if (ft.getMovements() == 20){
+				if (ft.getMovements() == ft.movementTime){
 					floatingIterator.remove();
 				}
 			}
@@ -1018,7 +1074,7 @@ public class MainApplication extends Application {
 		}
 		ac.play();
 		audioAllowed = false;
-		MainApplication.schedule(() -> audioAllowed = true, 120);
+		MainApplication.schedule(() -> audioAllowed = true, 140);
 	}
 	
 	public static void stopAllSounds(){

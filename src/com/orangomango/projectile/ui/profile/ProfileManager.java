@@ -18,10 +18,12 @@ public class ProfileManager {
 	public static void setupDirectory(){
 		checkAndCreateDir(new File(home+File.separator+".projectile"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"userData"));
+		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"userData"+File.separator+"customGuns"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"font"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"image"));
+		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"));
 	}
 
 	public ProfileManager(){

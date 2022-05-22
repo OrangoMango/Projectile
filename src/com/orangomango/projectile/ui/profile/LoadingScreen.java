@@ -20,7 +20,7 @@ import java.text.DecimalFormat;
 import static com.orangomango.projectile.MainApplication.*;
 
 public class LoadingScreen{
-	private static String[] files = new String[]{
+	private static final String[] files = new String[]{
 		"audio/background.mp3",
 		"audio/boss_battle.wav",
 		"audio/boss_death.wav",
@@ -41,6 +41,18 @@ public class LoadingScreen{
 		"audio/show.wav",
 		"font/main_font.ttf",
 		"image/projectile_logo.png"
+	};
+	
+	public static final String[] guns = new String[]{
+		"bouncy_gun.gbs",
+		"double_normal_gun.gbs",
+		"machine_gun.gbs",
+		"normal_gun.gbs",
+		"pirce_gun.gbs",
+		"shotgun_epic.gbs",
+		"sniper_common.gbs",
+		"sniper_epic.gbs",
+		"uzi.gbs"
 	};
 	
 	private static void downloadFile(String link, String path) {
@@ -77,6 +89,7 @@ public class LoadingScreen{
 		pane.setPadding(new Insets(10, 10, 10, 10));
 		
 		Task task = new Task(){
+			@Override
 			protected Object call(){
 				try {
 					updateMessage("Downloading assets...");
@@ -89,6 +102,7 @@ public class LoadingScreen{
 					
 					updateProgress(files.length, files.length);
 					setupSounds();
+					loadGuns();
 					updateMessage("Done");
 					
 					Platform.runLater(() -> {

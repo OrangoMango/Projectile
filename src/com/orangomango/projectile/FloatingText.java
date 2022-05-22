@@ -8,6 +8,7 @@ public class FloatingText{
 	private double x, y;
 	private String text;
 	private int movements;
+	public int movementTime = 20;
 	
 	public FloatingText(String text, double x, double y){
 		this.x = x;
