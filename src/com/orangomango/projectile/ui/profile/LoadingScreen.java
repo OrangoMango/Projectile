@@ -102,9 +102,9 @@ public class LoadingScreen{
 					}
 					
 					for (int i = 0; i < guns.length; i++){
-						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"+File.separator+guns[i]);
-						updateProgress(i, files.length+guns.length);
-						updateMessage(guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
+						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/guns/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"+File.separator+guns[i]);
+						updateProgress(files.length+i, files.length+guns.length);
+						updateMessage("guns/"+guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
 					}
 					
 					updateProgress(files.length, files.length+guns.length);

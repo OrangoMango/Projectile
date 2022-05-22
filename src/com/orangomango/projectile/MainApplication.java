@@ -155,7 +155,6 @@ public class MainApplication extends Application {
 	public static void main(String[] args){
 		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
 		ProfileManager.setupDirectory();
-		setupSounds();
 		launch(args);
 	}
 	
