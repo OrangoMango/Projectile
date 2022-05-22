@@ -97,11 +97,17 @@ public class LoadingScreen{
 					Thread.sleep(500);
 					for (int i = 0; i < files.length; i++){
 						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+files[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+files[i].replace("/", File.separator));
-						updateProgress(i, files.length);
-						updateMessage(files[i]+"... "+(new DecimalFormat("##.##").format((double)i/files.length*100))+"%");
+						updateProgress(i, files.length+guns.length);
+						updateMessage(files[i]+"... "+(new DecimalFormat("##.##").format((double)i/(files.length+guns.length)*100))+"%");
 					}
 					
-					updateProgress(files.length, files.length);
+					for (int i = 0; i < guns.length; i++){
+						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"+File.separator+guns[i]);
+						updateProgress(i, files.length+guns.length);
+						updateMessage(guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
+					}
+					
+					updateProgress(files.length, files.length+guns.length);
 					setupSounds();
 					loadGuns();
 					updateMessage("Done");
