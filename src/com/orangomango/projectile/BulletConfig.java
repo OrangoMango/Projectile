@@ -165,7 +165,7 @@ public class BulletConfig implements Serializable{
 	public static String getFieldName(String path){
 		try {
 			for (Field field : MainApplication.class.getDeclaredFields()){
-				if (field.getName().contains("SOUND") && ((Media)field.get(null)).getSource().equals(path)){
+				if (field.getName().endsWith("SOUND") && ((Media)field.get(null)).getSource().equals(path)){
 					return field.getName();
 				}
 			}

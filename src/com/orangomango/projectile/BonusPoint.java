@@ -68,6 +68,7 @@ public class BonusPoint{
 			}
 			if (difference >= TIME_TO_TAKE){
 				setRandomPosition(new Random());
+				userGamedata.put("bonusMissed", userGamedata.getOrDefault("bonusMissed", 0.0)+1);
 				if (MainApplication.score <= 150){
 					MainApplication.score = 0;
 				} else {

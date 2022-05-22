@@ -75,6 +75,7 @@ public class MainApplication extends Application {
 	private static double ammoDrawing;
 	private static Timeline reloading;
 	private static ArrayList<BulletConfig> availableGuns = new ArrayList<>();
+	private static int savedAmmo;
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -87,7 +88,7 @@ public class MainApplication extends Application {
 	public static final String MAIN_FONT;
 	
 	public static Media SCORE_SOUND;
-	public static Media SHOOT_SOUND; // TBD
+	public static Media SHOOT_SOUND;
 	public static Media DAMAGE_SOUND;
 	public static Media EXPLOSION_SOUND;
 	public static Media BACKGROUND_SOUND;
@@ -108,11 +109,13 @@ public class MainApplication extends Application {
 	public static Media NO_AMMO_SOUND;
 	
 	// TBD
-	public static Media MACHINE_GUN_SOUND;
+	public static Media[] GUN_SOUNDS = new Media[6];
+	/*public static Media MACHINE_GUN_SOUND;
 	public static Media FAST_GUN_SOUND;
 	public static Media SNIPER_SOUND;
 	public static Media TRIPLE_GUN_SOUND;
 	public static Media SHOTGUN_SOUND;
+	*/
 	public static Media DROP_SOUND;
 		
 	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
@@ -238,6 +241,7 @@ public class MainApplication extends Application {
 		showingTutorialMessage = false;
 		ammoDrawing = 0;
 		reloading = null;
+		savedAmmo = 0;
 
 		if (!currentStage.isFullScreen()){
 			currentStage.setFullScreenExitHint("Press F to exit fullscreen");
@@ -516,7 +520,7 @@ public class MainApplication extends Application {
 						case PRIMARY:
 							if (player.ammo == 0){
 								playSound(NO_AMMO_SOUND, false, null, true);
-								reloadAmmo(player);
+								if (reloading == null) reloadAmmo(player);
 								return;
 							}
 							bulletCount++;
@@ -548,7 +552,17 @@ public class MainApplication extends Application {
 	}
 	
 	private static void reloadAmmo(Player player){
-		if (player.ammo == config.getAmmo() || reloading != null || paused || showingTutorialMessage || config.ammoAmount == 0) return;
+		if (player.ammo == config.getAmmo() || paused || showingTutorialMessage || config.ammoAmount == 0) return;
+		if (reloading != null){
+			reloading.stop();
+			reloading = null;
+			ammoDrawing = 0;
+			config.ammoAmount++;
+			player.ammo = savedAmmo;
+			player.speed = player.startSpeed;
+			return;	
+		}
+		savedAmmo = player.ammo;
 		player.ammo = 0;
 		player.speed = player.startSpeed/2;
 		playSound(AMMO_RELOAD_SOUND, false, 1.0, false);
@@ -638,11 +652,11 @@ public class MainApplication extends Application {
 		SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
 		AMMO_RELOAD_SOUND = new Media("file:///home/paul/Documents/ammo_reload.wav");
 		NO_AMMO_SOUND = new Media("file:///home/paul/Documents/no_ammo.wav");
-		MACHINE_GUN_SOUND = new Media("file:///home/paul/Documents/machine_gun.wav");
-		FAST_GUN_SOUND = new Media("file:///home/paul/Documents/fast_gun.wav");
-		SNIPER_SOUND = new Media("file:///home/paul/Documents/sniper.wav");
-		TRIPLE_GUN_SOUND = new Media("file:///home/paul/Documents/triple_gun.mp3");
-		SHOTGUN_SOUND = new Media("file:///home/paul/Documents/shotgun.wav");
+		GUN_SOUNDS[0] = new Media("file:///home/paul/Documents/machine_gun.wav");
+		GUN_SOUNDS[1] = new Media("file:///home/paul/Documents/fast_gun.wav");
+		GUN_SOUNDS[2] = new Media("file:///home/paul/Documents/sniper.wav");
+		GUN_SOUNDS[3] = new Media("file:///home/paul/Documents/triple_gun.mp3");
+		GUN_SOUNDS[4] = new Media("file:///home/paul/Documents/shotgun.wav");
 		DROP_SOUND = new Media("file:///home/paul/Documents/drop.wav");
 	}
 

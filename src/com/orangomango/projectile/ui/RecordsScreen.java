@@ -100,7 +100,7 @@ public class RecordsScreen extends Screen{
 		gc.fillText("Bosses killed", 645, 340);
 		gc.fillText("Enemies killed", 645, 430);
 		gc.fillText("Bonus taken", 645, 520);
-		gc.fillText("TBD", 645, 610);
+		gc.fillText("Bonus missed", 645, 610);
 		gc.setFill(Color.RED);
 		int totalTime = pm.getJSON().getJSONObject("stats").getInt("timePlayed");
 		gc.fillText(String.format("%sh %sm %ss", totalTime/3600000, totalTime/60000%60, totalTime/1000%60), 645, 200);
@@ -108,7 +108,7 @@ public class RecordsScreen extends Screen{
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("bossesKilled")), 645, 380);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("enemiesKilled")), 645, 470);
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("bonusTaken")), 645, 560);
-		gc.fillText("Coming soon", 645, 650);
+		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("bonusMissed")), 645, 650);
 		
 		gc.setFill(Color.web("#FDE4C8"));
 		gc.fillText("Press SPACE to go back", 50, SCREEN_HEIGHT-40);

@@ -81,8 +81,8 @@ public class ProfileManager {
 		updateOnFile();
 	}
 	
-	public void updateStats(String key, int value, boolean add){
-		this.json.getJSONObject("stats").put(key, add ? this.json.getJSONObject("stats").getInt(key)+value : value);
+	public void updateStats(String key, int value){
+		this.json.getJSONObject("stats").put(key, this.json.getJSONObject("stats").getInt(key)+value);
 		updateOnFile();
 	}
 	

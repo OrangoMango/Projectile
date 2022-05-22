@@ -38,11 +38,12 @@ public class GameoverScreen extends Screen{
 		if (timePlayed > savedTime || savedTime == 0){
 			pm.updateBestTime(difficulty, timePlayed);
 		}
-		pm.updateStats("timePlayed", timePlayed, true);
-		pm.updateStats("roundsDone", 1, true);
-		pm.updateStats("bossesKilled", userGamedata.getOrDefault("bosses", 0.0).intValue(), true);
-		pm.updateStats("enemiesKilled", userGamedata.getOrDefault("enemies", 0.0).intValue(), true);
-		pm.updateStats("bonusTaken", userGamedata.getOrDefault("bonusPoints", 0.0).intValue(), true);
+		pm.updateStats("timePlayed", timePlayed);
+		pm.updateStats("roundsDone", 1);
+		pm.updateStats("bossesKilled", userGamedata.getOrDefault("bosses", 0.0).intValue());
+		pm.updateStats("enemiesKilled", userGamedata.getOrDefault("enemies", 0.0).intValue());
+		pm.updateStats("bonusTaken", userGamedata.getOrDefault("bonusPoints", 0.0).intValue());
+		pm.updateStats("bonusMissed", userGamedata.getOrDefault("bonusMissed", 0.0).intValue());
 	}
 	
 	@Override
@@ -89,14 +90,14 @@ public class GameoverScreen extends Screen{
 		gc.fillText("GAME OVER ("+difficulty+")", 50, 120);
 		gc.setStroke(Color.WHITE);
 		gc.setLineWidth(5);
-		gc.strokeRect(150, 200, 710, 400);
+		gc.strokeRect(150, 200, 710, 450);
 		gc.setFill(Color.web("#E7D6D6"));
 		gc.setFont(Font.loadFont(MAIN_FONT, 40));
 		gc.fillText(displayText, 160, 250);
 		if (displayFinished){
 			gc.setFill(Color.web("#1B8344"));
 			gc.setFont(Font.loadFont(MAIN_FONT, 33));
-			gc.fillText("Press SPACE to continue", 150, 670);
+			gc.fillText("Press SPACE to continue", 150, 700);
 		}
 		gc.restore();
 	}
@@ -118,6 +119,7 @@ public class GameoverScreen extends Screen{
 		builder.append("Aim ratio: ").append(new DecimalFormat("##.####").format(userGamedata.get("damageRatio"))).append("\n");
 		builder.append("Bosses killed: ").append(userGamedata.getOrDefault("bosses", 0.0).intValue()).append("\n");
 		builder.append("Bonus points: ").append(userGamedata.getOrDefault("bonusPoints", 0.0).intValue()).append("\n");
+		builder.append("Bonus missed: ").append(userGamedata.getOrDefault("bonusMissed", 0.0).intValue()).append("\n");
 		builder.append("Grenades launched: ").append(userGamedata.getOrDefault("explosions", 0.0).intValue()).append("\n");
 		builder.append("HP Recharged times: ").append(userGamedata.getOrDefault("recharges", 0.0).intValue());
 		return builder.toString();
