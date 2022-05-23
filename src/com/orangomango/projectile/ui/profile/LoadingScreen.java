@@ -22,7 +22,7 @@ import static com.orangomango.projectile.MainApplication.*;
 
 public class LoadingScreen{
 	private static final String[] files = new String[]{
-		"audio/background.mp3",
+		"audio/background.wav",
 		"audio/boss_battle.wav",
 		"audio/boss_death.wav",
 		"audio/boss_hit.wav",
@@ -31,29 +31,40 @@ public class LoadingScreen{
 		"audio/confirm.wav",
 		"audio/damage.wav",
 		"audio/death.wav",
+		"audio/drop.wav",
 		"audio/explosion.wav",
 		"audio/extra_life.wav",
+		"audio/fast_gun.wav",
+		"audio/machine_gun.wav",
 		"audio/menu_background.wav",
 		"audio/notification.wav",
+		"audio/no_ammo.wav",
 		"audio/score_lost.wav",
 		"audio/score.wav",
 		"audio/select.wav",
 		"audio/shoot.wav",
+		"audio/shotgun.wav",
 		"audio/show.wav",
+		"audio/sniper.wav",
+		"audio/space_gun.wav",
+		"audio/triple_gun.mp3",
 		"font/main_font.ttf",
 		"image/projectile_logo.png"
 	};
 	
 	public static final String[] guns = new String[]{
-		"bouncy_gun.gbs",
+		//"bouncy_gun.gbs",
 		"double_normal_gun.gbs",
+		"grenade_launcher.gbs",
 		"machine_gun.gbs",
 		"normal_gun.gbs",
 		"pirce_gun.gbs",
-		"small_gun.gbs",
 		"shotgun_epic.gbs",
+		"small_gun.gbs",
 		"sniper_common.gbs",
 		"sniper_epic.gbs",
+		"space_gun.gbs",
+		"super_sniper.gbs",
 		"uzi.gbs"
 	};
 	
@@ -94,12 +105,14 @@ public class LoadingScreen{
 						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+files[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+files[i].replace("/", File.separator));
 						updateProgress(i, files.length+guns.length);
 						updateMessage(files[i]+"... "+(new DecimalFormat("##.##").format((double)i/(files.length+guns.length)*100))+"%");
+						Logger.info("Downloaded "+files[i]);
 					}
 					
 					for (int i = 0; i < guns.length; i++){
 						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/gun/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"gun"+File.separator+guns[i]);
 						updateProgress(files.length+i, files.length+guns.length);
 						updateMessage("gun/"+guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
+						Logger.info("Downloaded gun/"+guns[i]);
 					}
 					
 					updateProgress(files.length, files.length+guns.length);
@@ -113,6 +126,7 @@ public class LoadingScreen{
 						startPage.run();
 					});
 				} catch (Exception e){
+					Logger.error(e.getMessage());
 					Alert alert = new Alert(Alert.AlertType.ERROR);
 					alert.setHeaderText("An error occured");
 					alert.setTitle("Unknown error");

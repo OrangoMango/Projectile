@@ -22,6 +22,7 @@ import java.io.*;
 import java.lang.reflect.*;
 
 import com.orangomango.projectile.*;
+import com.orangomango.projectile.ui.profile.Logger;
 
 public class MainApp extends Application{
     public static final String VERSION = "1.0";
@@ -38,6 +39,7 @@ public class MainApp extends Application{
     private DamageLine dmgline;
     private long shootStart;
     private File currentFile = null;
+    private boolean notSaved;
 
     private void startMainLoop(){
         Timeline tl = new Timeline(new KeyFrame(Duration.millis(1000.0/40), e -> {
@@ -101,7 +103,10 @@ public class MainApp extends Application{
     public VBox getLayout(Stage stage){
         VBox layout = new VBox();
         
-        stage.setOnCloseRequest(r -> Bullet.w = Bullet.startW);
+        stage.setOnCloseRequest(r -> {
+            Bullet.w = Bullet.startW;
+            Logger.info("Gunbuilder closed");
+        });
         
         SplitPane pane = new SplitPane();
         Canvas canvas = new Canvas(300, 450);
@@ -198,6 +203,7 @@ public class MainApp extends Application{
             field.setOnKeyPressed(k -> {
                 canvas.setDisable(true);
                 this.modified = true;
+                this.notSaved = true;
             });
             fields[cont] = field;
             label.setTooltip(new Tooltip(tooltips[cont]));
@@ -207,6 +213,7 @@ public class MainApp extends Application{
         Button browse = new Button("Browse..");
         browse.setOnAction(ev -> {
             FileChooser fc = new FileChooser();
+            fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("wav files", "*.wav"), new FileChooser.ExtensionFilter("mp3 files", "*.wav"));
             fc.setInitialDirectory(new File(System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
             File foundFile = fc.showOpenDialog(stage);
             if (foundFile != null){
@@ -217,6 +224,7 @@ public class MainApp extends Application{
             }
             canvas.setDisable(true);
             this.modified = true;
+            this.notSaved = true;
         });
         grid.add(browse, 2, 2);
         ComboBox<String> rarity = new ComboBox<>();
@@ -227,6 +235,7 @@ public class MainApp extends Application{
         grid.add(rar, 0, cont);
         grid.add(rarity, 1, cont++);
         CheckBox bounce = new CheckBox("Bounce");
+        bounce.setDisable(true); // Needs to be continued;
         CheckBox goPast = new CheckBox("Go past");
         CheckBox multi = new CheckBox("Multiple explosions");
         grid.add(bounce, 0, cont++);
@@ -244,8 +253,13 @@ public class MainApp extends Application{
                     media = fields[2].getText().equals("") ? null : new Media(fields[2].getText());
                 } else {
                     Class ma = Class.forName("com.orangomango.projectile.MainApplication");
-                    Field field = ma.getField(fields[2].getText());
-                    media = (Media)field.get(null);
+                    if (fields[2].getText().startsWith("GUN_SOUNDS")){
+                        Field field = ma.getField("GUN_SOUNDS");
+                        media = ((Media[])field.get(null))[Integer.parseInt(fields[2].getText().split("\\[")[1].substring(0, fields[2].getText().split("\\[")[1].length()-1))];
+                    } else {
+                        Field field = ma.getField(fields[2].getText());
+                        media = (Media)field.get(null);
+                    }
                 }
                 Integer ammo = fields[3].getText().equals("") ? null : Integer.parseInt(fields[3].getText());
                 Integer cooldown = fields[4].getText().equals("") ? null : Integer.parseInt(fields[4].getText());
@@ -253,15 +267,15 @@ public class MainApp extends Application{
                 Integer ammoAmount = fields[6].getText().equals("") ? null : Integer.parseInt(fields[6].getText());
                 int[] rechargeFrames = fields[7].getText().equals("") ? null : getIntArray(fields[7].getText());
                 if (rechargeFrames != null && rechargeFrames.length != 2){
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("Could not parse rechargeFrames");
                 }
                 int[] timing = fields[8].getText().equals("") ? null : getIntArray(fields[8].getText());
                 if (timing != null && timing.length != 2){
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("Could not parse timing");
                 }
-                int[] distanceDmg = fields[10].getText().equals("") ? null : getIntArray(fields[10].getText());
+                int[] distanceDmg = fields[10].getText().equals("") || fields[10].getText().equals("0;0;0") ? null : getIntArray(fields[10].getText());
                 if (distanceDmg != null && distanceDmg.length != 3){
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("Could not parse distanceDamage");
                 }
                 String[] data = fields[9].getText().equals("") ? null : fields[9].getText().split(";");
                 double[] angl = data == null ? null : new double[data.length];
@@ -278,44 +292,31 @@ public class MainApp extends Application{
                 this.currentAmount = this.config.ammoAmount;
                 this.config.allowMultipleExplosions = multi.isSelected();
                 this.pseudoDrawing = 0;
-                if (distanceDmg != null && !distanceDmg.equals(new int[]{0, 0, 0})){
+                if (distanceDmg != null){
                     this.config.setDamageOnDistance(distanceDmg[0], distanceDmg[1], distanceDmg[2]);
                 }
                 this.modified = false;
                 canvas.setDisable(false);
                 canvas.requestFocus();
+                Logger.info("Started testing for "+this.config);
             } catch (Exception e){
+                Logger.error("Inputs are invalid: "+e.getMessage());
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Arguments error");
                 alert.setHeaderText("Incorrect data given");
-                alert.setContentText("Please check your inputs");
+                alert.setContentText("Please check your inputs and if the error persists, please check log file");
                 alert.showAndWait();
             }
         });
         Button print = new Button("Print debug");
         print.setOnAction(ev -> {
-            System.out.println(this.config.getDebugString());
+            Logger.info(this.config.getDebugString());
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Current created gun");
             alert.setHeaderText("Your gun");
-            alert.setContentText(this.config.getDebugString());
+            alert.setContentText("Please check log file");
             alert.showAndWait();
         });
-        /*
-        Button saveBtn = new Button("Save gun");
-        saveBtn.setOnAction(ev -> {
-            if (this.createdGuns.forName(this.config.gunName) != null){
-                createdGuns.getList().remove(this.config);
-            }
-            if (!fields[11].getText().equals("")) this.config.gunName = fields[11].getText();
-            createdGuns.getList().add(this.config);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Gun saved successfully");
-            alert.setHeaderText("Gun saved to list");
-            alert.setContentText("Your gun was added to the saved list succesfully");
-            alert.showAndWait();
-        });
-        */
         HBox hbox = new HBox(3, test, print);
         grid.add(hbox, 1, cont++);
         
@@ -328,7 +329,7 @@ public class MainApp extends Application{
         MenuItem newFile = new MenuItem("New gun");
         newFile.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
         newFile.setOnAction(ev -> {
-            if (this.modified){
+            if (this.notSaved){
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Gun reset");
                 alert.getDialogPane().getStyleClass().addAll("alert", "warning");
@@ -341,6 +342,7 @@ public class MainApp extends Application{
                     this.currentAmmo = this.config.getAmmo();
                     this.currentAmount = this.config.ammoAmount;
                     this.config.loadMedia();
+                    Logger.info("Created a brand new file");
                 });
             }
             
@@ -356,7 +358,7 @@ public class MainApp extends Application{
                 File f = chooser.showSaveDialog(stage);
                 if (f == null) return;
                 this.currentFile = f;
-                System.out.println(f.getAbsolutePath());
+                Logger.info(f.getAbsolutePath());
             }
             try {
                 ObjectOutputStream ois = new ObjectOutputStream(new FileOutputStream(this.currentFile));
@@ -365,6 +367,13 @@ public class MainApp extends Application{
             } catch (IOException ex){
                 ex.printStackTrace();
             }
+            this.notSaved = false;
+            Logger.info("Saved file "+this.currentFile.getAbsolutePath());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("File saved");
+            alert.setHeaderText("Gun saved successfully");
+            alert.setContentText("Your gun was saved in the file");
+            alert.showAndWait();
         });
         MenuItem openFile = new MenuItem("Open");
         openFile.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
@@ -387,61 +396,9 @@ public class MainApp extends Application{
             this.currentAmount = this.config.ammoAmount;
             this.pseudoDrawing = 0;
             loadFields(fields, bounce, goPast, multi, rarity, canvas);
+            Logger.info("Opened file "+f.getAbsolutePath());
         });
-        /*
-        MenuItem resetGuns = new MenuItem("Reset guns");
-        resetGuns.setOnAction(ev -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Gun reset");
-            alert.setHeaderText("Reset all saved guns?");
-            alert.setContentText("Are you sure that you want to delete all guns saved in this session?");
-            alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(result -> {
-                this.createdGuns.getList().clear();
-                this.currentFile = null;
-            });
-        });
-        */
         file.getItems().addAll(newFile, saveFile, openFile);
-        /*
-        Menu edit = new Menu("Edit");
-        MenuItem showList = new MenuItem("Show guns");
-        showList.setOnAction(ev -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Your saved guns");
-            alert.setHeaderText("Your saved guns");
-            alert.setContentText(this.createdGuns.toString());
-            alert.showAndWait();
-        });
-        MenuItem manageItems = new MenuItem("Manage guns");
-        manageItems.setOnAction(ev -> {
-            Dialog<ButtonType> dialog = new Dialog<>();
-            HBox dPane = new HBox();
-            ListView<String> list = new ListView<>();
-            list.setPlaceholder(new Label("  No guns here...  "));
-            list.setMaxHeight(250);
-            list.setMaxWidth(200);
-            for (BulletConfig c : this.createdGuns.getList()){
-                list.getItems().add(c.toString());
-            }
-            Button selectB = new Button("Select");
-            selectB.setOnAction(evt -> {
-                BulletConfig selected = this.createdGuns.forName(list.getSelectionModel().getSelectedItem());
-                this.config = selected;
-                loadFields(fields, bounce, goPast, multi, rarity, canvas);
-            });
-            Button deleteB = new Button("Delete");
-            VBox vbox = new VBox(selectB, deleteB);
-            vbox.setSpacing(3);
-            dPane.setSpacing(5);
-            dPane.getChildren().addAll(list, vbox);
-            dialog.setTitle("Your guns");
-            dialog.getDialogPane().setContent(dPane);
-            dialog.getDialogPane().setMaxWidth(300);
-            dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
-            dialog.showAndWait();
-        });
-        edit.getItems().addAll(showList, new SeparatorMenuItem(), manageItems);
-        */
         Menu help = new Menu("Help");
         MenuItem helpItem = new MenuItem("Help");
         helpItem.setAccelerator(new KeyCodeCombination(KeyCode.F1));
@@ -465,6 +422,7 @@ public class MainApp extends Application{
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setResizable(false);
         stage.setScene(new Scene(getLayout(stage), 850, 540));
+        Logger.info("GunBuilder v"+VERSION+" started");
         stage.show();
     }
     

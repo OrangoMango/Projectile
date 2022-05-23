@@ -67,7 +67,7 @@ public class Enemy extends Entity{
 					player.hp = player.getStartHP();
 				}
 			}
-			if (random.nextInt(100) <= 6){
+			if (random.nextInt(100) <= 12){
 				Random randomN = new Random();
 				int prob = randomN.nextInt(100)+1;
 				BulletConfig.Rarity gotRarity = null;
@@ -108,7 +108,7 @@ public class Enemy extends Entity{
 				Player.bullets.add(bullet);
 				MainApplication.playSound(bcf.getShootSound(), false, null, true);
 				shootingAllowed = false;
-				MainApplication.schedule(() -> shootingAllowed = true, bcf.getCooldown());
+				MainApplication.schedule(() -> shootingAllowed = true, bcf.getCooldown()+MainApplication.currentDiff[13]);
 			}
 		} else if (distance2player <= 40){
 			if (!this.spawning && !this.dmgCooldown && !MainApplication.playWithTutorial){

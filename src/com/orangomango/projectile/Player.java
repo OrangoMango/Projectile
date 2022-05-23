@@ -76,9 +76,10 @@ public class Player extends Entity{
 			MainApplication.schedule(() -> playingSound = false, 500);
 		}
 		if (this.hp <= 0 && !gameIsOver){
-			System.out.println("YOU DIED");
+			Logger.info("YOU DIED");
 			gameIsOver = true;
 			userGamedata.put("damageRatio", (double)MainApplication.enemyDamageCount/MainApplication.bulletCount);
+			Logger.info("Game data: "+userGamedata);
 			MainApplication.playSound(DEATH_SOUND, false, null, false);
 			MainApplication.loop.stop();
 			MainApplication.entities.clear();

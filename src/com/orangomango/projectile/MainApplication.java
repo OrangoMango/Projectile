@@ -27,7 +27,7 @@ import com.orangomango.projectile.ui.profile.*;
  * Code entirely written by OrangoMango (orangomango.github.io)
  * License MIT
  * @author OrangoMango
- * @version 1.0
+ * @version 1.1
  */
 public class MainApplication extends Application {
 	
@@ -109,15 +109,7 @@ public class MainApplication extends Application {
 	public static Media SCORE_LOST_SOUND;
 	public static Media AMMO_RELOAD_SOUND;
 	public static Media NO_AMMO_SOUND;
-	
-	// TBD
 	public static Media[] GUN_SOUNDS = new Media[6];
-	/*public static Media MACHINE_GUN_SOUND;
-	public static Media FAST_GUN_SOUND;
-	public static Media SNIPER_SOUND;
-	public static Media TRIPLE_GUN_SOUND;
-	public static Media SHOTGUN_SOUND;
-	*/
 	public static Media DROP_SOUND;
 		
 	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
@@ -162,7 +154,15 @@ public class MainApplication extends Application {
 	public static void main(String[] args){
 		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
 		ProfileManager.setupDirectory();
-		launch(args);
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> Logger.info("Application closed")));
+		try {
+			launch(args);
+		} catch (Exception ex){
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			ex.printStackTrace(pw);
+			Logger.error(sw.toString());
+		}
 	}
 	
 	private static void displayTutorialMessageAfter(String message, int delay, BooleanSupplier condition, GraphicsContext gc, Player player){
@@ -207,6 +207,15 @@ public class MainApplication extends Application {
 		showingTutorialMessage = true;
 	}
 	
+	private static int gunByName(String name){
+		int i = 0;
+		for (BulletConfig c : availableGuns){
+			if (c.gunName.equals(name)) return i;
+			i++;
+		}
+		return -1;
+	}
+	
 	public static void loadGuns(){
 		try {
 			for (String name : LoadingScreen.guns){
@@ -219,7 +228,7 @@ public class MainApplication extends Application {
 		} catch (IOException|ClassNotFoundException e){
 			e.printStackTrace();
 		}
-		System.out.println(availableGuns);
+		Logger.info("Guns: "+availableGuns);
 	}
 	
 	private static Canvas getCanvas(){
@@ -307,25 +316,7 @@ public class MainApplication extends Application {
 		
 		entities.add(player);
 		
-		//config = new BulletConfig(null, 70, 3, null, false, 60, null, new int[]{100, 55}, true, 350.0, 50, MACHINE_GUN_SOUND);
-		
-		// FAST_GUN_SOUND
-		
-		//config = new BulletConfig(null, null, null, new double[]{-5, 5}, false, 20, null, new int[]{100, 15}, false, null, null, null);
-		
-		//config = new BulletConfig(15, 350, null, null, false, 5, null, new int[]{100, 10}, false, 640.0, 3, SNIPER_SOUND.getSource(), BulletConfig.Rarity.COMMON);
-		//config.setDamageOnDistance(5, 40, 1);
-		
-		//config = new BulletConfig(null, 200, 4, null, false, 36, new int[]{3, 100}, new int[]{100, 20}, false, null, null, TRIPLE_GUN_SOUND);
-		//config.allowMultipleExplosions = true;
-		
-		//config = new BulletConfig(null, 450, null, new double[]{-10, 0, 10}, false, 15, null, new int[]{100, 15}, false, 150.0, 10, SHOTGUN_SOUND, BulletConfig.Rarity.COMMON);
-		//config.setDamageOnDistance(30, 5, -2);
-		
-		//config = new BulletConfig(null, null, null, null, false, 150000, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
-		//config.loadMedia();
-		
-		config = availableGuns.get(3);
+		config = availableGuns.get(gunByName("normal_gun"));
 
 		canvas.setOnKeyPressed(e -> {
 			switch (e.getCode()){
@@ -436,7 +427,7 @@ public class MainApplication extends Application {
 					}
 					break;
 				case E:
-					config = availableGuns.get(5);
+					config = availableGuns.get(gunByName("small_gun"));
 					config.ammoAmount = config.getStartAmmoAmount();
 					player.ammo = config.getAmmo();
 				case Q:
@@ -462,6 +453,7 @@ public class MainApplication extends Application {
 							reloading.pause();
 						}
 						paused = !paused;
+						Logger.info("Game paused");
 					} else {
 						if (showingPause) return;
 						showingPause = true;
@@ -503,6 +495,7 @@ public class MainApplication extends Application {
 							showingPause = false;
 						});
 						resume.play();
+						Logger.info("Game resumed");
 					}
 					break;
 				case R:
@@ -599,6 +592,7 @@ public class MainApplication extends Application {
 	@Override
 	public void start(Stage stage){
 		currentStage = stage;
+
 		stage.setTitle("Projectile by OrangoMango");
 		stage.setOnCloseRequest(cr -> System.exit(0));
 		stage.setScene(new Scene(new TilePane(new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT)), SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -637,12 +631,14 @@ public class MainApplication extends Application {
 		};
 
 		if (firstTime){
+			Logger.info("Downloading assets");
 			LoadingScreen ls = new LoadingScreen(stage);
 		} else {
 			setupSounds();
 			loadGuns();
 			startPage.run();
 			stage.show();
+			Logger.info("Application started");
 		}
 	}
 	
@@ -652,7 +648,7 @@ public class MainApplication extends Application {
 			SHOOT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/shoot.wav");
 			DAMAGE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/damage.wav");
 			EXPLOSION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/explosion.wav");
-			BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/background.mp3");
+			BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/background.wav");
 			DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/death.wav");
 			EXTRA_LIFE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/extra_life.wav");
 			BOSS_DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_death.wav");
@@ -673,6 +669,7 @@ public class MainApplication extends Application {
 			GUN_SOUNDS[2] = new Media("file:///home/paul/Documents/sniper.wav");
 			GUN_SOUNDS[3] = new Media("file:///home/paul/Documents/triple_gun.mp3");
 			GUN_SOUNDS[4] = new Media("file:///home/paul/Documents/shotgun.wav");
+			GUN_SOUNDS[5] = new Media("file:///home/paul/Documents/space_gun.wav");
 			DROP_SOUND = new Media("file:///home/paul/Documents/drop.wav");
 		} catch (Exception e){
 			Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -699,8 +696,6 @@ public class MainApplication extends Application {
 				ex.printStackTrace();
 			}
 			while (threadRunning){
-				//Thread.getAllStackTraces().keySet().forEach(t -> System.out.println(t.getName()+"\t"+t.getState()+"\t"+t.isDaemon()));
-				//System.out.println("\n\n");
 				if (paused || entities.size() == currentDiff[18] || bossDialog) continue;
 				boolean bossFound = false;
 				for (int i = 0; i < entities.size(); i++){
@@ -805,6 +800,10 @@ public class MainApplication extends Application {
 			Iterator<Drop> dropIterator = drops.iterator();
 			while (dropIterator.hasNext()){
 				Drop drop = dropIterator.next();
+				if (drop.mustRemove){
+					dropIterator.remove();
+					continue;
+				}
 				drop.draw(gc);
 				if (drop.onPlayer(player)){
 					playSound(DROP_SOUND, false, null, false);
@@ -816,10 +815,8 @@ public class MainApplication extends Application {
 					} else {
 						player.shield = player.getStartShield();
 					}
-					System.out.println(gotRarity);
 					ArrayList<BulletConfig> list = new ArrayList<>();
 					for (BulletConfig conf : availableGuns){
-						//System.out.println("> "+conf.getRarity());
 						if (conf.getRarity() == gotRarity){
 							list.add(conf);
 						}
@@ -827,9 +824,8 @@ public class MainApplication extends Application {
 					config = list.get(randomN.nextInt(list.size()));
 					config.ammoAmount = config.getStartAmmoAmount();
 					player.ammo = config.getAmmo();
-					System.out.println(config.ammoAmount+"/"+config.getStartAmmoAmount());
-					System.out.println(config);
-					FloatingText ftext = new FloatingText(config.toString().replace("_", " "), drop.getX(), drop.getY());
+					Logger.info("Drop: "+gotRarity+" "+config);
+					FloatingText ftext = new FloatingText(config.toString().replace("_", " ").split(" \\[")[0], drop.getX(), drop.getY());
 					ftext.movementTime = 30;
 					floatingTexts.add(ftext);
 				}
@@ -854,7 +850,7 @@ public class MainApplication extends Application {
 								} else {
 									ent.takeDamage(exp.damage);
 								}
-								floatingTexts.add(new FloatingText("-"+exp.damage, ent.getX(), ent.getY()));
+								floatingTexts.add(new FloatingText(Integer.toString(exp.damage), ent.getX(), ent.getY()));
 								if (ent.getHP() <= 0){
 									i--;
 								}
@@ -862,7 +858,7 @@ public class MainApplication extends Application {
 						}
 					}
 				} catch (ConcurrentModificationException ex){
-					System.out.println("-- error (2.2)");
+					Logger.error("-- error (2.2)");
 				}
 			}
 			if (point.isOnPlayer(player)){
@@ -903,7 +899,7 @@ public class MainApplication extends Application {
 						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
 							if (!b.doExplosion){
 								((Enemy)e).takeDamage(dmg, i);
-								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
+								floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
 								enemyDamageCount++;
 							}
 							if (b.doExplosion){
@@ -920,7 +916,7 @@ public class MainApplication extends Application {
 						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
 							if (!b.doExplosion){
 								((Boss)e).takeDamage(dmg, i);
-								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
+								floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
 								enemyDamageCount++;
 							}
 							if (b.doExplosion){
@@ -937,7 +933,7 @@ public class MainApplication extends Application {
 						} else if (e.collided(b.getX(), b.getY(), Bullet.w)){
 							if (!b.doExplosion){
 								e.takeDamage(dmg);
-								floatingTexts.add(new FloatingText("-"+dmg, b.getX(), b.getY()));
+								floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
 							}
 							if (!removed){
 								if (!b.config.willGoPast() || b.doExplosion){
@@ -951,7 +947,7 @@ public class MainApplication extends Application {
 						}
 					} catch (ConcurrentModificationException exc){
 						exc.printStackTrace();
-						System.out.println("-- error (3)");
+						Logger.error("-- error (3)");
 						System.exit(0);
 					}
 				}
@@ -1077,7 +1073,7 @@ public class MainApplication extends Application {
 				hpCheck = false;
 			}
 
-			// Show notification
+			// Show notification if notification.mustShow = true
 			notification.show();
 			
 		}));
@@ -1102,7 +1098,7 @@ public class MainApplication extends Application {
 		}
 		ac.play();
 		audioAllowed = false;
-		MainApplication.schedule(() -> audioAllowed = true, 140);
+		MainApplication.schedule(() -> audioAllowed = true, 200);
 	}
 	
 	public static void stopAllSounds(){

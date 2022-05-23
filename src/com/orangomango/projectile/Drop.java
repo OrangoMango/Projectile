@@ -7,11 +7,16 @@ public class Drop{
 	private double x, y;
 	private String color;
 	private BulletConfig.Rarity rarity;
+	private long startTime;
+	private static final int TIME_TO_TAKE = 20000;
+	private static final double WIDTH = 20;
+	public boolean mustRemove;
 	
 	public Drop(double x, double y, BulletConfig.Rarity rarity){
 		this.x = x;
 		this.y = y;
 		this.rarity = rarity;
+		this.startTime = System.currentTimeMillis();
 		switch (this.rarity){
 			case COMMON:
 				this.color = "#14F7C4";
@@ -31,7 +36,19 @@ public class Drop{
 	
 	public void draw(GraphicsContext gc){
 		gc.setFill(Color.web(this.color));
-		gc.fillRect(this.x-10, this.y-10, 20, 20);
+		gc.fillRect(this.x-WIDTH/2, this.y-WIDTH/2, WIDTH, WIDTH);
+		gc.setFill(Color.web("#8ABAEA"));
+		double difference = (double)System.currentTimeMillis()-this.startTime;
+		gc.fillRect(this.x-WIDTH/2, this.y+WIDTH/2+5, WIDTH*((difference)/TIME_TO_TAKE >= 1 ? 1 : (difference)/TIME_TO_TAKE), 5);
+		gc.setStroke(Color.web("#338EE6"));
+		gc.save();
+		gc.setLineWidth(0.65);
+		gc.strokeRect(this.x-WIDTH/2, this.y+WIDTH/2+5, WIDTH, 5);
+		gc.restore();
+		if (difference >= TIME_TO_TAKE){
+			this.mustRemove = true;
+			MainApplication.playSound(MainApplication.SCORE_LOST_SOUND, false, null, false);
+		}
 	}
 	
 	public double getX(){

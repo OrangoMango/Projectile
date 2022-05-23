@@ -14,7 +14,7 @@ public class BonusPoint{
 	private boolean timeCheck;
 	private boolean tutorial;
 	private static int TIME_TO_TAKE = 35000;
-	private static int WIDTH = 20;
+	private static double WIDTH = 20;
 	public boolean show = true;
 	
 	public BonusPoint(GraphicsContext gc, double x, double y, boolean tutorial){

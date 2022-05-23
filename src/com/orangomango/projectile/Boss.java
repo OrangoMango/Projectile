@@ -137,6 +137,7 @@ public class Boss extends Entity{
 			userGamedata.put("bosses", userGamedata.getOrDefault("bosses", 0.0)+1);
 			MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 			MainApplication.score += 100;
+			Logger.info("Boss defeated");
 			MainApplication.bossCount = MainApplication.score;
 			MainApplication.bossCheck = false;
 			MainApplication.point.startTimer();

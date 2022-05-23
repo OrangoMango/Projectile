@@ -169,6 +169,13 @@ public class BulletConfig implements Serializable{
 					return field.getName();
 				}
 			}
+			int i = 0;
+			for (Media m : MainApplication.GUN_SOUNDS){
+				if (m.getSource().equals(path)){
+					return "GUN_SOUNDS["+i+"]";
+				}
+				i++;
+			}
 		} catch (Exception exc){
 			exc.printStackTrace();
 		}
@@ -177,7 +184,7 @@ public class BulletConfig implements Serializable{
 	
 	@Override
 	public String toString(){
-		return "Gun: "+this.gunName;
+		return "Gun: "+this.gunName+" ["+this.rarity+"]";
 	}
 	
 	public String getDebugString(){

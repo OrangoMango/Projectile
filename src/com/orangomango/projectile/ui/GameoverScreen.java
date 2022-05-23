@@ -12,6 +12,7 @@ import java.util.*;
 
 import static com.orangomango.projectile.MainApplication.*;
 import com.orangomango.projectile.ui.profile.*;
+import com.orangomango.projectile.ui.profile.Logger;
 
 public class GameoverScreen extends Screen{
 	private volatile String displayText = "";
@@ -76,7 +77,7 @@ public class GameoverScreen extends Screen{
 			playSound(SHOW_SOUND, false, null, false);
 		}, 1200);
 		
-		System.out.println("Drawing gameover screen: "+SCREEN_WIDTH+"x"+SCREEN_HEIGHT);
+		Logger.info("Drawing gameover screen: "+SCREEN_WIDTH+"x"+SCREEN_HEIGHT);
 		return new TilePane(canvas);
 	}
 	
