@@ -138,6 +138,11 @@ public class MainApplication extends Application {
 		MAIN_FONT = "file://"+userHome+"/.projectile/assets/font/main_font.ttf";
 	}
 	
+	/**
+	 * Schedule a runnable that will run after x seconds.
+	 * @param r The @link Runnable to run
+	 * @param delay The runnable will run after @link delay seconds 
+	 */
 	public static void schedule(Runnable r, int delay){
 		Thread t = new Thread(() -> {
 			try {
@@ -146,12 +151,13 @@ public class MainApplication extends Application {
 				ie.printStackTrace();
 			}
 			r.run();
-			//System.out.println("Rm a task, now "+Thread.getAllStackTraces().keySet().size());
 		}, "Schedule-"+(threadCont++));
 		t.start();
-		//System.out.println("\t\tSheduled a task");
 	}
 	
+	/**
+	 * Application main method. Here it will start the setup for the user directory
+	 */
 	public static void main(String[] args){
 		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
 		ProfileManager.setupDirectory();

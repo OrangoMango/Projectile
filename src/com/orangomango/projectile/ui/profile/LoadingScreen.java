@@ -102,9 +102,9 @@ public class LoadingScreen{
 					}
 					
 					for (int i = 0; i < guns.length; i++){
-						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/guns/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"+File.separator+guns[i]);
+						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/gun/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"gun"+File.separator+guns[i]);
 						updateProgress(files.length+i, files.length+guns.length);
-						updateMessage("guns/"+guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
+						updateMessage("gun/"+guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
 					}
 					
 					updateProgress(files.length, files.length+guns.length);
@@ -132,8 +132,9 @@ public class LoadingScreen{
 		ProgressBar bar = new ProgressBar();
 		bar.setMinWidth(360);
 		bar.progressProperty().bind(task.progressProperty());
-		pane.add(label, 0, 0);
-		pane.add(bar, 0, 1);
+		pane.add(new ImageView(new Image("https://github.com/OrangoMango/Projectile/raw/main/assets/image/loadingScreen")), 0, 0);
+		pane.add(label, 0, 1);
+		pane.add(bar, 0, 2);
 		
 		schedule(() -> new Thread(task).run(), 1000);
 		

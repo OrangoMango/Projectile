@@ -23,7 +23,7 @@ public class ProfileManager {
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"font"));
 		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"image"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"));
+		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"gun"));
 	}
 
 	public ProfileManager(){
