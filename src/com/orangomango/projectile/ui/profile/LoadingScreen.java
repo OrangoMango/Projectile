@@ -7,13 +7,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Label;
 import javafx.scene.control.Alert;
+import javafx.scene.image.*;
 import javafx.concurrent.Task;
 import javafx.scene.media.Media;
 import javafx.geometry.Insets;
 
 import java.util.*;
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.nio.file.*;
 import java.text.DecimalFormat;
 
@@ -56,16 +57,10 @@ public class LoadingScreen{
 		"uzi.gbs"
 	};
 	
-	private static void downloadFile(String link, String path) {
-		try (InputStream in = new URL(link).openStream()) {
-			Files.copy(in, Paths.get(path));
-		} catch (Exception ex) {
-			Alert alert = new Alert(Alert.AlertType.ERROR);
-			alert.setHeaderText("Connection error");
-			alert.setTitle("Connection error");
-			alert.setContentText("An error occured while downloading, ("+ex.getMessage()+").\nPlease try again later");
-			alert.showAndWait();
-		}
+	private static void downloadFile(String link, String path) throws IOException, MalformedURLException{
+		InputStream in = new URL(link).openStream();
+		Files.copy(in, Paths.get(path));
+		in.close();
 	}
 	
 	private static void deleteDirectory(File f){
@@ -132,13 +127,13 @@ public class LoadingScreen{
 		ProgressBar bar = new ProgressBar();
 		bar.setMinWidth(360);
 		bar.progressProperty().bind(task.progressProperty());
-		pane.add(new ImageView(new Image("https://github.com/OrangoMango/Projectile/raw/main/assets/image/loadingScreen")), 0, 0);
+		pane.add(new ImageView(new Image("https://github.com/OrangoMango/Projectile/raw/main/assets/image/loadingScreen.png")), 0, 0);
 		pane.add(label, 0, 1);
 		pane.add(bar, 0, 2);
 		
 		schedule(() -> new Thread(task).run(), 1000);
 		
-		stage.setScene(new Scene(pane, 400, 300));
+		stage.setScene(new Scene(pane, 420, 500));
 		stage.show();
 	}
 }

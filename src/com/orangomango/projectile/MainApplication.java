@@ -6,6 +6,7 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
+import javafx.scene.control.Alert;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.animation.*;
@@ -209,7 +210,7 @@ public class MainApplication extends Application {
 	public static void loadGuns(){
 		try {
 			for (String name : LoadingScreen.guns){
-				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(userHome+File.separator+".projectile"+File.separator+"assets"+File.separator+"guns"+File.separator+name)));
+				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(userHome+File.separator+".projectile"+File.separator+"assets"+File.separator+"gun"+File.separator+name)));
 				BulletConfig bc = (BulletConfig)ois.readObject();
 				bc.loadMedia();
 				availableGuns.add(bc);
@@ -646,32 +647,41 @@ public class MainApplication extends Application {
 	}
 	
 	public static void setupSounds(){
-		SCORE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score.wav");
-		SHOOT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/shoot.wav");
-		DAMAGE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/damage.wav");
-		EXPLOSION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/explosion.wav");
-		BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/background.mp3");
-		DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/death.wav");
-		EXTRA_LIFE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/extra_life.wav");
-		BOSS_DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_death.wav");
-		BOSS_BATTLE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_battle.wav");
-		BOSS_HP_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hp.wav");
-		BOSS_SUPER_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_super.wav");
-		BOSS_HIT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hit.wav");
-		MENU_BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/menu_background.wav");
-		CONFIRM_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/confirm.wav");
-		SELECT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/select.wav");
-		SHOW_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/show.wav");
-		NOTIFICATION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/notification.wav");
-		SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
-		AMMO_RELOAD_SOUND = new Media("file:///home/paul/Documents/ammo_reload.wav");
-		NO_AMMO_SOUND = new Media("file:///home/paul/Documents/no_ammo.wav");
-		GUN_SOUNDS[0] = new Media("file:///home/paul/Documents/machine_gun.wav");
-		GUN_SOUNDS[1] = new Media("file:///home/paul/Documents/fast_gun.wav");
-		GUN_SOUNDS[2] = new Media("file:///home/paul/Documents/sniper.wav");
-		GUN_SOUNDS[3] = new Media("file:///home/paul/Documents/triple_gun.mp3");
-		GUN_SOUNDS[4] = new Media("file:///home/paul/Documents/shotgun.wav");
-		DROP_SOUND = new Media("file:///home/paul/Documents/drop.wav");
+		try {
+			SCORE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score.wav");
+			SHOOT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/shoot.wav");
+			DAMAGE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/damage.wav");
+			EXPLOSION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/explosion.wav");
+			BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/background.mp3");
+			DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/death.wav");
+			EXTRA_LIFE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/extra_life.wav");
+			BOSS_DEATH_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_death.wav");
+			BOSS_BATTLE_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_battle.wav");
+			BOSS_HP_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hp.wav");
+			BOSS_SUPER_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_super.wav");
+			BOSS_HIT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hit.wav");
+			MENU_BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/menu_background.wav");
+			CONFIRM_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/confirm.wav");
+			SELECT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/select.wav");
+			SHOW_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/show.wav");
+			NOTIFICATION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/notification.wav");
+			SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
+			AMMO_RELOAD_SOUND = new Media("file:///home/paul/Documents/ammo_reload.wav");
+			NO_AMMO_SOUND = new Media("file:///home/paul/Documents/no_ammo.wav");
+			GUN_SOUNDS[0] = new Media("file:///home/paul/Documents/machine_gun.wav");
+			GUN_SOUNDS[1] = new Media("file:///home/paul/Documents/fast_gun.wav");
+			GUN_SOUNDS[2] = new Media("file:///home/paul/Documents/sniper.wav");
+			GUN_SOUNDS[3] = new Media("file:///home/paul/Documents/triple_gun.mp3");
+			GUN_SOUNDS[4] = new Media("file:///home/paul/Documents/shotgun.wav");
+			DROP_SOUND = new Media("file:///home/paul/Documents/drop.wav");
+		} catch (Exception e){
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Corrupted game directory");
+			alert.setHeaderText("Could not start program");
+			alert.setContentText("The directory .projectile in your home is corrupted, please delete it and try again");
+			alert.showAndWait();
+			System.exit(0);
+		}
 	}
 
 	private static void startSpawning(GraphicsContext gc, Player player){
