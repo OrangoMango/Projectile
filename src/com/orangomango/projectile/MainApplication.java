@@ -1076,6 +1076,11 @@ public class MainApplication extends Application {
 			// Show notification if notification.mustShow = true
 			notification.show();
 			
+			// Auto recharge ammo
+			if (reloading == null && player.ammo == 0){
+				reloadAmmo(player);
+			}
+			
 		}));
 		loop.setCycleCount(Animation.INDEFINITE);
 		loop.play();

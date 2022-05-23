@@ -224,11 +224,11 @@ public class HomeScreen extends Screen{
 		showButtons(cursor);
 		gc.setFill(Color.web("#4E78E9"));
 		gc.setFont(Font.loadFont(MAIN_FONT, 25));
-		gc.fillText(finalText, 50, 700);
+		gc.fillText(finalText, 50, 680);
 		if (cursor.fY == 2){
 			gc.setFill(Color.web("#B9C5E5"));
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
-			gc.fillText("Movement: WASD\nShoot: left-click\nShoot grenade (4.5sec): right-click\nPause/Resume: P\nRestore hp (25sec): Q", 150+DISTANCE-85, 300);
+			gc.fillText("Movement: WASD\nShoot: left-click\nShoot grenade (4.5sec): right-click\nPause/Resume: P\nRestore hp (25sec+): Q\nUse simple gun: E\nReload ammo: R\nFullscreen: F", 150+DISTANCE-85, 300);
 		}
 		if (this.message != null){
 			this.message.show();
@@ -240,7 +240,7 @@ public class HomeScreen extends Screen{
 		StringBuilder builder = new StringBuilder();
 		String[] keys = new String[]{"Difficulty: ", "Control method: "};
 		int counter = 0;
-		builder.append("--Your settings--\n");
+		builder.append("Version 1.1 by OrangoMango (Code and Images),\nAudio from freesound.org\n--Your settings--\n");
 		for (Selection selection : buttons){
 			if (selection.choosed){
 				String k = keys[counter++];

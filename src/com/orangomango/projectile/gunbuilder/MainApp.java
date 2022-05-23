@@ -405,7 +405,7 @@ public class MainApp extends Application{
         helpItem.setOnAction(ev -> {
             Dialog<ButtonType> dialog = new Dialog<>();
             WebView wv = new WebView();
-            wv.getEngine().load("https://github.com/OrangoMango/Projectile");
+            wv.getEngine().load("https://github.com/OrangoMango/Projectile/wiki/GunBuilder");
             dialog.getDialogPane().setContent(wv);
             dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
             dialog.showAndWait();
