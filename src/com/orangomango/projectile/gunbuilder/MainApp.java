@@ -60,6 +60,9 @@ public class MainApp extends Application{
                     } else if (dmg < 0){
                         dmg = 0;
                     }
+                    if (b.doExplosion){
+                        dmg = 20;
+                    }
                     texts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
                     if (!b.config.willGoPast()) bullets.remove(i--);
                 }
@@ -105,6 +108,7 @@ public class MainApp extends Application{
         
         stage.setOnCloseRequest(r -> {
             Bullet.w = Bullet.startW;
+            Player.w = Player.startW;
             Logger.info("Gunbuilder closed");
         });
         

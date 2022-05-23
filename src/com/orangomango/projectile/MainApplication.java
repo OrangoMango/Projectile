@@ -259,6 +259,8 @@ public class MainApplication extends Application {
 		reloading = null;
 		savedAmmo = 0;
 
+		loadGuns();
+
 		if (!currentStage.isFullScreen()){
 			currentStage.setFullScreenExitHint("Press F to exit fullscreen");
 		}
@@ -431,15 +433,7 @@ public class MainApplication extends Application {
 					config.ammoAmount = config.getStartAmmoAmount();
 					player.ammo = config.getAmmo();
 				case Q:
-					if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
-					rechargeStart = System.currentTimeMillis();
-					userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
-					if (player.hp+40 > player.getStartHP()){
-						player.hp = player.getStartHP();
-					} else {
-						player.hp += 40;
-					}
-					playSound(EXTRA_LIFE_SOUND, false, null, false);
+					rechargeLife(player);
 					break;
 				case P:
 					if (showingTutorialMessage) return;
@@ -559,6 +553,18 @@ public class MainApplication extends Application {
 		return canvas;
 	}
 	
+	private static void rechargeLife(Player player){
+		if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
+			rechargeStart = System.currentTimeMillis();
+			userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
+			if (player.hp+40 > player.getStartHP()){
+				player.hp = player.getStartHP();
+			} else {
+				player.hp += 40;
+			}
+			playSound(EXTRA_LIFE_SOUND, false, null, false);
+	}
+	
 	private static void reloadAmmo(Player player){
 		if (player.ammo == config.getAmmo() || paused || showingTutorialMessage || config.ammoAmount == 0) return;
 		if (reloading != null){
@@ -635,7 +641,6 @@ public class MainApplication extends Application {
 			LoadingScreen ls = new LoadingScreen(stage);
 		} else {
 			setupSounds();
-			loadGuns();
 			startPage.run();
 			stage.show();
 			Logger.info("Application started");
@@ -1068,6 +1073,7 @@ public class MainApplication extends Application {
 				notification.setText("HP is low!");
 				notification.mustShow = true;
 				playSound(NOTIFICATION_SOUND, false, 1.0, false);
+				rechargeLife(player);
 			}
 			if (player.hp >= 70){
 				hpCheck = false;

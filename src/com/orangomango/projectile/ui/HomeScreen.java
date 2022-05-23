@@ -132,6 +132,10 @@ public class HomeScreen extends Screen{
 								Platform.runLater(recordsPage);
 							} else if (selection.getText().equals("BUILDER")){
 								new MainApp().start(new Stage());
+							} else if (selection.getText().equals("CONFIG SERVER")){
+								new ServerConfig().start(new Stage());
+							} else if (selection.getText().equals("JOIN GAME")){
+								System.out.println("Join game");
 							} else {
 								selection.choosed = true;
 							}
@@ -149,6 +153,7 @@ public class HomeScreen extends Screen{
 		Selection difficultyButton = new Selection(gc, "DIFFICULTY", 120, 400, 0, 1, null, null);
 		Selection helpButton = new Selection(gc, "HELP", 120, 500, 0, 2, null, null);
 		Selection controlsButton = new Selection(gc, "CONTROLS", 120, 600, 0, 3, null, null);
+		Selection multiplayerButton = new Selection(gc, "MULTIPLAYER", 120, 700, 0, 4, null, null); 
 		
 		// Play
 		Selection tutorialButton = null;
@@ -173,11 +178,16 @@ public class HomeScreen extends Screen{
 		shortPress.choosed = this.pm.getJSON().getInt("input") == 0;
 		Selection longPress = new Selection(gc, "LONG PRESS", 120+DISTANCE, 400, 1, 1, 0, 3);
 		longPress.choosed = this.pm.getJSON().getInt("input") == 1;
+		
+		// Multiplayer
+		Selection configServer = new Selection(gc, "CONFIG SERVER", 120+DISTANCE, 300, 1, 0, 0, 4);
+		Selection connect = new Selection(gc, "JOIN GAME", 120+DISTANCE, 400, 1, 1, 0, 4);
 
 		buttons.add(playButton);
 		buttons.add(difficultyButton);
 		buttons.add(helpButton);
 		buttons.add(controlsButton);
+		buttons.add(multiplayerButton);
 		if (!this.pm.getJSON().getBoolean("tutorialComplete")){
 			buttons.add(tutorialButton);
 		}
@@ -190,9 +200,12 @@ public class HomeScreen extends Screen{
 		buttons.add(extreme);
 		buttons.add(shortPress);
 		buttons.add(longPress);
+		buttons.add(configServer);
+		buttons.add(connect);
 		
 		updateFinalText();
 		update(gc, cursor);
+		schedule(() -> update(gc, cursor), 200);
 		
 		return new TilePane(canvas);
 	}
@@ -214,7 +227,8 @@ public class HomeScreen extends Screen{
 		gc.save();
 		gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
 		
-		gc.drawImage(LOGO_IMG, 90, 30, 768, 200);
+		gc.drawImage(LOGO_IMG, 90, 10, 650, 169);
+		gc.translate(0, -70);
 		
 		cursor.show();
 		updateFinalText();
@@ -223,8 +237,8 @@ public class HomeScreen extends Screen{
 		}
 		showButtons(cursor);
 		gc.setFill(Color.web("#4E78E9"));
-		gc.setFont(Font.loadFont(MAIN_FONT, 25));
-		gc.fillText(finalText, 50, 680);
+		gc.setFont(Font.loadFont(MAIN_FONT, 20));
+		gc.fillText(finalText, 50, 750);
 		if (cursor.fY == 2){
 			gc.setFill(Color.web("#B9C5E5"));
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));

@@ -6,7 +6,8 @@ import javafx.scene.paint.Color;
 public class Player{
 	private GraphicsContext gc;
 	private double x = 100, y = 400;
-	public static double w = 30;
+	public static final double startW = 30;
+	public static double w = startW;
 	
 	public Player(GraphicsContext gc){
 		this.gc = gc;
