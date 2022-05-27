@@ -83,6 +83,7 @@ public class MainApplication extends Application {
 	private static ArrayList<BulletConfig> availableGuns = new ArrayList<>();
 	private static int savedAmmo;
 	private static boolean showingPause;
+	private static Player player;
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -305,7 +306,7 @@ public class MainApplication extends Application {
 		notification = new Notification(gc);
 		
 		ProfileManager pm = new ProfileManager();
-		Player player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
+		player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
 		
 		if (!playWithTutorial){
 			gc.save();
@@ -320,7 +321,7 @@ public class MainApplication extends Application {
 			gc.restore();
 		} else {
 			gameStarted = true;
-			update(gc, player);
+			update(gc);
 			playSound(BACKGROUND_SOUND, true, 1.0, false);
 			gameStart = System.currentTimeMillis();
 			displayTutorialMessageAfter(messages[dimIndex], 1200, () -> true, gc, player);
@@ -354,7 +355,7 @@ public class MainApplication extends Application {
 		config = availableGuns.get(gunByName("normal_gun"));
 
 		canvas.setOnKeyPressed(e -> {
-			
+			sendState();
 			switch (e.getCode()){
 				case ENTER:
 					if (messageSkipped) return;
@@ -453,8 +454,8 @@ public class MainApplication extends Application {
 				case SPACE:
 					if (paused) return;
 					if (!gameStarted){
-						startSpawning(gc, player);
-						update(gc, player);
+						startSpawning(gc);
+						update(gc);
 						gameStarted = true;
 						playSound(BACKGROUND_SOUND, true, 1.0, false);
 						gameStart = System.currentTimeMillis();
@@ -467,7 +468,7 @@ public class MainApplication extends Application {
 					config.ammoAmount = config.getStartAmmoAmount();
 					player.ammo = config.getAmmo();
 				case Q:
-					rechargeHP(player);
+					rechargeHP();
 					break;
 				case P:
 					if (showingTutorialMessage) return;
@@ -527,7 +528,7 @@ public class MainApplication extends Application {
 					}
 					break;
 				case R:
-					reloadAmmo(player);
+					reloadAmmo();
 					break;
 				case F:
 					currentStage.setFullScreen(!currentStage.isFullScreen());
@@ -556,7 +557,7 @@ public class MainApplication extends Application {
 						case PRIMARY:
 							if (player.ammo == 0){
 								playSound(NO_AMMO_SOUND, false, null, true);
-								reloadAmmo(player);
+								reloadAmmo();
 								return;
 							}
 							bulletCount++;
@@ -587,7 +588,7 @@ public class MainApplication extends Application {
 		return canvas;
 	}
 	
-	private static void rechargeHP(Player player){
+	private static void rechargeHP(){
 		if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
 			rechargeStart = System.currentTimeMillis();
 			userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
@@ -599,7 +600,7 @@ public class MainApplication extends Application {
 			playSound(EXTRA_LIFE_SOUND, false, null, false);
 	}
 	
-	private static void reloadAmmo(Player player){
+	private static void reloadAmmo(){
 		if (player.ammo == config.getAmmo() || paused || showingTutorialMessage || config.ammoAmount == 0) return;
 		if (reloading != null){
 			reloading.stop();
@@ -719,7 +720,7 @@ public class MainApplication extends Application {
 		}
 	}
 
-	private static void startSpawning(GraphicsContext gc, Player player){
+	private static void startSpawning(GraphicsContext gc){
 
 		// SPAWNING PAUSED FOR DEBUGGING
 		if (true) return;
@@ -833,9 +834,16 @@ public class MainApplication extends Application {
 		client.send(gameState);
 	}
 	
-	private static void loadState(GraphicsContext gc, Player player){
+	private static void loadState(GraphicsContext gc){
 		gameState = (GameState)client.listen();
 		entities = gameState.entities;
+		// Temp
+		for (int i = 0; i < entities.size(); i++){
+			Entity e = entities.get(i);
+			if (e instanceof Player){
+				player = (Player)e;
+			}
+		}
 		System.out.println(">> "+entities.size());
 		explosions = gameState.explosions;
 		floatingTexts = gameState.texts;
@@ -846,14 +854,14 @@ public class MainApplication extends Application {
 		pointer2 = new Pointer(gc, player, point2);
 	}
 
-	private static void update(GraphicsContext gc, Player player){
+	private static void update(GraphicsContext gc){
 		userGamedata.clear();
 		Random random = new Random();
 		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {
 			// Load data from gameState and send current state
 			if (client != null){
-				sendState();
-				loadState(gc, player);
+				//sendState();
+				loadState(gc);
 			}
 
 			System.out.println("Entities: "+entities);
@@ -1151,7 +1159,7 @@ public class MainApplication extends Application {
 				notification.setText("HP is low!");
 				notification.mustShow = true;
 				playSound(NOTIFICATION_SOUND, false, 1.0, false);
-				rechargeHP(player);
+				rechargeHP();
 			}
 			if (player.hp >= 70){
 				hpCheck = false;
@@ -1162,7 +1170,7 @@ public class MainApplication extends Application {
 			
 			// Auto recharge ammo
 			if (reloading == null && player.ammo == 0){
-				reloadAmmo(player);
+				reloadAmmo();
 			}
 			
 		}));
