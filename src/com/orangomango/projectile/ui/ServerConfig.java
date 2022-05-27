@@ -15,6 +15,7 @@ import com.orangomango.projectile.ui.profile.Logger;
 
 public class ServerConfig extends Application{
 	private static Server server;
+	private Stage stage;
 	
 	private void updateDisabled(Node... nodes){
 		boolean cond = Server.server == null || (Server.server != null && Server.server.isClosed());
@@ -65,6 +66,7 @@ public class ServerConfig extends Application{
 				ServerConfig.server = new Server("127.0.0.1", 1234, 2, 0); // To be changed
 				serverState.setText("Server: STARTED");
 				updateDisabled(host, port, maxPlayers, op1, op2, op3, hostL, portL, maxPlayersL, gameModeL);
+				stage.close();
 			}
 		});
 		Button stop = new Button("Stop server");
@@ -102,6 +104,7 @@ public class ServerConfig extends Application{
 	}
 	
 	public void start(Stage stage){
+		this.stage = stage;
 		stage.setTitle("Projectile server config");
 		stage.setResizable(false);
 		stage.initModality(Modality.APPLICATION_MODAL);

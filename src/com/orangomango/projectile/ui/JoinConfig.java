@@ -38,7 +38,7 @@ public class JoinConfig extends Application{
 		user.setPromptText("Guest");
 		Button join = new Button("Join game");
 		join.setOnAction(ev -> {
-			Client client = new Client("127.0.0.1", 1234, "Guest");
+			Client client = new Client("127.0.0.1", 1234, "Guest"+(new java.util.Random()).nextInt(20));
 			MainApplication.client = client;
 			if (this.onDone != null){
 				this.stage.close();

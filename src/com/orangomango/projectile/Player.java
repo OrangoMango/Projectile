@@ -21,6 +21,7 @@ public class Player extends Entity{
 	public static ArrayList<Bullet> bullets = new ArrayList<>();
 	public int ammo = 10;
 	private int startHP, startShield;
+	public String user;
 	
 	public Player(GraphicsContext gc, double x, double y, String color, String damageColor, ProfileManager pm){
 		super(gc, x, y, color, damageColor);

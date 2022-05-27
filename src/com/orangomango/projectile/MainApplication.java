@@ -44,7 +44,7 @@ public class MainApplication extends Application {
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
 	public static int SCREEN_WIDTH =  1000; // those values are used also in other files
 	public static int SCREEN_HEIGHT = 800;
-	public static final int FPS = 40;
+	public static final int FPS = 5;
 	public static Runnable startPage;
 	public static Runnable gameoverPage;
 	public static Runnable recordsPage;
@@ -95,6 +95,7 @@ public class MainApplication extends Application {
 	
 	public static Client client;
 	private static GameState gameState;
+	public static boolean host;
 	
 	public static final String MAIN_FONT;
 	
@@ -268,6 +269,7 @@ public class MainApplication extends Application {
 		ammoDrawing = 0;
 		reloading = null;
 		savedAmmo = 0;
+		host = false;
 
 		loadGuns();
 		
@@ -306,7 +308,9 @@ public class MainApplication extends Application {
 		notification = new Notification(gc);
 		
 		ProfileManager pm = new ProfileManager();
-		player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
+		Player tPlayer = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
+		tPlayer.user = client.getUsername();
+		player = tPlayer;
 		
 		if (!playWithTutorial){
 			gc.save();
@@ -343,19 +347,32 @@ public class MainApplication extends Application {
 			System.out.println("HERE");
 			GameState gs = new GameState();
 			gs.sendMessage("list", client);
-			Integer num = (Integer)client.listen();
+			Integer num;
+			while (true){
+				try {
+					num = (Integer)client.listen();
+					break;
+				} catch (ClassCastException cce){
+				}
+			}
 			System.out.println("NUM: "+num);
 			if (num == 1){
+				host = true;
 				GameState ugs = new GameState(entities, explosions, floatingTexts, drops, point, point2);
 				//ugs.sendMessage("set", client);
 				gameState = ugs;
+			} else {
+				loadState(gc);
+				entities.add(tPlayer);
+				sendState();
+				pointer1 = new Pointer(gc, player, point);
+				pointer2 = new Pointer(gc, player, point2);
 			}
 		}
 		
 		config = availableGuns.get(gunByName("normal_gun"));
 
 		canvas.setOnKeyPressed(e -> {
-			sendState();
 			switch (e.getCode()){
 				case ENTER:
 					if (messageSkipped) return;
@@ -841,7 +858,9 @@ public class MainApplication extends Application {
 		for (int i = 0; i < entities.size(); i++){
 			Entity e = entities.get(i);
 			if (e instanceof Player){
-				player = (Player)e;
+				if (((Player)e).user.equals(client.getUsername())){
+					player = (Player)e;
+				}
 			}
 		}
 		System.out.println(">> "+entities.size());
@@ -853,15 +872,41 @@ public class MainApplication extends Application {
 		pointer1 = new Pointer(gc, player, point);
 		pointer2 = new Pointer(gc, player, point2);
 	}
+	
+	private static void updateStates(GraphicsContext gc){
+		new Thread(() -> {
+			while (true){
+				try {
+					System.out.println("-> broadcasting");
+					sendState();
+					Thread.sleep(5000);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
+				}
+			}
+		}).start();
+		new Thread(() -> {
+			while (true){
+				try {
+					System.out.println("-> getting");
+					loadState(gc);
+					Thread.sleep(3000);
+				} catch (InterruptedException ex){
+					ex.printStackTrace();
+				}
+			}
+		}).start();
+	}
 
 	private static void update(GraphicsContext gc){
 		userGamedata.clear();
 		Random random = new Random();
+		updateStates(gc);
 		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {
 			// Load data from gameState and send current state
 			if (client != null){
 				//sendState();
-				loadState(gc);
+				//System.out.println("\n\n");
 			}
 
 			System.out.println("Entities: "+entities);
@@ -873,6 +918,8 @@ public class MainApplication extends Application {
 			gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 			gc.setFill(Color.BLACK);
 			gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			
+			System.out.println("==== MAIN START ====");
 			
 			Iterator<Drop> dropIterator = drops.iterator();
 			while (dropIterator.hasNext()){
