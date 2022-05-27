@@ -4,7 +4,9 @@ import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class FloatingText{
+import java.io.Serializable;
+
+public class FloatingText implements Serializable{
 	private double x, y;
 	private String text;
 	private int movements;

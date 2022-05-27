@@ -26,6 +26,8 @@ public class RecordsScreen extends Screen{
 		gc.setFill(Color.web("#676C69"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
+		gc.scale(SCREEN_WIDTH/1000.0, SCREEN_HEIGHT/800.0);
+		
 		ProfileManager pm = new ProfileManager();
 		gc.setStroke(Color.web("#ABCBB8"));
 		gc.setLineWidth(5);
@@ -111,7 +113,7 @@ public class RecordsScreen extends Screen{
 		gc.fillText(Integer.toString(pm.getJSON().getJSONObject("stats").getInt("bonusMissed")), 645, 650);
 		
 		gc.setFill(Color.web("#FDE4C8"));
-		gc.fillText("Press SPACE to go back", 50, SCREEN_HEIGHT-40);
+		gc.fillText("Press SPACE to go back", 50, 760);
 
 		layout.getChildren().add(canvas);
 		return layout;

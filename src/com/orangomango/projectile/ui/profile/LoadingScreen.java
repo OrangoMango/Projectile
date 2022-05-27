@@ -22,6 +22,7 @@ import static com.orangomango.projectile.MainApplication.*;
 
 public class LoadingScreen{
 	private static final String[] files = new String[]{
+		"audio/ammo_reload.wav",
 		"audio/background.wav",
 		"audio/boss_battle.wav",
 		"audio/boss_death.wav",
@@ -64,6 +65,7 @@ public class LoadingScreen{
 		"sniper_common.gbs",
 		"sniper_epic.gbs",
 		"space_gun.gbs",
+		"super_shotgun.gbs",
 		"super_sniper.gbs",
 		"uzi.gbs"
 	};

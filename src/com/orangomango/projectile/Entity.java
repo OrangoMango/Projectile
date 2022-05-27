@@ -4,13 +4,14 @@ import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
 import java.util.*;
+import java.io.Serializable;
 
-public class Entity{
-	protected GraphicsContext gc;
+public class Entity implements Serializable{
+	protected transient GraphicsContext gc;
 	protected double x, y, w=35;
 	protected String color;
 	protected double speed = 3;
-	protected int hp = 100;
+	protected int hp = 10000;
 	protected int shield = 0;
 	private String normalColor, damageColor;
 	
@@ -21,6 +22,10 @@ public class Entity{
 		this.color = color;
 		this.normalColor = this.color;
 		this.damageColor = damageColor;
+	}
+	
+	public void setGC(GraphicsContext gc){
+		this.gc = gc;
 	}
 	
 	public void takeDamage(int damage){

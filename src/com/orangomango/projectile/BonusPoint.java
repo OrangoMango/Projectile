@@ -4,11 +4,13 @@ import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
 import java.util.*;
+import java.io.Serializable;
 
 import static com.orangomango.projectile.MainApplication.*;
+import com.orangomango.projectile.ui.profile.Logger;
 
-public class BonusPoint{
-	private GraphicsContext gc;
+public class BonusPoint implements Serializable{
+	private transient GraphicsContext gc;
 	private double x, y;
 	private long startTime;
 	private boolean timeCheck;
@@ -16,6 +18,7 @@ public class BonusPoint{
 	private static int TIME_TO_TAKE = 35000;
 	private static double WIDTH = 20;
 	public boolean show = true;
+	private boolean important;
 	
 	public BonusPoint(GraphicsContext gc, double x, double y, boolean tutorial){
 		this.gc = gc;
@@ -26,10 +29,15 @@ public class BonusPoint{
 		TIME_TO_TAKE = currentDiff[14];
 	}
 	
+	public void setGC(GraphicsContext gc){
+		this.gc = gc;
+	}
+	
 	public void setRandomPosition(Random random){
 		setX(random.nextInt(SCREEN_WIDTH-20)+10);
 		setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
 		timeCheck = false;
+		Logger.info("BonusPoint pos: "+getX()+" "+getY());
 	}
 	
 	public void addToStartTime(long value){
@@ -38,6 +46,7 @@ public class BonusPoint{
 	
 	public void startTimer(){
 		this.startTime = System.currentTimeMillis();
+		this.important = false;
 	}
 	
 	private void setX(double value){
@@ -46,6 +55,18 @@ public class BonusPoint{
 	
 	private void setY(double value){
 		this.y = value;
+	}
+	
+	public double getX(){
+		return this.x;
+	}
+	
+	public double getY(){
+		return this.y;
+	}
+	
+	public boolean isImportant(){
+		return this.important;
 	}
 	
 	public void draw(){
@@ -65,6 +86,7 @@ public class BonusPoint{
 				timeCheck = true;
 				MainApplication.notification.setText("Yellow points!");
 				MainApplication.notification.mustShow = true;
+				this.important = true;
 			}
 			if (difference >= TIME_TO_TAKE){
 				setRandomPosition(new Random());

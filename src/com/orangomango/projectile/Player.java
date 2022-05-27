@@ -83,10 +83,18 @@ public class Player extends Entity{
 			MainApplication.playSound(DEATH_SOUND, false, null, false);
 			MainApplication.loop.stop();
 			MainApplication.entities.clear();
+			MainApplication.client.close();
+			MainApplication.client = null;
 			MainApplication.threadRunning = false;
 			MainApplication.stopAllSounds();
 			MainApplication.schedule(() -> Platform.runLater(MainApplication.gameoverPage), 1500);
 		}
+	}
+	
+	@Override
+	public String toString(){
+		String top = super.toString();
+		return top+" "+getX()+" "+getY();
 	}
 	
 	@Override

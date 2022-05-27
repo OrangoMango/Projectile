@@ -85,7 +85,8 @@ public class GameoverScreen extends Screen{
 		gc.setFill(Color.web("#929292"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.save();
-		gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
+		//gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
+		gc.scale(SCREEN_WIDTH/1000.0, SCREEN_HEIGHT/800.0);
 		gc.setFill(Color.RED);
 		gc.setFont(Font.loadFont(MAIN_FONT, 75));
 		gc.fillText("GAME OVER ("+difficulty+")", 50, 120);

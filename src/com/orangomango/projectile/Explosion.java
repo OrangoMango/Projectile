@@ -4,7 +4,7 @@ import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
 public class Explosion{
-	private GraphicsContext gc;
+	private transient GraphicsContext gc;
 	private double x, y;
 	public double radius = 20;
 	public int damage = 10;
@@ -13,6 +13,10 @@ public class Explosion{
 		this.gc = gc;
 		this.x = x;
 		this.y = y;
+	}
+	
+	public void setGC(GraphicsContext gc){
+		this.gc = gc;
 	}
 	
 	public void explode(){

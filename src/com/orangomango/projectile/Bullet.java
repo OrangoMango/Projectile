@@ -3,10 +3,11 @@ package com.orangomango.projectile;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
+import java.io.Serializable;
 import java.util.function.Predicate;
 
-public class Bullet{
-	private GraphicsContext gc;
+public class Bullet implements Serializable{
+	private transient GraphicsContext gc;
 	private double angle; // In radians
 	private double speed = 10;
 	private double x, y;
@@ -26,6 +27,10 @@ public class Bullet{
 		this.y = y;
 		this.config = config;
 		configure();
+	}
+	
+	public void setGC(GraphicsContext gc){
+		this.gc = gc;
 	}
 	
 	private void configure(){

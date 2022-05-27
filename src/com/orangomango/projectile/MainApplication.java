@@ -3,6 +3,7 @@ package com.orangomango.projectile;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import javafx.stage.Screen;
 import javafx.scene.Scene;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
@@ -14,6 +15,7 @@ import javafx.scene.media.*;
 import javafx.util.Duration;
 import javafx.event.EventHandler;
 import javafx.scene.input.*;
+import javafx.geometry.Rectangle2D;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -21,6 +23,7 @@ import java.io.*;
 
 import com.orangomango.projectile.ui.*;
 import com.orangomango.projectile.ui.profile.*;
+import com.orangomango.projectile.multiplayer.*;
 
 /**
  * MainApplication for the game. This class contains the main method
@@ -61,6 +64,8 @@ public class MainApplication extends Application {
 	private static volatile boolean paused;
 	public static BonusPoint point;
 	public static BonusPoint point2;
+	private static Pointer pointer1;
+	private static Pointer pointer2;
 	public static int bossCount;
 	public static int bulletCount;
 	public static int enemyDamageCount;
@@ -86,6 +91,9 @@ public class MainApplication extends Application {
 	private static String[] bossMessages = new String[]{"player;What shall I do now?!?", "boss;Hahaha you will not beat me!", "player;I must kill you, but you have\nsuper powers :(", "boss;I can spawn deadly lines and if my\nhp is over 50% I can recover it", "player;Anything else?", "boss;Don't worry I will not follow you,\nI'm too good", "player;haha let's see..", "player;Maybe I should use grenades to do\nmore damage.. And recharge my hp", "boss;I will kill you haha"};
 	private static boolean bossDialog;
 	private static volatile int dimIndex;
+	
+	public static Client client;
+	private static GameState gameState;
 	
 	public static final String MAIN_FONT;
 	
@@ -154,7 +162,7 @@ public class MainApplication extends Application {
 	public static void main(String[] args){
 		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
 		ProfileManager.setupDirectory();
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> Logger.info("Application closed")));
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> Logger.info("Application (and server) closed")));
 		try {
 			launch(args);
 		} catch (Exception ex){
@@ -250,6 +258,7 @@ public class MainApplication extends Application {
 		doneAlpha = false;
 		explosions.clear();
 		floatingTexts.clear();
+		availableGuns.clear();
 		drops.clear();
 		bulletCount = 0;
 		enemyDamageCount = 0;
@@ -260,6 +269,11 @@ public class MainApplication extends Application {
 		savedAmmo = 0;
 
 		loadGuns();
+		
+		// Setup SCREEN_WIDTH and SCREEN_HEIGHT based on the device resolution
+		Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+		if (bounds.getWidth() < SCREEN_WIDTH) SCREEN_WIDTH = (int)Math.round(bounds.getWidth());
+		if (bounds.getHeight() < SCREEN_HEIGHT) SCREEN_HEIGHT = (int)Math.round(bounds.getHeight());
 
 		if (!currentStage.isFullScreen()){
 			currentStage.setFullScreenExitHint("Press F to exit fullscreen");
@@ -294,6 +308,8 @@ public class MainApplication extends Application {
 		Player player = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
 		
 		if (!playWithTutorial){
+			gc.save();
+			gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
 			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
@@ -301,6 +317,7 @@ public class MainApplication extends Application {
 				gc.setFill(Color.RED);
 				gc.fillText("Warning: your difficulty is "+difficulty+". Enemies and boss\nare stronger and deal more damage", 70, 550);
 			}
+			gc.restore();
 		} else {
 			gameStarted = true;
 			update(gc, player);
@@ -315,12 +332,29 @@ public class MainApplication extends Application {
 		point.show = !playWithTutorial;
 		point2 = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20, playWithTutorial);
 		point2.show = !playWithTutorial;
+
+		pointer1 = new Pointer(gc, player, point);
+		pointer2 = new Pointer(gc, player, point2);
 		
 		entities.add(player);
+		
+		if (client != null){
+			System.out.println("HERE");
+			GameState gs = new GameState();
+			gs.sendMessage("list", client);
+			Integer num = (Integer)client.listen();
+			System.out.println("NUM: "+num);
+			if (num == 1){
+				GameState ugs = new GameState(entities, explosions, floatingTexts, drops, point, point2);
+				//ugs.sendMessage("set", client);
+				gameState = ugs;
+			}
+		}
 		
 		config = availableGuns.get(gunByName("normal_gun"));
 
 		canvas.setOnKeyPressed(e -> {
+			
 			switch (e.getCode()){
 				case ENTER:
 					if (messageSkipped) return;
@@ -433,7 +467,7 @@ public class MainApplication extends Application {
 					config.ammoAmount = config.getStartAmmoAmount();
 					player.ammo = config.getAmmo();
 				case Q:
-					rechargeLife(player);
+					rechargeHP(player);
 					break;
 				case P:
 					if (showingTutorialMessage) return;
@@ -522,7 +556,7 @@ public class MainApplication extends Application {
 						case PRIMARY:
 							if (player.ammo == 0){
 								playSound(NO_AMMO_SOUND, false, null, true);
-								if (reloading == null) reloadAmmo(player);
+								reloadAmmo(player);
 								return;
 							}
 							bulletCount++;
@@ -553,7 +587,7 @@ public class MainApplication extends Application {
 		return canvas;
 	}
 	
-	private static void rechargeLife(Player player){
+	private static void rechargeHP(Player player){
 		if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
 			rechargeStart = System.currentTimeMillis();
 			userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
@@ -583,7 +617,6 @@ public class MainApplication extends Application {
 		config.ammoAmount--;
 		reloading = new Timeline(new KeyFrame(Duration.millis(config.getRechargeFrames()[0]), evt -> {
 			ammoDrawing += 1.0/config.getRechargeFrames()[1];
-			//System.out.println(">><<");
 		}));
 		reloading.setOnFinished(evt -> {
 			player.ammo = config.getAmmo();
@@ -667,15 +700,15 @@ public class MainApplication extends Application {
 			SHOW_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/show.wav");
 			NOTIFICATION_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/notification.wav");
 			SCORE_LOST_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/score_lost.wav");
-			AMMO_RELOAD_SOUND = new Media("file:///home/paul/Documents/ammo_reload.wav");
-			NO_AMMO_SOUND = new Media("file:///home/paul/Documents/no_ammo.wav");
-			GUN_SOUNDS[0] = new Media("file:///home/paul/Documents/machine_gun.wav");
-			GUN_SOUNDS[1] = new Media("file:///home/paul/Documents/fast_gun.wav");
-			GUN_SOUNDS[2] = new Media("file:///home/paul/Documents/sniper.wav");
-			GUN_SOUNDS[3] = new Media("file:///home/paul/Documents/triple_gun.mp3");
-			GUN_SOUNDS[4] = new Media("file:///home/paul/Documents/shotgun.wav");
-			GUN_SOUNDS[5] = new Media("file:///home/paul/Documents/space_gun.wav");
-			DROP_SOUND = new Media("file:///home/paul/Documents/drop.wav");
+			AMMO_RELOAD_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/ammo_reload.wav");
+			NO_AMMO_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/no_ammo.wav");
+			GUN_SOUNDS[0] = new Media("file://"+userHome+"/.projectile/assets/audio/machine_gun.wav");
+			GUN_SOUNDS[1] = new Media("file://"+userHome+"/.projectile/assets/audio/fast_gun.wav");
+			GUN_SOUNDS[2] = new Media("file://"+userHome+"/.projectile/assets/audio/sniper.wav");
+			GUN_SOUNDS[3] = new Media("file://"+userHome+"/.projectile/assets/audio/triple_gun.mp3");
+			GUN_SOUNDS[4] = new Media("file://"+userHome+"/.projectile/assets/audio/shotgun.wav");
+			GUN_SOUNDS[5] = new Media("file://"+userHome+"/.projectile/assets/audio/space_gun.wav");
+			DROP_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/drop.wav");
 		} catch (Exception e){
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Corrupted game directory");
@@ -689,7 +722,7 @@ public class MainApplication extends Application {
 	private static void startSpawning(GraphicsContext gc, Player player){
 
 		// SPAWNING PAUSED FOR DEBUGGING
-		//if (true) return;
+		if (true) return;
 		
 		Random random = new Random();
 		final int MIN = currentDiff[10];
@@ -790,10 +823,41 @@ public class MainApplication extends Application {
 		}).start();
 	}
 	
+	private static void sendState(){
+		gameState.entities = entities;
+		System.out.println("-- Sending entities: "+gameState.entities);
+		gameState.texts = floatingTexts;
+		gameState.drops = drops;
+		gameState.point1 = point;
+		gameState.point2 = point2;
+		client.send(gameState);
+	}
+	
+	private static void loadState(GraphicsContext gc, Player player){
+		gameState = (GameState)client.listen();
+		entities = gameState.entities;
+		System.out.println(">> "+entities.size());
+		explosions = gameState.explosions;
+		floatingTexts = gameState.texts;
+		drops = gameState.drops;
+		point = gameState.point1;
+		point2 = gameState.point2;
+		pointer1 = new Pointer(gc, player, point);
+		pointer2 = new Pointer(gc, player, point2);
+	}
+
 	private static void update(GraphicsContext gc, Player player){
 		userGamedata.clear();
 		Random random = new Random();
 		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {
+			// Load data from gameState and send current state
+			if (client != null){
+				sendState();
+				loadState(gc, player);
+			}
+
+			System.out.println("Entities: "+entities);
+			
 			long now = System.currentTimeMillis();
 			long cooldown = now-explosionStart < 4500 ? now-explosionStart : 4500;
 			long cooldown2 = now-rechargeStart < currentDiff[15] ? now-rechargeStart : currentDiff[15];
@@ -835,13 +899,18 @@ public class MainApplication extends Application {
 					floatingTexts.add(ftext);
 				}
 			}
+			//System.out.println(entities.size());
 			for (int i = 0; i < entities.size(); i++){
+				if (client != null) entities.get(i).setGC(gc);
 				entities.get(i).draw();
 			}
 			Iterator<Explosion> explosionIterator = explosions.iterator();
 			while (explosionIterator.hasNext()){
 				try {
 					Explosion exp = explosionIterator.next();
+					if (client != null){
+						exp.setGC(gc);
+					}
 					exp.explode();
 					if (exp.radius >= 150){
 						explosionIterator.remove();
@@ -866,6 +935,10 @@ public class MainApplication extends Application {
 					Logger.error("-- error (2.2)");
 				}
 			}
+			if (client != null){
+				point.setGC(gc);
+				point2.setGC(gc);
+			}
 			if (point.isOnPlayer(player)){
 				point.setRandomPosition(random);
 				point.startTimer();
@@ -882,10 +955,15 @@ public class MainApplication extends Application {
 				playSound(SCORE_SOUND, false, null, false);
 			}
 			point2.draw();
+			pointer1.draw();
+			pointer2.draw();
 			Iterator<Bullet> iterator = Player.bullets.iterator();
 			while (iterator.hasNext()){
 				boolean removed = false;
 				Bullet b = iterator.next();
+				if (client != null){
+					b.setGC(gc);
+				}
 				if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
 					iterator.remove();
 					removed = true;
@@ -1073,7 +1151,7 @@ public class MainApplication extends Application {
 				notification.setText("HP is low!");
 				notification.mustShow = true;
 				playSound(NOTIFICATION_SOUND, false, 1.0, false);
-				rechargeLife(player);
+				rechargeHP(player);
 			}
 			if (player.hp >= 70){
 				hpCheck = false;
@@ -1109,7 +1187,7 @@ public class MainApplication extends Application {
 		}
 		ac.play();
 		audioAllowed = false;
-		MainApplication.schedule(() -> audioAllowed = true, 200);
+		MainApplication.schedule(() -> audioAllowed = true, 150);
 	}
 	
 	public static void stopAllSounds(){

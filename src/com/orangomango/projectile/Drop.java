@@ -3,7 +3,9 @@ package com.orangomango.projectile;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
-public class Drop{
+import java.io.Serializable;
+
+public class Drop implements Serializable{
 	private double x, y;
 	private String color;
 	private BulletConfig.Rarity rarity;

@@ -130,12 +130,19 @@ public class HomeScreen extends Screen{
 								return;
 							} else if (selection.getText().equals("RECORDS")){
 								Platform.runLater(recordsPage);
-							} else if (selection.getText().equals("BUILDER")){
+							} else if (selection.getText().equals("GUN BUILDER")){
 								new MainApp().start(new Stage());
 							} else if (selection.getText().equals("CONFIG SERVER")){
 								new ServerConfig().start(new Stage());
 							} else if (selection.getText().equals("JOIN GAME")){
-								System.out.println("Join game");
+								JoinConfig jc = new JoinConfig();
+								jc.setOnDone(() -> {
+									stopAllSounds();
+									difficulty = this.diff.toLowerCase();
+									// ... Indicate to MainApplication that the data should be sent via a server
+									this.startEvent.run();
+								});
+								jc.start(new Stage());
 							} else {
 								selection.choosed = true;
 							}
@@ -162,7 +169,7 @@ public class HomeScreen extends Screen{
 		}
 		Selection startButton = new Selection(gc, "START", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 300 : 400, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 0 : 1, 0, 0);
 		Selection recordsButton = new Selection(gc, "RECORDS", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 400 : 500, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 1 : 2, 0, 0);
-		Selection gunBuilderButton = new Selection(gc, "BUILDER", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 500 : 600, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 2 : 3, 0, 0);
+		Selection gunBuilderButton = new Selection(gc, "GUN BUILDER", 120+DISTANCE, this.pm.getJSON().getBoolean("tutorialComplete") ? 500 : 600, 1, this.pm.getJSON().getBoolean("tutorialComplete") ? 2 : 3, 0, 0);
 		
 		// Difficulty
 		Selection easy = new Selection(gc, "EASY", 120+DISTANCE, 300, 1, 0, 0, 1);
@@ -205,7 +212,7 @@ public class HomeScreen extends Screen{
 		
 		updateFinalText();
 		update(gc, cursor);
-		schedule(() -> update(gc, cursor), 200);
+		schedule(() -> update(gc, cursor), 1000); // Update screen after invocation of the TilePane (size may change)
 		
 		return new TilePane(canvas);
 	}
@@ -225,7 +232,9 @@ public class HomeScreen extends Screen{
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
 		gc.save();
-		gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
+		//gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
+		
+		gc.scale(SCREEN_WIDTH/1000.0, SCREEN_HEIGHT/800.0);
 		
 		gc.drawImage(LOGO_IMG, 90, 10, 650, 169);
 		gc.translate(0, -70);
