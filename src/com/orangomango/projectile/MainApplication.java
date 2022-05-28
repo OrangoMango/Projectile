@@ -44,7 +44,7 @@ public class MainApplication extends Application {
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
 	public static int SCREEN_WIDTH =  1000; // those values are used also in other files
 	public static int SCREEN_HEIGHT = 800;
-	public static final int FPS = 5;
+	public static final int FPS = 40;
 	public static Runnable startPage;
 	public static Runnable gameoverPage;
 	public static Runnable recordsPage;
@@ -83,7 +83,7 @@ public class MainApplication extends Application {
 	private static ArrayList<BulletConfig> availableGuns = new ArrayList<>();
 	private static int savedAmmo;
 	private static boolean showingPause;
-	private static Player player;
+	public static Player player;
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -309,7 +309,7 @@ public class MainApplication extends Application {
 		
 		ProfileManager pm = new ProfileManager();
 		Player tPlayer = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
-		tPlayer.user = client.getUsername();
+		if (client != null) tPlayer.user = client.getUsername();
 		player = tPlayer;
 		
 		if (!playWithTutorial){
@@ -345,16 +345,7 @@ public class MainApplication extends Application {
 		
 		if (client != null){
 			System.out.println("HERE");
-			GameState gs = new GameState();
-			gs.sendMessage("list", client);
-			Integer num;
-			while (true){
-				try {
-					num = (Integer)client.listen();
-					break;
-				} catch (ClassCastException cce){
-				}
-			}
+			int num = getClientsCount();
 			System.out.println("NUM: "+num);
 			if (num == 1){
 				host = true;
@@ -574,7 +565,7 @@ public class MainApplication extends Application {
 						case PRIMARY:
 							if (player.ammo == 0){
 								playSound(NO_AMMO_SOUND, false, null, true);
-								reloadAmmo();
+								if (reloading != null) reloadAmmo();
 								return;
 							}
 							bulletCount++;
@@ -603,6 +594,22 @@ public class MainApplication extends Application {
 		});
 		
 		return canvas;
+	}
+	
+	private static int getClientsCount(){
+		GameState gs = new GameState();
+		gs.sendMessage("list", client);
+		Integer num;
+		while (true){
+			try {
+				// Ignore sync gamestates, use only that one that contains the clients count
+				num = (Integer)client.listen();
+				break;
+			} catch (ClassCastException cce){
+				continue;
+			}
+		}
+		return num;
 	}
 	
 	private static void rechargeHP(){
@@ -740,7 +747,9 @@ public class MainApplication extends Application {
 	private static void startSpawning(GraphicsContext gc){
 
 		// SPAWNING PAUSED FOR DEBUGGING
-		if (true) return;
+		//if (true) return;
+		
+		if (client != null && !host) return;
 		
 		Random random = new Random();
 		final int MIN = currentDiff[10];
@@ -842,19 +851,23 @@ public class MainApplication extends Application {
 	}
 	
 	private static void sendState(){
-		gameState.entities = entities;
-		System.out.println("-- Sending entities: "+gameState.entities);
-		gameState.texts = floatingTexts;
-		gameState.drops = drops;
-		gameState.point1 = point;
-		gameState.point2 = point2;
-		client.send(gameState);
+		try {
+			gameState.entities = new ArrayList<Entity>(entities);
+			System.out.println("-- Sending entities: "+gameState.entities);
+			gameState.texts = new ArrayList<FloatingText>(floatingTexts);
+			gameState.drops = new ArrayList<Drop>(drops);
+			gameState.point1 = point;
+			gameState.point2 = point2;
+			client.send(gameState);
+		} catch (ConcurrentModificationException cme){
+			System.out.println("--> Error while sending data");
+		}
 	}
 	
 	private static void loadState(GraphicsContext gc){
 		gameState = (GameState)client.listen();
 		entities = gameState.entities;
-		// Temp
+		// Get user
 		for (int i = 0; i < entities.size(); i++){
 			Entity e = entities.get(i);
 			if (e instanceof Player){
@@ -878,8 +891,8 @@ public class MainApplication extends Application {
 			while (true){
 				try {
 					System.out.println("-> broadcasting");
-					sendState();
-					Thread.sleep(5000);
+					if (host) sendState();
+					Thread.sleep(200);
 				} catch (InterruptedException ex){
 					ex.printStackTrace();
 				}
@@ -887,13 +900,8 @@ public class MainApplication extends Application {
 		}).start();
 		new Thread(() -> {
 			while (true){
-				try {
-					System.out.println("-> getting");
-					loadState(gc);
-					Thread.sleep(3000);
-				} catch (InterruptedException ex){
-					ex.printStackTrace();
-				}
+				//System.out.println("-> getting");
+				loadState(gc);
 			}
 		}).start();
 	}
@@ -901,16 +909,11 @@ public class MainApplication extends Application {
 	private static void update(GraphicsContext gc){
 		userGamedata.clear();
 		Random random = new Random();
-		updateStates(gc);
-		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {
-			// Load data from gameState and send current state
-			if (client != null){
-				//sendState();
-				//System.out.println("\n\n");
-			}
-
-			System.out.println("Entities: "+entities);
-			
+		// Load data from gameState and send current state
+		if (client != null){
+			updateStates(gc);
+		}
+		MainApplication.loop = new Timeline(new KeyFrame(Duration.millis(1000.0/FPS), ev -> {			
 			long now = System.currentTimeMillis();
 			long cooldown = now-explosionStart < 4500 ? now-explosionStart : 4500;
 			long cooldown2 = now-rechargeStart < currentDiff[15] ? now-rechargeStart : currentDiff[15];
@@ -919,7 +922,7 @@ public class MainApplication extends Application {
 			gc.setFill(Color.BLACK);
 			gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 			
-			System.out.println("==== MAIN START ====");
+			//System.out.println("==== MAIN START ====");
 			
 			Iterator<Drop> dropIterator = drops.iterator();
 			while (dropIterator.hasNext()){
@@ -1012,91 +1015,96 @@ public class MainApplication extends Application {
 			point2.draw();
 			pointer1.draw();
 			pointer2.draw();
-			Iterator<Bullet> iterator = Player.bullets.iterator();
-			while (iterator.hasNext()){
-				boolean removed = false;
-				Bullet b = iterator.next();
-				if (client != null){
-					b.setGC(gc);
-				}
-				if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
-					iterator.remove();
-					removed = true;
-				}
-				int delAmount = 0;
-				for (int i = 0; i < entities.size(); i++){
-					try {
-						Entity e = entities.get(i);
-						int dmg = b.config.willDoDamageOnDistance() ? b.config.getDamageData()[0]+b.config.getDamageData()[2]*b.getFrames() : b.config.getDamage();
-						if (b.config.willDoDamageOnDistance() && dmg > b.config.getDamageData()[1] && b.config.getDamageData()[1] > b.config.getDamageData()[0]){
-							dmg = b.config.getDamageData()[1];
-						} else if (dmg < 0){
-							dmg = 0;
+			for (int j = 0; j < entities.size(); j++){
+				if (entities.get(j) instanceof Player){
+					Player currentPlayer = (Player)entities.get(j);
+					Iterator<Bullet> iterator = currentPlayer.bullets.iterator();
+					while (iterator.hasNext()){
+						boolean removed = false;
+						Bullet b = iterator.next();
+						if (client != null){
+							b.setGC(gc);
 						}
-						if (b.continueCond.test(e)) continue;
-						if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
-							if (!b.doExplosion){
-								((Enemy)e).takeDamage(dmg, i);
-								floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
-								enemyDamageCount++;
-							}
-							if (b.doExplosion){
-								Explosion explosion = new Explosion(gc, b.getX(), b.getY());
-								explosion.damage = 20;
-								explosions.add(explosion);
-							}
-							if (!removed){
-								if (!b.config.willGoPast() || b.doExplosion){
-									iterator.remove();
-									removed = true;
+						if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
+							iterator.remove();
+							removed = true;
+						}
+						int delAmount = 0;
+						for (int i = 0; i < entities.size(); i++){
+							try {
+								Entity e = entities.get(i);
+								int dmg = b.config.willDoDamageOnDistance() ? b.config.getDamageData()[0]+b.config.getDamageData()[2]*b.getFrames() : b.config.getDamage();
+								if (b.config.willDoDamageOnDistance() && dmg > b.config.getDamageData()[1] && b.config.getDamageData()[1] > b.config.getDamageData()[0]){
+									dmg = b.config.getDamageData()[1];
+								} else if (dmg < 0){
+									dmg = 0;
 								}
-							}
-						} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
-							if (!b.doExplosion){
-								((Boss)e).takeDamage(dmg, i);
-								floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
-								enemyDamageCount++;
-							}
-							if (b.doExplosion){
-								Explosion explosion = new Explosion(gc, b.getX(), b.getY());
-								explosion.damage = 20;
-								explosions.add(explosion);
-							}
-							if (!removed){
-								if (!b.config.willGoPast() || b.doExplosion){
-									iterator.remove();
-									removed = true;
+								if (b.continueCond.test(e)) continue;
+								if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
+									if (!b.doExplosion){
+										((Enemy)e).takeDamage(dmg, i);
+										floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
+										enemyDamageCount++;
+									}
+									if (b.doExplosion){
+										Explosion explosion = new Explosion(gc, b.getX(), b.getY());
+										explosion.damage = 20;
+										explosions.add(explosion);
+									}
+									if (!removed){
+										if (!b.config.willGoPast() || b.doExplosion){
+											iterator.remove();
+											removed = true;
+										}
+									}
+								} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
+									if (!b.doExplosion){
+										((Boss)e).takeDamage(dmg, i);
+										floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
+										enemyDamageCount++;
+									}
+									if (b.doExplosion){
+										Explosion explosion = new Explosion(gc, b.getX(), b.getY());
+										explosion.damage = 20;
+										explosions.add(explosion);
+									}
+									if (!removed){
+										if (!b.config.willGoPast() || b.doExplosion){
+											iterator.remove();
+											removed = true;
+										}
+									}
+								} else if (e.collided(b.getX(), b.getY(), Bullet.w)){
+									if (!b.doExplosion){
+										e.takeDamage(dmg);
+										floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
+									}
+									if (!removed){
+										if (!b.config.willGoPast() || b.doExplosion){
+											iterator.remove();
+											removed = true;
+										}
+									}
 								}
-							}
-						} else if (e.collided(b.getX(), b.getY(), Bullet.w)){
-							if (!b.doExplosion){
-								e.takeDamage(dmg);
-								floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
-							}
-							if (!removed){
-								if (!b.config.willGoPast() || b.doExplosion){
-									iterator.remove();
-									removed = true;
+								if (e.getHP() <= 0){
+									i--;
 								}
+							} catch (ConcurrentModificationException exc){
+								exc.printStackTrace();
+								Logger.error("-- error (3)");
+								System.exit(0);
 							}
 						}
-						if (e.getHP() <= 0){
-							i--;
+						if (b.getFrames()*b.getSpeed() >= b.config.getMaxDistance() && !b.doExplosion){
+							if (!removed){
+								iterator.remove();
+								removed = true;
+							}
 						}
-					} catch (ConcurrentModificationException exc){
-						exc.printStackTrace();
-						Logger.error("-- error (3)");
-						System.exit(0);
+						b.travel();
+						removed = false;
 					}
 				}
-				if (b.getFrames()*b.getSpeed() >= b.config.getMaxDistance() && !b.doExplosion){
-					if (!removed){
-						iterator.remove();
-						removed = true;
-					}
-				}
-				b.travel();
-				removed = false;
 			}
 			for (int i = 0; i < Boss.supers.size(); i++){
 				BossSuper bs = Boss.supers.get(i);

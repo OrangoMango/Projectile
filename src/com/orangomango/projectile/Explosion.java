@@ -3,7 +3,9 @@ package com.orangomango.projectile;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
-public class Explosion{
+import java.io.Serializable;
+
+public class Explosion implements Serializable{
 	private transient GraphicsContext gc;
 	private double x, y;
 	public double radius = 20;

@@ -4,7 +4,6 @@ import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 
 import java.io.Serializable;
-import java.util.function.Predicate;
 
 public class Bullet implements Serializable{
 	private transient GraphicsContext gc;
@@ -16,9 +15,14 @@ public class Bullet implements Serializable{
 	public boolean doExplosion = false;
 	public BulletConfig config;
 	private int framesTravelled;
-	public Predicate<Entity> continueCond = e -> e instanceof Player;
+	public ContinueCond<Entity> continueCond = e -> e instanceof Player;
 	public int WIDTH = MainApplication.SCREEN_WIDTH;
 	public int HEIGHT = MainApplication.SCREEN_HEIGHT;
+	
+	@FunctionalInterface
+	public static interface ContinueCond<T> extends Serializable{
+		public boolean test(T cond);
+	}
 	
 	public Bullet(GraphicsContext gc, double x, double y, double angle, BulletConfig config){
 		this.gc = gc;

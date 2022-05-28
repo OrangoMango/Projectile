@@ -18,7 +18,7 @@ public class Player extends Entity{
 	private boolean playingSound;
 	private boolean gameIsOver;
 	public double startSpeed;
-	public static ArrayList<Bullet> bullets = new ArrayList<>();
+	public ArrayList<Bullet> bullets = new ArrayList<>();
 	public int ammo = 10;
 	private int startHP, startShield;
 	public String user;
@@ -84,8 +84,10 @@ public class Player extends Entity{
 			MainApplication.playSound(DEATH_SOUND, false, null, false);
 			MainApplication.loop.stop();
 			MainApplication.entities.clear();
-			MainApplication.client.close();
-			MainApplication.client = null;
+			if (MainApplication.client != null){
+				MainApplication.client.close();
+				MainApplication.client = null;
+			}
 			MainApplication.threadRunning = false;
 			MainApplication.stopAllSounds();
 			MainApplication.schedule(() -> Platform.runLater(MainApplication.gameoverPage), 1500);

@@ -31,7 +31,6 @@ public class Client{
 	
 	public void send(GameState gs){
 		try {
-			//System.out.println("Step 1.: "+gs.entities.get(0).getX());
 			System.out.println("Writing");
 			this.writer.reset();
 			this.writer.writeObject(gs);
@@ -47,7 +46,6 @@ public class Client{
 			System.out.println("..Reading");
 			Object gs = (Object)this.reader.readObject();
 			System.out.println("..Done");
-			//System.out.println("Step 2.: "+this.gameState.entities.get(0).getX());
 			return gs;
 		} catch (IOException|ClassNotFoundException ex){
 			ex.printStackTrace();

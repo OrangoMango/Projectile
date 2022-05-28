@@ -51,7 +51,7 @@ public class ClientManager implements Runnable{
 					}
 				} catch (IOException|ClassNotFoundException ex){
 					ex.printStackTrace();
-					close();
+					//close();
 				}
 			}
 		}).start();

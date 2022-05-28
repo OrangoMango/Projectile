@@ -11,7 +11,7 @@ public class Entity implements Serializable{
 	protected double x, y, w=35;
 	protected String color;
 	protected double speed = 3;
-	protected int hp = 10000;
+	protected int hp = 100;
 	protected int shield = 0;
 	private String normalColor, damageColor;
 	
