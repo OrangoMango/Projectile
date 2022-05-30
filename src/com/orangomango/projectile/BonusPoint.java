@@ -88,7 +88,7 @@ public class BonusPoint implements Serializable{
 				MainApplication.notification.mustShow = true;
 				this.important = true;
 			}
-			if (difference >= TIME_TO_TAKE && (MainApplication.client == null || MainApplication.host)){
+			if (difference >= TIME_TO_TAKE){
 				setRandomPosition(new Random());
 				userGamedata.put("bonusMissed", userGamedata.getOrDefault("bonusMissed", 0.0)+1);
 				if (MainApplication.score <= 150){

@@ -12,13 +12,13 @@ import static com.orangomango.projectile.MainApplication.*;
 import com.orangomango.projectile.ui.profile.*;
 
 public class Player extends Entity{
-	public Timeline movement;
+	public transient Timeline movement;
 	public boolean shootingAllowed = true;
 	public boolean shooting;
 	private boolean playingSound;
 	private boolean gameIsOver;
 	public double startSpeed;
-	public ArrayList<Bullet> bullets = new ArrayList<>();
+	public List<Bullet> bullets = Collections.synchronizedList(new ArrayList<Bullet>());
 	public int ammo = 10;
 	private int startHP, startShield;
 	public String user;

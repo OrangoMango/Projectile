@@ -8,8 +8,8 @@ import java.util.*;
 public class GameState implements Serializable{
 	public List<Entity> entities;
 	public List<Explosion> explosions;
-	public ArrayList<FloatingText> texts;
-	public ArrayList<Drop> drops;
+	public List<FloatingText> texts;
+	public List<Drop> drops;
 	public BonusPoint point1;
 	public BonusPoint point2;
 	private String message;
@@ -28,7 +28,7 @@ public class GameState implements Serializable{
 		this.message = null;
 	}
 	
-	public GameState(List<Entity> entities, List<Explosion> explosions, ArrayList<FloatingText> texts, ArrayList<Drop> drops, BonusPoint p1, BonusPoint p2){
+	public GameState(List<Entity> entities, List<Explosion> explosions, List<FloatingText> texts, List<Drop> drops, BonusPoint p1, BonusPoint p2){
 		this.entities = entities;
 		this.explosions = explosions;
 		this.texts = texts;

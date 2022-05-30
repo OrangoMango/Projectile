@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 
 import com.orangomango.projectile.ui.profile.Logger;
+import com.orangomango.projectile.Player;
 
 public class ClientManager implements Runnable{
 	private Socket socket;
@@ -28,7 +29,16 @@ public class ClientManager implements Runnable{
 		new Thread(() -> {
 			while (this.socket.isConnected()){
 				try {
-					GameState gs = (GameState)this.reader.readObject();
+					GameState gs;
+					Object o = this.reader.readObject();
+					if (o instanceof GameState) {
+						gs = (GameState)o;
+					} else {
+						Player g = (Player)o;
+						Server.clients.get(0).writer.reset();
+						Server.clients.get(0).writer.writeObject(g);
+						continue;
+					}
 					System.out.println("Got it");
 					if (gs.getMessage() != null){
 						if (gs.getMessage().equals("list")){
@@ -45,8 +55,12 @@ public class ClientManager implements Runnable{
 					System.out.println("Client receives gs: "+gs.entities.get(0).getX());
 					for (ClientManager cm : Server.clients){
 						if (cm != this){
-							cm.writer.reset();
-							cm.writer.writeObject(gs);
+							try {
+								cm.writer.reset();
+								cm.writer.writeObject(gs);
+							} catch (IOException e){
+								System.out.println("\n\n"+e.getMessage()+"\n\n");
+							}
 						}
 					}
 				} catch (IOException|ClassNotFoundException ex){

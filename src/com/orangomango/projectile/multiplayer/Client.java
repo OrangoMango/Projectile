@@ -3,6 +3,8 @@ package com.orangomango.projectile.multiplayer;
 import java.net.*;
 import java.io.*;
 
+import com.orangomango.projectile.Player;
+
 public class Client{
 	private String host;
 	private int port;
@@ -36,8 +38,17 @@ public class Client{
 			this.writer.writeObject(gs);
 		} catch (IOException ex){
 			ex.printStackTrace();
-			System.exit(0);
 			//close();
+		}
+	}
+	
+	public void sendPlayer(Player player){
+		try {
+			System.out.println("Writing player");
+			this.writer.reset();
+			this.writer.writeObject(player);
+		} catch (IOException ex){
+			ex.printStackTrace();
 		}
 	}
 	

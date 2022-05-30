@@ -39,8 +39,8 @@ public class MainApplication extends Application {
 	public static List<Entity> entities = Collections.synchronizedList(new ArrayList<Entity>());
 	private static List<Explosion> explosions = Collections.synchronizedList(new ArrayList<Explosion>());
 	private static ArrayList<AudioClip> clips = new ArrayList<>();
-	private static ArrayList<FloatingText> floatingTexts = new ArrayList<>();
-	public static ArrayList<Drop> drops = new ArrayList<>();
+	private static List<FloatingText> floatingTexts = Collections.synchronizedList(new ArrayList<FloatingText>());
+	public static List<Drop> drops = Collections.synchronizedList(new ArrayList<Drop>());
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
 	public static int SCREEN_WIDTH =  1000; // those values are used also in other files
 	public static int SCREEN_HEIGHT = 800;
@@ -96,6 +96,7 @@ public class MainApplication extends Application {
 	public static Client client;
 	private static GameState gameState;
 	public static boolean host;
+	private static volatile boolean doingAction;
 	
 	public static final String MAIN_FONT;
 	
@@ -270,6 +271,7 @@ public class MainApplication extends Application {
 		reloading = null;
 		savedAmmo = 0;
 		host = false;
+		doingAction = false;
 
 		loadGuns();
 		
@@ -354,8 +356,7 @@ public class MainApplication extends Application {
 				gameState = ugs;
 			} else {
 				loadState(gc);
-				entities.add(tPlayer);
-				sendState();
+				client.sendPlayer(tPlayer);
 				pointer1 = new Pointer(gc, player, point);
 				pointer2 = new Pointer(gc, player, point2);
 			}
@@ -363,7 +364,10 @@ public class MainApplication extends Application {
 		
 		config = availableGuns.get(gunByName("normal_gun"));
 
+		canvas.setOnKeyReleased(e -> doingAction = false);
+
 		canvas.setOnKeyPressed(e -> {
+			doingAction = true;
 			switch (e.getCode()){
 				case ENTER:
 					if (messageSkipped) return;
@@ -565,7 +569,7 @@ public class MainApplication extends Application {
 						case PRIMARY:
 							if (player.ammo == 0){
 								playSound(NO_AMMO_SOUND, false, null, true);
-								if (reloading != null) reloadAmmo();
+								if (reloading == null) reloadAmmo();
 								return;
 							}
 							bulletCount++;
@@ -747,9 +751,7 @@ public class MainApplication extends Application {
 	private static void startSpawning(GraphicsContext gc){
 
 		// SPAWNING PAUSED FOR DEBUGGING
-		//if (true) return;
-		
-		if (client != null && !host) return;
+		if (true) return;
 		
 		Random random = new Random();
 		final int MIN = currentDiff[10];
@@ -761,7 +763,7 @@ public class MainApplication extends Application {
 				ex.printStackTrace();
 			}
 			while (threadRunning){
-				if (paused || entities.size() == currentDiff[18] || bossDialog) continue;
+				if (paused || entities.size() >= currentDiff[18] || bossDialog) continue;
 				boolean bossFound = false;
 				for (int i = 0; i < entities.size(); i++){
 					if (entities.get(i) instanceof Boss){
@@ -840,7 +842,7 @@ public class MainApplication extends Application {
 					}
 				}
 				
-				entities.add(en);
+				if (client == null || host) entities.add(en);
 				try {
 					Thread.sleep(random.nextInt(MAX-MIN)+MIN);
 				} catch (InterruptedException ex){
@@ -852,10 +854,10 @@ public class MainApplication extends Application {
 	
 	private static void sendState(){
 		try {
-			gameState.entities = new ArrayList<Entity>(entities);
+			gameState.entities = entities;
 			System.out.println("-- Sending entities: "+gameState.entities);
-			gameState.texts = new ArrayList<FloatingText>(floatingTexts);
-			gameState.drops = new ArrayList<Drop>(drops);
+			gameState.texts = floatingTexts;
+			gameState.drops = drops;
 			gameState.point1 = point;
 			gameState.point2 = point2;
 			client.send(gameState);
@@ -886,24 +888,76 @@ public class MainApplication extends Application {
 		pointer2 = new Pointer(gc, player, point2);
 	}
 	
+	/**
+	 * This method constatly sends/receives data from the server/clients every <code>timing</code> milliseconds.
+	 * @param gc The <code>GraphicsContext</code> used to load the state.
+	 */
 	private static void updateStates(GraphicsContext gc){
-		new Thread(() -> {
-			while (true){
-				try {
-					System.out.println("-> broadcasting");
-					if (host) sendState();
-					Thread.sleep(200);
-				} catch (InterruptedException ex){
-					ex.printStackTrace();
+		final int timing = 30;
+		if (host){
+			new Thread(() -> {
+				while (true){
+					try {
+						System.out.println("-> broadcasting");
+						sendState();
+						Thread.sleep(timing);
+					} catch (InterruptedException ex){
+						ex.printStackTrace();
+					}
 				}
-			}
-		}).start();
-		new Thread(() -> {
-			while (true){
-				//System.out.println("-> getting");
-				loadState(gc);
-			}
-		}).start();
+			}).start();
+			new Thread(() -> {
+				while (true){
+					Player got = null;
+					while (got == null){
+						try {
+							got = (Player)client.listen();
+						} catch (ClassCastException cce){
+							continue;
+						}
+					}
+					System.out.println("Got a player");
+					boolean found = false;
+					for (int i = 0; i < entities.size(); i++){
+						Entity e = entities.get(i);
+						if (e instanceof Player && ((Player)e).user.equals(got.user)){
+							entities.set(i, got);
+							found = true;
+							break;
+						}
+					}
+					if (!found) entities.add(got);
+					System.out.println("Now entities are: "+entities);
+				}
+			}).start();
+		} else {
+			new Thread(() -> {
+				while (true){
+					try {
+						if (!doingAction){
+							System.out.println("-> getting");
+							loadState(gc);
+						} else {
+							client.listen(); // Waste data
+						}
+						Thread.sleep(timing/2);
+					} catch (InterruptedException ex){
+						ex.printStackTrace();
+					}
+				}
+			}).start();
+			// SEND ONLY THE PLAYER STATE
+			new Thread(() -> {
+				while (true){
+					try {
+						client.sendPlayer(player);
+						Thread.sleep(timing/2);
+					} catch (InterruptedException ex){
+						ex.printStackTrace();
+					}
+				}
+			}).start();
+		}
 	}
 
 	private static void update(GraphicsContext gc){
