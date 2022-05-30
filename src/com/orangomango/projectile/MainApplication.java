@@ -1043,8 +1043,7 @@ public class MainApplication extends Application {
 						}
 					}
 				}
-			} catch (ArrayIndexOutOfBoundsException exc){
-				Logger.warning("entities' list is empty");
+			} catch (IndexOutOfBoundsException exc){
 			}
 			Iterator<Explosion> explosionIterator = explosions.iterator();
 			while (explosionIterator.hasNext()){
