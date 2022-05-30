@@ -177,6 +177,7 @@ public class MainApp extends Application{
                         this.currentAmmo--;
                     } else {
                         MainApplication.playSound(MainApplication.EXPLOSION_SOUND, false, null, true);
+                        if (!this.config.allowMultipleExplosions) break;
                     }
                 }
             }));
