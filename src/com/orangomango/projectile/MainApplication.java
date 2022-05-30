@@ -30,7 +30,7 @@ import com.orangomango.projectile.multiplayer.*;
  * Code entirely written by OrangoMango (orangomango.github.io)
  * License MIT
  * @author OrangoMango
- * @version 1.1
+ * @version 2.0
  */
 public class MainApplication extends Application {
 	

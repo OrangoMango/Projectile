@@ -263,7 +263,7 @@ public class HomeScreen extends Screen{
 		StringBuilder builder = new StringBuilder();
 		String[] keys = new String[]{"Difficulty: ", "Control method: "};
 		int counter = 0;
-		builder.append("Version 1.1 by OrangoMango (Code and Images),\nAudio from freesound.org\n--Your settings--\n");
+		builder.append("Version 2.0 by OrangoMango (Code and Images),\nAudio from freesound.org\n--Your settings--\n");
 		for (Selection selection : buttons){
 			if (selection.choosed){
 				String k = keys[counter++];
