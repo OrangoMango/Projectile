@@ -553,7 +553,6 @@ public class MainApplication extends Application {
 				player.speed = player.startSpeed/2;
 			}
 			
-			
 			if (System.currentTimeMillis() < explosionStart+4500 && e.getButton() == MouseButton.SECONDARY) return;
 
 			player.shootingAllowed = false;
@@ -746,7 +745,7 @@ public class MainApplication extends Application {
 	private static void startSpawning(GraphicsContext gc){
 
 		// SPAWNING PAUSED FOR DEBUGGING
-		if (true) return;
+		//if (true) return;
 		
 		Random random = new Random();
 		final int MIN = currentDiff[10];
@@ -768,7 +767,7 @@ public class MainApplication extends Application {
 				}
 				bossInGame = bossFound;
 				boolean shoots = random.nextInt(100) <= 20 && score >= 650 ? true : false;
-				shoots = shoots && !bossInGame;
+				shoots = shoots && (!bossInGame || score >= 3500);
 				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, shoots ? "#90F501" : "#ff0000", shoots ? "#E1FDB8" : "#FFA3B2", player, shoots);
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
 					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
@@ -847,22 +846,24 @@ public class MainApplication extends Application {
 		}).start();
 	}
 	
-	private static void sendState(){
-		try {
-			gameState.entities = entities;
-			System.out.println("-- Sending entities: "+gameState.entities);
-			gameState.texts = floatingTexts;
-			gameState.drops = drops;
-			gameState.point1 = point;
-			gameState.point2 = point2;
-			client.send(gameState);
-		} catch (ConcurrentModificationException cme){
-			System.out.println("--> Error while sending data");
+	private synchronized static void sendState(){
+		List<Entity> newEnts = Collections.synchronizedList(gameState.entities);
+		List<Explosion> newExps = Collections.synchronizedList(explosions);
+		List<FloatingText> newTexts = Collections.synchronizedList(floatingTexts);
+		List<Drop> newDrops = Collections.synchronizedList(drops);
+		synchronized (client){
+			client.send(new GameState(newEnts, newExps, newTexts, newDrops, point, point2));
 		}
 	}
 	
-	private static void loadState(GraphicsContext gc){
-		gameState = (GameState)client.listen();
+	private synchronized static void loadState(GraphicsContext gc){
+		Object ob = client.listen();
+		if (ob instanceof Player){
+			return;
+		} else {
+			gameState = (GameState)ob;
+		}
+		if (gameState == null) return;
 		List<Entity> gotEnt = gameState.entities;
 		List<Entity> finalE = Collections.synchronizedList(new ArrayList<Entity>());
 		for (int i = 0; i < gotEnt.size(); i++){
@@ -877,18 +878,21 @@ public class MainApplication extends Application {
 		// Get user
 		for (int i = 0; i < entities.size(); i++){
 			Entity e = entities.get(i);
+			e.setGC(gc);
 			if (e instanceof Player){
 				if (((Player)e).user.equals(client.getUsername())){
 					player = (Player)e;
 				}
 			}
 		}
-		System.out.println(">> "+entities.size());
-		explosions = gameState.explosions;
-		floatingTexts = gameState.texts;
-		drops = gameState.drops;
+		//System.out.println(">> "+entities.size());
+		explosions = Collections.synchronizedList(gameState.explosions);
+		floatingTexts = Collections.synchronizedList(gameState.texts);
+		drops = Collections.synchronizedList(gameState.drops);
 		point = gameState.point1;
 		point2 = gameState.point2;
+		point.setGC(gc);
+		point2.setGC(gc);
 		pointer1 = new Pointer(gc, player, point);
 		pointer2 = new Pointer(gc, player, point2);
 	}
@@ -898,12 +902,12 @@ public class MainApplication extends Application {
 	 * @param gc The <code>GraphicsContext</code> used to load the state.
 	 */
 	private static void updateStates(GraphicsContext gc){
-		final int timing = 10;
+		final int timing = 50;
 		if (host){
 			new Thread(() -> {
 				while (true){
 					try {
-						System.out.println("-> broadcasting");
+						//System.out.println("-> broadcasting");
 						sendState();
 						Thread.sleep(timing);
 					} catch (InterruptedException ex){
@@ -921,7 +925,7 @@ public class MainApplication extends Application {
 							continue;
 						}
 					}
-					System.out.println("Got a player");
+					//System.out.println("Got a player");
 					boolean found = false;
 					for (int i = 0; i < entities.size(); i++){
 						Entity e = entities.get(i);
@@ -932,14 +936,14 @@ public class MainApplication extends Application {
 						}
 					}
 					if (!found) entities.add(got);
-					System.out.println("Now entities are: "+entities);
+					//System.out.println("Now entities are: "+entities);
 				}
 			}).start();
 		} else {
 			new Thread(() -> {
 				while (true){
 					try {
-						System.out.println("-> getting");
+						//System.out.println("-> getting");
 						loadState(gc);
 						Thread.sleep(timing/2);
 					} catch (InterruptedException ex){
@@ -951,6 +955,7 @@ public class MainApplication extends Application {
 			new Thread(() -> {
 				while (true){
 					try {
+						player.bullets = Collections.synchronizedList(player.bullets);
 						client.sendPlayer(player);
 						Thread.sleep(timing);
 					} catch (InterruptedException ex){
@@ -1013,9 +1018,33 @@ public class MainApplication extends Application {
 				}
 			}
 			//System.out.println(entities.size());
-			for (int i = 0; i < entities.size(); i++){
-				if (client != null) entities.get(i).setGC(gc);
-				entities.get(i).draw();
+			try {
+				for (int i = 0; i < entities.size(); i++){
+					entities.get(i).setGC(gc);
+					entities.get(i).draw();
+					if (entities.get(i) instanceof Player){
+						if (point.isOnPlayer((Player)entities.get(i))){
+							point.setRandomPosition(random);
+							if (!host) point.allowed = false;
+							schedule(() -> point.allowed = true, 200);
+							point.startTimer();
+							score += 50;
+							userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
+							playSound(SCORE_SOUND, false, null, false);
+						}
+						if (point2.isOnPlayer((Player)entities.get(i))){
+							point2.setRandomPosition(random);
+							if (!host) point.allowed = false;
+							schedule(() -> point.allowed = true, 200);
+							point2.startTimer();
+							score += 50;
+							userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
+							playSound(SCORE_SOUND, false, null, false);
+						}
+					}
+				}
+			} catch (ArrayIndexOutOfBoundsException exc){
+				Logger.warning("entities' list is empty");
 			}
 			Iterator<Explosion> explosionIterator = explosions.iterator();
 			while (explosionIterator.hasNext()){
@@ -1048,25 +1077,7 @@ public class MainApplication extends Application {
 					Logger.error("-- error (2.2)");
 				}
 			}
-			if (client != null){
-				point.setGC(gc);
-				point2.setGC(gc);
-			}
-			if (point.isOnPlayer(player)){
-				point.setRandomPosition(random);
-				point.startTimer();
-				score += 50;
-				userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
-				playSound(SCORE_SOUND, false, null, false);
-			}
 			point.draw();
-			if (point2.isOnPlayer(player)){
-				point2.setRandomPosition(random);
-				point2.startTimer();
-				score += 50;
-				userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
-				playSound(SCORE_SOUND, false, null, false);
-			}
 			point2.draw();
 			pointer1.draw();
 			pointer2.draw();
@@ -1074,90 +1085,100 @@ public class MainApplication extends Application {
 				if (entities.get(j) instanceof Player){
 					Player currentPlayer = (Player)entities.get(j);
 					Iterator<Bullet> iterator = currentPlayer.bullets.iterator();
-					while (iterator.hasNext()){
-						boolean removed = false;
-						Bullet b = iterator.next();
-						if (client != null){
-							b.setGC(gc);
-						}
-						if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
-							iterator.remove();
-							removed = true;
-						}
-						int delAmount = 0;
-						for (int i = 0; i < entities.size(); i++){
-							try {
-								Entity e = entities.get(i);
-								int dmg = b.config.willDoDamageOnDistance() ? b.config.getDamageData()[0]+b.config.getDamageData()[2]*b.getFrames() : b.config.getDamage();
-								if (b.config.willDoDamageOnDistance() && dmg > b.config.getDamageData()[1] && b.config.getDamageData()[1] > b.config.getDamageData()[0]){
-									dmg = b.config.getDamageData()[1];
-								} else if (dmg < 0){
-									dmg = 0;
-								}
-								if (b.continueCond.test(e)) continue;
-								if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
-									if (!b.doExplosion){
-										((Enemy)e).takeDamage(dmg, i);
-										floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
-										enemyDamageCount++;
-									}
-									if (b.doExplosion){
-										Explosion explosion = new Explosion(gc, b.getX(), b.getY());
-										explosion.damage = 20;
-										explosions.add(explosion);
-									}
-									if (!removed){
-										if (!b.config.willGoPast() || b.doExplosion){
-											iterator.remove();
-											removed = true;
-										}
-									}
-								} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
-									if (!b.doExplosion){
-										((Boss)e).takeDamage(dmg, i);
-										floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
-										enemyDamageCount++;
-									}
-									if (b.doExplosion){
-										Explosion explosion = new Explosion(gc, b.getX(), b.getY());
-										explosion.damage = 20;
-										explosions.add(explosion);
-									}
-									if (!removed){
-										if (!b.config.willGoPast() || b.doExplosion){
-											iterator.remove();
-											removed = true;
-										}
-									}
-								} else if (e.collided(b.getX(), b.getY(), Bullet.w)){
-									if (!b.doExplosion){
-										e.takeDamage(dmg);
-										floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
-									}
-									if (!removed){
-										if (!b.config.willGoPast() || b.doExplosion){
-											iterator.remove();
-											removed = true;
-										}
-									}
-								}
-								if (e.getHP() <= 0){
-									i--;
-								}
-							} catch (ConcurrentModificationException exc){
-								exc.printStackTrace();
-								Logger.error("-- error (3)");
-								System.exit(0);
+					synchronized (client == null ? new Object() : client){
+						while (iterator.hasNext()){
+							boolean removed = false;
+							Bullet b = iterator.next();
+							if (client != null){
+								b.setGC(gc);
 							}
-						}
-						if (b.getFrames()*b.getSpeed() >= b.config.getMaxDistance() && !b.doExplosion){
-							if (!removed){
+							if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
 								iterator.remove();
 								removed = true;
 							}
+							int delAmount = 0;
+							for (int i = 0; i < entities.size(); i++){
+								try {
+									Entity e = entities.get(i);
+									int dmg = b.config.willDoDamageOnDistance() ? b.config.getDamageData()[0]+b.config.getDamageData()[2]*b.getFrames() : b.config.getDamage();
+									if (b.config.willDoDamageOnDistance() && dmg > b.config.getDamageData()[1] && b.config.getDamageData()[1] > b.config.getDamageData()[0]){
+										dmg = b.config.getDamageData()[1];
+									} else if (dmg < 0){
+										dmg = 0;
+									}
+									//System.out.println(((Player)e).user+" "+((Player)e).user.equals(MainApplication.client.getUsername()));
+									if (b.continueCond.test(e)){
+										if (b.owner != null && e instanceof Player){
+											//System.out.println(b.owner);
+											if (b.owner.equals(((Player)e).user)) continue;
+										} else {
+											continue;
+										}
+									}
+									if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
+										if (!b.doExplosion){
+											((Enemy)e).takeDamage(dmg, i);
+											floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
+											enemyDamageCount++;
+										}
+										if (b.doExplosion){
+											Explosion explosion = new Explosion(gc, b.getX(), b.getY());
+											explosion.damage = 20;
+											explosions.add(explosion);
+										}
+										if (!removed){
+											if (!b.config.willGoPast() || b.doExplosion){
+												iterator.remove();
+												removed = true;
+											}
+										}
+									} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
+										if (!b.doExplosion){
+											((Boss)e).takeDamage(dmg, i);
+											floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
+											enemyDamageCount++;
+										}
+										if (b.doExplosion){
+											Explosion explosion = new Explosion(gc, b.getX(), b.getY());
+											explosion.damage = 20;
+											explosions.add(explosion);
+										}
+										if (!removed){
+											if (!b.config.willGoPast() || b.doExplosion){
+												iterator.remove();
+												removed = true;
+											}
+										}
+									} else if (e.collided(b.getX(), b.getY(), Bullet.w)){
+										if (!b.doExplosion){
+											e.takeDamage(dmg);
+											floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
+										}
+										if (!removed){
+											if (!b.config.willGoPast() || b.doExplosion){
+												iterator.remove();
+												removed = true;
+											}
+										}
+									}
+									if (e.getHP() <= 0){
+										i--;
+									}
+								} catch (ConcurrentModificationException exc){
+									exc.printStackTrace();
+									Logger.error("-- error (3)");
+									System.exit(0);
+								}
+							}
+							if (b.getFrames()*b.getSpeed() >= b.config.getMaxDistance() && !b.doExplosion){
+								if (!removed){
+									iterator.remove();
+									removed = true;
+								}
+							}
+							b.travel();
+							removed = false;
 						}
-						b.travel();
-						removed = false;
 					}
 				}
 			}

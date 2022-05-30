@@ -39,20 +39,15 @@ public class ClientManager implements Runnable{
 						Server.clients.get(0).writer.writeObject(g);
 						continue;
 					}
-					System.out.println("Got it");
+					//System.out.println("Got it");
 					if (gs.getMessage() != null){
 						if (gs.getMessage().equals("list")){
 							this.writer.reset();
 							this.writer.writeObject(Integer.valueOf(Server.clients.size()));
 							continue;
 						}
-						/* else if (gs.getMessage().equals("set")){
-							this.writer.reset();
-							this.writer.writeObject(gs);
-							continue;
-						}*/
 					}
-					System.out.println("Client receives gs: "+gs.entities.get(0).getX());
+					//System.out.println("Client receives gs: "+gs.entities.get(0).getX());
 					for (ClientManager cm : Server.clients){
 						if (cm != this){
 							try {
@@ -64,15 +59,15 @@ public class ClientManager implements Runnable{
 						}
 					}
 				} catch (IOException|ClassNotFoundException ex){
-					ex.printStackTrace();
-					//close();
+					//ex.printStackTrace();
+					close();
+					break;
 				}
 			}
 		}).start();
 	}
 	
 	private void close(){
-		System.exit(0);
 		try {
 			Server.clients.remove(this);
 			if (this.socket != null) this.socket.close();

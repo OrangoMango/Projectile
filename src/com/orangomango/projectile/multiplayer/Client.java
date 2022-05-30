@@ -33,35 +33,38 @@ public class Client{
 	
 	public void send(GameState gs){
 		try {
-			System.out.println("Writing");
+			//System.out.println("Writing");
 			this.writer.reset();
 			this.writer.writeObject(gs);
 		} catch (IOException ex){
-			ex.printStackTrace();
-			//close();
+			//ex.printStackTrace();
+			close();
 		}
 	}
 	
 	public void sendPlayer(Player player){
 		try {
-			System.out.println("Writing player");
+			//System.out.println("Writing player");
 			this.writer.reset();
 			this.writer.writeObject(player);
 		} catch (IOException ex){
-			ex.printStackTrace();
+			//ex.printStackTrace();
+			close();
 		}
 	}
 	
 	public Object listen(){
 		try {
-			System.out.println("..Reading");
+			//System.out.println("..Reading");
 			Object gs = (Object)this.reader.readObject();
-			System.out.println("..Done");
+			//System.out.println("..Done");
 			return gs;
-		} catch (IOException|ClassNotFoundException ex){
+		} catch (EOFException ex){
 			ex.printStackTrace();
 			return null;
-			//close()
+		} catch (IOException|ClassNotFoundException ex){
+			Player.doGameOver();
+			return null;
 		}
 	}
 	
@@ -72,7 +75,6 @@ public class Client{
 			if (this.writer != null) this.writer.close();
 		} catch (IOException ex){
 			ex.printStackTrace();
-			System.exit(0);
 		}
 	}
 }

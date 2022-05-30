@@ -19,6 +19,7 @@ public class BonusPoint implements Serializable{
 	private static double WIDTH = 20;
 	public boolean show = true;
 	private boolean important;
+	public boolean allowed = true;
 	
 	public BonusPoint(GraphicsContext gc, double x, double y, boolean tutorial){
 		this.gc = gc;
@@ -34,8 +35,13 @@ public class BonusPoint implements Serializable{
 	}
 	
 	public void setRandomPosition(Random random){
-		setX(random.nextInt(SCREEN_WIDTH-20)+10);
-		setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+		if (client == null || host){
+			setX(random.nextInt(SCREEN_WIDTH-20)+10);
+			setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+		} else {
+			setX(-50);
+			setY(-50);
+		}
 		timeCheck = false;
 		Logger.info("BonusPoint pos: "+getX()+" "+getY());
 	}
@@ -88,7 +94,7 @@ public class BonusPoint implements Serializable{
 				MainApplication.notification.mustShow = true;
 				this.important = true;
 			}
-			if (difference >= TIME_TO_TAKE){
+			if (difference >= TIME_TO_TAKE && (client == null || host)){
 				setRandomPosition(new Random());
 				userGamedata.put("bonusMissed", userGamedata.getOrDefault("bonusMissed", 0.0)+1);
 				if (MainApplication.score <= 150){
@@ -103,6 +109,6 @@ public class BonusPoint implements Serializable{
 	}
 	
 	public boolean isOnPlayer(Player p){
-		return (this.x >= p.x-p.w/2 && this.x <= p.x+p.w/2) && (this.y >= p.y-p.w/2 && this.y <= p.y+p.w/2);
+		return (this.x >= p.x-p.w/2 && this.x <= p.x+p.w/2) && (this.y >= p.y-p.w/2 && this.y <= p.y+p.w/2) && allowed;
 	}
 }

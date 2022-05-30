@@ -16,6 +16,7 @@ public class Bullet implements Serializable{
 	public BulletConfig config;
 	private int framesTravelled;
 	public ContinueCond<Entity> continueCond = e -> e instanceof Player;
+	public String owner;
 	public int WIDTH = MainApplication.SCREEN_WIDTH;
 	public int HEIGHT = MainApplication.SCREEN_HEIGHT;
 	

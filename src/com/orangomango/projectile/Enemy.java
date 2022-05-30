@@ -104,7 +104,7 @@ public class Enemy extends Entity{
 				BulletConfig bcf = new BulletConfig(15, 700, (int)Math.round(damage2player*0.65), null, false, null, null, null, false, null, null, null, BulletConfig.Rarity.COMMON);
 				bcf.loadMedia();
 				Bullet bullet = new Bullet(gc, this.x, this.y, Math.atan2(this.player.y-this.y, this.player.x-this.x), bcf);
-				bullet.continueCond = e -> !(e instanceof Player);
+				bullet.continueCond = e -> e instanceof Enemy;
 				MainApplication.player.bullets.add(bullet);
 				MainApplication.playSound(bcf.getShootSound(), false, null, true);
 				shootingAllowed = false;

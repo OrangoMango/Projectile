@@ -22,6 +22,7 @@ public class Player extends Entity{
 	public int ammo = 10;
 	private int startHP, startShield;
 	public String user;
+	private long tookDamage;
 	
 	public Player(GraphicsContext gc, double x, double y, String color, String damageColor, ProfileManager pm){
 		super(gc, x, y, color, damageColor);
@@ -63,6 +64,7 @@ public class Player extends Entity{
 			ammo--;
 		}
 		Bullet b = new Bullet(this.gc, this.x, this.y, Math.atan2(shootY-this.y, shootX-this.x)+Math.toRadians(config.getAngles()[count]), config);
+		b.owner = user;
 		b.doExplosion = explosion;
 		bullets.add(b);
 		playSound(explosion ? EXPLOSION_SOUND : config.getShootSound(), false, null, true);
@@ -70,28 +72,36 @@ public class Player extends Entity{
 	
 	@Override
 	public void takeDamage(int damage){
-		super.takeDamage(damage);
+		if (System.currentTimeMillis()-tookDamage < 400 && MainApplication.client != null) return;
 		if (!playingSound){
 			playSound(DAMAGE_SOUND, false, null, true);
 			playingSound = true;
 			MainApplication.schedule(() -> playingSound = false, 500);
 		}
+		super.takeDamage(damage);
+		tookDamage = System.currentTimeMillis();
 		if (this.hp <= 0 && !gameIsOver){
-			Logger.info("YOU DIED");
-			gameIsOver = true;
-			userGamedata.put("damageRatio", (double)MainApplication.enemyDamageCount/MainApplication.bulletCount);
-			Logger.info("Game data: "+userGamedata);
-			MainApplication.playSound(DEATH_SOUND, false, null, false);
-			MainApplication.loop.stop();
-			MainApplication.entities.clear();
-			if (MainApplication.client != null){
-				MainApplication.client.close();
-				MainApplication.client = null;
+			System.out.println("YOU DIED");
+			if (client == null || MainApplication.client.getUsername().equals(user)){
+				gameIsOver = true;
+				doGameOver();
 			}
-			MainApplication.threadRunning = false;
-			MainApplication.stopAllSounds();
-			MainApplication.schedule(() -> Platform.runLater(MainApplication.gameoverPage), 1500);
 		}
+	}
+	
+	public static void doGameOver(){
+		MainApplication.userGamedata.put("damageRatio", (double)MainApplication.enemyDamageCount/MainApplication.bulletCount);
+		Logger.info("Game data: "+userGamedata);
+		MainApplication.playSound(DEATH_SOUND, false, null, false);
+		MainApplication.loop.stop();
+		MainApplication.entities.clear();
+		if (MainApplication.client != null){
+			MainApplication.client.close();
+			MainApplication.client = null;
+		}
+		MainApplication.threadRunning = false;
+		MainApplication.stopAllSounds();
+		MainApplication.schedule(() -> Platform.runLater(MainApplication.gameoverPage), 1500);
 	}
 	
 	@Override

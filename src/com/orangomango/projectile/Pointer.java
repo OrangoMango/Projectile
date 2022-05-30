@@ -16,6 +16,7 @@ public class Pointer{
 	}
 	
 	public void draw(){
+		if (bp.getX() < 0 || bp.getY() < 0) return;
 		this.gc.setFill(this.bp.isImportant() ? Color.web("#FFAA4A") : Color.web("#4AF7FF"));
 		double angle = Math.atan2(bp.getY()-this.player.getY(), bp.getX()-this.player.getX());
 		this.gc.save();
