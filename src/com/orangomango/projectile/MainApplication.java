@@ -96,7 +96,6 @@ public class MainApplication extends Application {
 	public static Client client;
 	private static GameState gameState;
 	public static boolean host;
-	private static volatile boolean doingAction;
 	
 	public static final String MAIN_FONT;
 	
@@ -271,7 +270,6 @@ public class MainApplication extends Application {
 		reloading = null;
 		savedAmmo = 0;
 		host = false;
-		doingAction = false;
 
 		loadGuns();
 		
@@ -364,10 +362,7 @@ public class MainApplication extends Application {
 		
 		config = availableGuns.get(gunByName("normal_gun"));
 
-		canvas.setOnKeyReleased(e -> doingAction = false);
-
 		canvas.setOnKeyPressed(e -> {
-			doingAction = true;
 			switch (e.getCode()){
 				case ENTER:
 					if (messageSkipped) return;
@@ -868,7 +863,17 @@ public class MainApplication extends Application {
 	
 	private static void loadState(GraphicsContext gc){
 		gameState = (GameState)client.listen();
-		entities = gameState.entities;
+		List<Entity> gotEnt = gameState.entities;
+		List<Entity> finalE = Collections.synchronizedList(new ArrayList<Entity>());
+		for (int i = 0; i < gotEnt.size(); i++){
+			Entity e = gotEnt.get(i);
+			if (e instanceof Player && ((Player)e).user.equals(client.getUsername())){
+				finalE.add(player);
+			} else {
+				finalE.add(e);
+			}
+		}
+		entities = finalE;
 		// Get user
 		for (int i = 0; i < entities.size(); i++){
 			Entity e = entities.get(i);
@@ -893,7 +898,7 @@ public class MainApplication extends Application {
 	 * @param gc The <code>GraphicsContext</code> used to load the state.
 	 */
 	private static void updateStates(GraphicsContext gc){
-		final int timing = 30;
+		final int timing = 10;
 		if (host){
 			new Thread(() -> {
 				while (true){
@@ -934,12 +939,8 @@ public class MainApplication extends Application {
 			new Thread(() -> {
 				while (true){
 					try {
-						if (!doingAction){
-							System.out.println("-> getting");
-							loadState(gc);
-						} else {
-							client.listen(); // Waste data
-						}
+						System.out.println("-> getting");
+						loadState(gc);
 						Thread.sleep(timing/2);
 					} catch (InterruptedException ex){
 						ex.printStackTrace();
@@ -951,7 +952,7 @@ public class MainApplication extends Application {
 				while (true){
 					try {
 						client.sendPlayer(player);
-						Thread.sleep(timing/2);
+						Thread.sleep(timing);
 					} catch (InterruptedException ex){
 						ex.printStackTrace();
 					}
