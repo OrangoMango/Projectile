@@ -18,7 +18,7 @@ public class RecordsScreen extends Screen{
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> {
-			if (e.getCode() == KeyCode.SPACE){
+			if (e.getCode() == KeyCode.SPACE || e.getCode() == KeyCode.ESCAPE){
 				Platform.runLater(startPage);
 			}
 		});
@@ -26,7 +26,7 @@ public class RecordsScreen extends Screen{
 		gc.setFill(Color.web("#676C69"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
-		gc.scale(SCREEN_WIDTH/1000.0, SCREEN_HEIGHT/800.0);
+		gc.scale((double)SCREEN_WIDTH/DEFAULT_WIDTH, (double)SCREEN_HEIGHT/DEFAULT_HEIGHT);
 		
 		ProfileManager pm = new ProfileManager();
 		gc.setStroke(Color.web("#ABCBB8"));

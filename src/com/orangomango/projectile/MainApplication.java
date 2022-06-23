@@ -30,7 +30,7 @@ import com.orangomango.projectile.multiplayer.*;
  * Code entirely written by OrangoMango (orangomango.github.io)
  * License MIT
  * @author OrangoMango
- * @version 2.0
+ * @version 1.1
  */
 public class MainApplication extends Application {
 	
@@ -42,12 +42,15 @@ public class MainApplication extends Application {
 	private static List<FloatingText> floatingTexts = Collections.synchronizedList(new ArrayList<FloatingText>());
 	public static List<Drop> drops = Collections.synchronizedList(new ArrayList<Drop>());
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
-	public static int SCREEN_WIDTH =  1000; // those values are used also in other files
-	public static int SCREEN_HEIGHT = 800;
+	public static final int DEFAULT_WIDTH = 1000;
+	public static final int DEFAULT_HEIGHT = 800;
+	public static int SCREEN_WIDTH =  DEFAULT_WIDTH;
+	public static int SCREEN_HEIGHT = DEFAULT_HEIGHT;
 	public static final int FPS = 40;
 	public static Runnable startPage;
 	public static Runnable gameoverPage;
 	public static Runnable recordsPage;
+	public static Runnable tasksPage;
 	private static Canvas currentCanvas;
 	private static Stage currentStage;
 
@@ -119,7 +122,7 @@ public class MainApplication extends Application {
 	public static Media SCORE_LOST_SOUND;
 	public static Media AMMO_RELOAD_SOUND;
 	public static Media NO_AMMO_SOUND;
-	public static Media[] GUN_SOUNDS = new Media[6];
+	public static Media[] GUN_SOUNDS = new Media[8];
 	public static Media DROP_SOUND;
 		
 	private static final int[] diffEasy = new int[]{10, 15, 20, 10, 20, 40, 50, 60, 60, 70, 1000, 2000, 500, 500, 40000, 25000, 450, 15, 8};
@@ -314,7 +317,7 @@ public class MainApplication extends Application {
 		
 		if (!playWithTutorial){
 			gc.save();
-			gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
+			gc.translate((SCREEN_WIDTH-DEFAULT_WIDTH)/2, (SCREEN_HEIGHT-DEFAULT_HEIGHT)/2);
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
 			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
@@ -691,6 +694,13 @@ public class MainApplication extends Application {
 			stage.setFullScreenExitHint("");
 			stage.getScene().setRoot(records.getScene());
 		};
+		
+		tasksPage = () -> {
+			TasksScreen tasks = new TasksScreen();
+			stage.setResizable(false);
+			stage.setFullScreenExitHint("");
+			stage.getScene().setRoot(tasks.getScene());
+		};
 
 		if (firstTime){
 			Logger.info("Downloading assets");
@@ -731,6 +741,8 @@ public class MainApplication extends Application {
 			GUN_SOUNDS[3] = new Media("file://"+userHome+"/.projectile/assets/audio/triple_gun.mp3");
 			GUN_SOUNDS[4] = new Media("file://"+userHome+"/.projectile/assets/audio/shotgun.wav");
 			GUN_SOUNDS[5] = new Media("file://"+userHome+"/.projectile/assets/audio/space_gun.wav");
+			GUN_SOUNDS[6] = new Media("file://"+userHome+"/.projectile/assets/audio/small_gun.wav");
+			GUN_SOUNDS[7] = new Media("file://"+userHome+"/.projectile/assets/audio/super_sniper.wav");
 			DROP_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/drop.wav");
 		} catch (Exception e){
 			Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -1205,6 +1217,8 @@ public class MainApplication extends Application {
 				}
 			}
 			
+			gc.translate(0, 10);
+			
 			// Draw hp bar
 			gc.setFill(Color.web(getHPColor(player.hp, player.getStartHP())));
 			gc.fillRect(20, 20, 200*player.hp/player.getStartHP() <= 0 ? 0 : 200*player.hp/player.getStartHP(), 30);
@@ -1277,6 +1291,8 @@ public class MainApplication extends Application {
 			gc.setLineWidth(4);
 			gc.strokeRect(230, 20, 30, 90);
 			gc.strokeRect(230, 116, 30, 14);
+			
+			gc.translate(0, -10);
 			
 			// Draw timer
 			userGamedata.put("gameTime", (double)(now-gameStart));

@@ -177,7 +177,6 @@ public class MainApp extends Application{
                         this.currentAmmo--;
                     } else {
                         MainApplication.playSound(MainApplication.EXPLOSION_SOUND, false, null, true);
-                        if (!this.config.allowMultipleExplosions) break;
                     }
                 }
             }));
@@ -253,19 +252,7 @@ public class MainApp extends Application{
             try {
                 Integer speed = fields[0].getText().equals("") ? null : Integer.parseInt(fields[0].getText());
                 Integer damage = fields[1].getText().equals("") ? null : Integer.parseInt(fields[1].getText());
-                Media media;
-                if (fields[2].getText().startsWith("file://") || fields[2].getText().equals("")){
-                    media = fields[2].getText().equals("") ? null : new Media(fields[2].getText());
-                } else {
-                    Class ma = Class.forName("com.orangomango.projectile.MainApplication");
-                    if (fields[2].getText().startsWith("GUN_SOUNDS")){
-                        Field field = ma.getField("GUN_SOUNDS");
-                        media = ((Media[])field.get(null))[Integer.parseInt(fields[2].getText().split("\\[")[1].substring(0, fields[2].getText().split("\\[")[1].length()-1))];
-                    } else {
-                        Field field = ma.getField(fields[2].getText());
-                        media = (Media)field.get(null);
-                    }
-                }
+                String media = fields[2].getText();
                 Integer ammo = fields[3].getText().equals("") ? null : Integer.parseInt(fields[3].getText());
                 Integer cooldown = fields[4].getText().equals("") ? null : Integer.parseInt(fields[4].getText());
                 Double maxDistance = fields[5].getText().equals("") ? null : Double.parseDouble(fields[5].getText());
@@ -290,7 +277,7 @@ public class MainApp extends Application{
                         angl[count++] = Double.parseDouble(p);
                     }
                 }
-                this.config = new BulletConfig(speed, cooldown, damage, angl, bounce.isSelected(), ammo, timing, rechargeFrames, goPast.isSelected(), maxDistance, ammoAmount, media == null ? null : media.getSource(), BulletConfig.Rarity.valueOf(rarity.getSelectionModel().getSelectedItem().toUpperCase()));
+                this.config = new BulletConfig(speed, cooldown, damage, angl, bounce.isSelected(), ammo, timing, rechargeFrames, goPast.isSelected(), maxDistance, ammoAmount, media, BulletConfig.Rarity.valueOf(rarity.getSelectionModel().getSelectedItem().toUpperCase()));
                 this.config.loadMedia();
                 if (!fields[11].getText().equals("")) this.config.gunName = fields[11].getText();
                 this.currentAmmo = this.config.getAmmo();

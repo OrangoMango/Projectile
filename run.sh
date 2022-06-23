@@ -1,4 +1,4 @@
-#rm -r bin/*
+rm -r bin/*
 cd src
 echo "compiling source code.."
 javac -cp .:../lib/json.jar -d ../bin --module-path $1 --add-modules javafx.controls,javafx.media,javafx.web com/orangomango/projectile/*.java -Xlint:deprecation

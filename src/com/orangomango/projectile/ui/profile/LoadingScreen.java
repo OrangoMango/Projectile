@@ -46,8 +46,10 @@ public class LoadingScreen{
 		"audio/shoot.wav",
 		"audio/shotgun.wav",
 		"audio/show.wav",
+		"audio/small_gun.wav",
 		"audio/sniper.wav",
 		"audio/space_gun.wav",
+		"audio/super_sniper.wav",
 		"audio/triple_gun.mp3",
 		"font/main_font.ttf",
 		"image/projectile_logo.png"
@@ -117,7 +119,7 @@ public class LoadingScreen{
 						Logger.info("Downloaded gun/"+guns[i]);
 					}
 					
-					updateProgress(files.length, files.length+guns.length);
+					updateProgress(files.length+guns.length, files.length+guns.length);
 					setupSounds();
 					loadGuns();
 					updateMessage("Done");

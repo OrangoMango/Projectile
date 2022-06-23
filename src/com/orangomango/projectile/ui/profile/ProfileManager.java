@@ -44,7 +44,8 @@ public class ProfileManager {
 				userData.createNewFile();
 				BufferedWriter writer = new BufferedWriter(new FileWriter(userData));
 				textData = "{highscore:{easy:0; medium:0; hard:0; extreme:0;}; bestTime:{easy:0; medium:0; hard:0; extreme:0;}; stats:{timePlayed:0; roundsDone:0; bossesKilled:0; enemiesKilled:0; bonusTaken: 0; bonusMissed: 0;}; input: 0; firstTimeBoss:true; tutorialComplete:false;}";
-				writer.write(textData);
+				this.json = new JSONObject(textData);
+				writer.write(this.json.toString(4));
 				writer.close();
 			} catch (IOException ex){
 				ex.printStackTrace();
@@ -53,12 +54,12 @@ public class ProfileManager {
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(userData));
 				textData = reader.readLine();
+				this.json = new JSONObject(textData);
 				reader.close();
 			} catch (IOException ex){
 				ex.printStackTrace();
 			}
 		}
-		this.json = new JSONObject(textData);
 	}
 	
 	/**
@@ -75,7 +76,7 @@ public class ProfileManager {
 		File userData = new File(home+File.separator+".projectile"+File.separator+"userData"+File.separator+"data.json");
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(userData));
-			writer.write(this.json.toString());
+			writer.write(this.json.toString(4));
 			writer.close();
 		} catch (IOException ioe){
 			ioe.printStackTrace();

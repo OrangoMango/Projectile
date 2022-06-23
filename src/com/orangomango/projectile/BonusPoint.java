@@ -2,6 +2,7 @@ package com.orangomango.projectile;
 
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
+import javafx.geometry.Rectangle2D;
 
 import java.util.*;
 import java.io.Serializable;
@@ -109,6 +110,8 @@ public class BonusPoint implements Serializable{
 	}
 	
 	public boolean isOnPlayer(Player p){
-		return (this.x >= p.x-p.w/2 && this.x <= p.x+p.w/2) && (this.y >= p.y-p.w/2 && this.y <= p.y+p.w/2) && allowed;
+		Rectangle2D playerRect = new Rectangle2D(p.x, p.y, p.w, p.w);
+		Rectangle2D thisRect = new Rectangle2D(this.x, this.y, WIDTH, WIDTH);
+		return playerRect.intersects(thisRect) && allowed;
 	}
 }

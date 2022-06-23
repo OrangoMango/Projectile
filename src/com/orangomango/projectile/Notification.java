@@ -26,10 +26,10 @@ public class Notification {
 		gc.save();
 		gc.setFill(Color.web("#F7D79B"));
 		gc.setGlobalAlpha(0.7);
-		gc.fillRect(SCREEN_WIDTH-310, 20, 290, 50);
+		gc.fillRect(SCREEN_WIDTH-310, 30, 290, 50);
 		gc.setFont(Font.loadFont(MAIN_FONT, 25));
 		gc.setFill(Color.web("#7B390E"));
-		gc.fillText(this.text, SCREEN_WIDTH-290, 52);
+		gc.fillText(this.text, SCREEN_WIDTH-290, 62);
 		gc.restore();
 		MainApplication.schedule(() -> mustShow = false, 2000);
 	}
