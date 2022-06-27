@@ -7,6 +7,7 @@ import javafx.scene.effect.ColorAdjust;
 import java.util.*;
 
 import static com.orangomango.projectile.MainApplication.*;
+import com.orangomango.projectile.ui.profile.Logger;
 
 public class Enemy extends Entity{
 	private Player player;
@@ -52,12 +53,13 @@ public class Enemy extends Entity{
 		this.damage2player = value;
 	}
 	
-	public void takeDamage(int damage, int index){
+	public void takeDamage(int damage){
 		super.takeDamage(damage);
 		totalDamage += damage;
 		Random random = new Random();
 		if (this.hp <= 0){
-			die(index);			
+			die();
+			MainApplication.taskState.getJSONObject("enemies").put(this.shoots ? "green" : "red", MainApplication.taskState.getJSONObject("enemies").getInt(this.shoots ? "green" : "red")+1);	
 			userGamedata.put("enemies", userGamedata.getOrDefault("enemies", 0.0)+1);
 			if (this.boss && random.nextInt(100) <= 15+this.damage2player){ // 15% probability + extra %
 				MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
@@ -118,18 +120,26 @@ public class Enemy extends Entity{
 			}
 		} else {
 			this.x += speedX;
-			for (Entity en : MainApplication.entities){
-				if (en != this && collided(en)){
-					this.x -= speedX+2;
-					break;
+			try {
+				for (Entity en : MainApplication.entities){
+					if (en != this && collided(en)){
+						this.x -= speedX+2;
+						break;
+					}
 				}
+			} catch (ConcurrentModificationException ex){
+				Logger.warning("ConcurrentModificationException occured while checking collision of an enemy");
 			}
 			this.y += speedY;
-			for (Entity en : MainApplication.entities){
-				if (en != this && collided(en)){
-					this.y -= speedY+2;
-					break;
+			try {
+				for (Entity en : MainApplication.entities){
+					if (en != this && collided(en)){
+						this.y -= speedY+2;
+						break;
+					}
 				}
+			} catch (ConcurrentModificationException ex){
+				Logger.warning("ConcurrentModificationException occured while checking collision of an enemy");
 			}
 		}
 		if (this.spawning){

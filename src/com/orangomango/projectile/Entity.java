@@ -77,9 +77,9 @@ public class Entity implements Serializable{
 		gc.fillOval(this.x-this.w/2, this.y-this.w/2, this.w, this.w);
 	}
 	
-	public void die(int index){
+	public void die(){		
 		try {
-			MainApplication.entities.remove(index);
+			MainApplication.entities.remove(this);
 		} catch (ConcurrentModificationException ex){
 			System.out.println("-- error");
 		}

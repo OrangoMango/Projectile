@@ -53,7 +53,9 @@ public class ProfileManager {
 		} else {
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(userData));
-				textData = reader.readLine();
+				StringBuilder builder = new StringBuilder();
+				reader.lines().forEach(line -> builder.append(line).append("\n"));
+				textData = builder.toString();
 				this.json = new JSONObject(textData);
 				reader.close();
 			} catch (IOException ex){

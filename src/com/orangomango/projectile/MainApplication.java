@@ -20,6 +20,7 @@ import javafx.geometry.Rectangle2D;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.io.*;
+import org.json.*;
 
 import com.orangomango.projectile.ui.*;
 import com.orangomango.projectile.ui.profile.*;
@@ -51,6 +52,8 @@ public class MainApplication extends Application {
 	public static Runnable gameoverPage;
 	public static Runnable recordsPage;
 	public static Runnable tasksPage;
+	public static Runnable taskEndPage;
+	public static Runnable achievementsPage;
 	private static Canvas currentCanvas;
 	private static Stage currentStage;
 
@@ -87,6 +90,8 @@ public class MainApplication extends Application {
 	private static int savedAmmo;
 	private static boolean showingPause;
 	public static Player player;
+	private static final String DEFAULT_TASK_STATE = "{\"enemies\" : {\"red\" : 0,\"green\" : 0},\"score\" : 0,\"totalDamage\" : 0,\"totalTime\" : 0,\"hpRecovered\" : 0,\"collected\" : {\"bonusPoints\" : 0,\"guns\" : 0,},\"bulletsShot\" : 0,\"rechargeTimes\" : 0,\"bossesKilled\" : 0,\"damageRatio\" : 0}";
+	public static JSONObject taskState = new JSONObject(DEFAULT_TASK_STATE);
 	
 	public static boolean playWithTutorial;
 	private static TutorialMessage tutorialMsg;
@@ -115,6 +120,7 @@ public class MainApplication extends Application {
 	public static Media BOSS_SUPER_SOUND;
 	public static Media BOSS_HIT_SOUND;
 	public static Media MENU_BACKGROUND_SOUND;
+	public static Media GAMEOVER_BACKGROUND_SOUND;
 	public static Media CONFIRM_SOUND;
 	public static Media SELECT_SOUND;
 	public static Media SHOW_SOUND;
@@ -265,6 +271,7 @@ public class MainApplication extends Application {
 		floatingTexts.clear();
 		availableGuns.clear();
 		drops.clear();
+		entities.clear();
 		bulletCount = 0;
 		enemyDamageCount = 0;
 		dimIndex = 0;
@@ -273,6 +280,7 @@ public class MainApplication extends Application {
 		reloading = null;
 		savedAmmo = 0;
 		host = false;
+		taskState = new JSONObject(DEFAULT_TASK_STATE);
 
 		loadGuns();
 		
@@ -617,6 +625,7 @@ public class MainApplication extends Application {
 		if (System.currentTimeMillis() < rechargeStart+currentDiff[15] || paused || player.hp == player.getStartHP() || showingTutorialMessage) return;
 			rechargeStart = System.currentTimeMillis();
 			userGamedata.put("recharges", userGamedata.getOrDefault("recharges", 0.0)+1);
+			taskState.put("hpRecovered", taskState.getInt("hpRecovered")+1);
 			if (player.hp+40 > player.getStartHP()){
 				player.hp = player.getStartHP();
 			} else {
@@ -649,6 +658,7 @@ public class MainApplication extends Application {
 			ammoDrawing = 0;
 			player.speed = player.startSpeed;
 			reloading = null;
+			taskState.put("rechargeTimes", taskState.getInt("rechargeTimes")+1);
 		});
 		reloading.setCycleCount(config.getRechargeFrames()[1]);
 		reloading.play();
@@ -695,11 +705,25 @@ public class MainApplication extends Application {
 			stage.getScene().setRoot(records.getScene());
 		};
 		
-		tasksPage = () -> {
-			TasksScreen tasks = new TasksScreen();
+		taskEndPage = () -> {
+			TasksScreen tasks = new TasksScreen(true);
 			stage.setResizable(false);
 			stage.setFullScreenExitHint("");
 			stage.getScene().setRoot(tasks.getScene());
+		};
+		
+		tasksPage = () -> {
+			TasksScreen tasks = new TasksScreen(false);
+			stage.setResizable(false);
+			stage.setFullScreenExitHint("");
+			stage.getScene().setRoot(tasks.getScene());
+		};
+		
+		achievementsPage = () -> {
+			AchievementsScreen screen = new AchievementsScreen();
+			stage.setResizable(false);
+			stage.setFullScreenExitHint("");
+			stage.getScene().setRoot(screen.getScene());
 		};
 
 		if (firstTime){
@@ -728,6 +752,7 @@ public class MainApplication extends Application {
 			BOSS_SUPER_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_super.wav");
 			BOSS_HIT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/boss_hit.wav");
 			MENU_BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/menu_background.wav");
+			GAMEOVER_BACKGROUND_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/gameover_background.wav");
 			CONFIRM_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/confirm.wav");
 			SELECT_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/select.wav");
 			SHOW_SOUND = new Media("file://"+userHome+"/.projectile/assets/audio/show.wav");
@@ -1007,6 +1032,7 @@ public class MainApplication extends Application {
 				if (drop.onPlayer(player)){
 					playSound(DROP_SOUND, false, null, false);
 					dropIterator.remove();
+					taskState.getJSONObject("collected").put("guns", taskState.getJSONObject("collected").getInt("guns")+1);
 					Random randomN = new Random();
 					BulletConfig.Rarity gotRarity = drop.getRarity(); 
 					if (player.shield <= player.getStartShield()-25){
@@ -1042,6 +1068,7 @@ public class MainApplication extends Application {
 							point.startTimer();
 							score += 50;
 							userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
+							taskState.getJSONObject("collected").put("bonusPoints", taskState.getJSONObject("collected").getInt("bonusPoints")+1);
 							playSound(SCORE_SOUND, false, null, false);
 						}
 						if (point2.isOnPlayer((Player)entities.get(i))){
@@ -1051,6 +1078,7 @@ public class MainApplication extends Application {
 							point2.startTimer();
 							score += 50;
 							userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
+							taskState.getJSONObject("collected").put("bonusPoints", taskState.getJSONObject("collected").getInt("bonusPoints")+1);
 							playSound(SCORE_SOUND, false, null, false);
 						}
 					}
@@ -1071,9 +1099,9 @@ public class MainApplication extends Application {
 							Entity ent = entities.get(i);
 							if (exp.collided(ent)){
 								if (ent instanceof Enemy && !((Enemy)ent).spawning){
-									((Enemy)ent).takeDamage(exp.damage, i);
+									((Enemy)ent).takeDamage(exp.damage);
 								} else if (ent instanceof Boss){
-									((Boss)ent).takeDamage(exp.damage, i);
+									((Boss)ent).takeDamage(exp.damage);
 								} else {
 									ent.takeDamage(exp.damage);
 								}
@@ -1128,7 +1156,7 @@ public class MainApplication extends Application {
 									}
 									if (e instanceof Enemy && e.collided(b.getX(), b.getY(), Bullet.w) && !((Enemy)e).spawning){
 										if (!b.doExplosion){
-											((Enemy)e).takeDamage(dmg, i);
+											((Enemy)e).takeDamage(dmg);
 											floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
 											enemyDamageCount++;
 										}
@@ -1145,7 +1173,7 @@ public class MainApplication extends Application {
 										}
 									} else if (e instanceof Boss && e.collided(b.getX(), b.getY(), Bullet.w)){
 										if (!b.doExplosion){
-											((Boss)e).takeDamage(dmg, i);
+											((Boss)e).takeDamage(dmg);
 											floatingTexts.add(new FloatingText(Integer.toString(dmg), b.getX(), b.getY()));
 											enemyDamageCount++;
 										}
@@ -1200,7 +1228,7 @@ public class MainApplication extends Application {
 					Entity ent = entities.get(j);
 					if (bs.detectCollision(ent)){
 						if (ent instanceof Enemy){
-							((Enemy)ent).takeDamage(25, j);
+							((Enemy)ent).takeDamage(25);
 						} else if (ent instanceof Player){
 							ent.takeDamage(2);
 						}
@@ -1243,6 +1271,7 @@ public class MainApplication extends Application {
 			
 			// Draw score
 			userGamedata.put("score", (double)score);
+			taskState.put("score", score);
 			gc.setFill(Color.WHITE);
 			gc.setFont(Font.loadFont(MAIN_FONT, 35));
 			gc.fillText(Integer.toString(score), 270, 50);
@@ -1296,6 +1325,7 @@ public class MainApplication extends Application {
 			
 			// Draw timer
 			userGamedata.put("gameTime", (double)(now-gameStart));
+			taskState.put("totalTime", now-gameStart);
 			gc.setFont(Font.loadFont(MAIN_FONT, 30));
 			gc.setFill(Color.WHITE);
 			gc.fillText(String.format("%s:%s", (now-gameStart)/60000, (now-gameStart)/1000%60), 30, SCREEN_HEIGHT-30);

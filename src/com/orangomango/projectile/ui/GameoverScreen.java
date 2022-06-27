@@ -16,6 +16,8 @@ import com.orangomango.projectile.ui.profile.Logger;
 
 public class GameoverScreen extends Screen{
 	private volatile String displayText = "";
+	private volatile String xpText = "";
+	private volatile int xpTotal = 0;
 	private volatile boolean displayFinished;
 	private static boolean newHighscore, newTime;
 	
@@ -49,22 +51,29 @@ public class GameoverScreen extends Screen{
 	
 	@Override
 	public TilePane getScene(){
+		playSound(GAMEOVER_BACKGROUND_SOUND, true, 0.65, false);
 		TilePane layout = new TilePane();
 		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> {
 			if (e.getCode() == KeyCode.SPACE && displayFinished){
-				Platform.runLater(startPage);
+				Platform.runLater(taskEndPage);
 			}
 		});
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		
 		drawCanvas(gc);
+		TaskManager tm = new TaskManager();
 		
 		schedule(() -> {
+			int counter = 0;
 			for (String text : getStringData().split("\n")){
 				displayText += text+"\n";
-				Platform.runLater(() -> drawCanvas(gc));
+				int xp = getXPData()[counter++];
+				xpTotal += xp;
+				xpText += xp+"xp\n";
+				tm.getJSON().put("xp", tm.getJSON().getInt("xp")+xp);
+				drawCanvas(gc);
 				playSound(SHOW_SOUND, false, null, false);
 				try {
 					Thread.sleep(500);
@@ -72,8 +81,9 @@ public class GameoverScreen extends Screen{
 					ex.printStackTrace();
 				}
 			}
+			tm.updateOnFile();
 			displayFinished = true;
-			Platform.runLater(() -> drawCanvas(gc));
+			drawCanvas(gc);
 			playSound(SHOW_SOUND, false, null, false);
 		}, 1200);
 		
@@ -83,6 +93,7 @@ public class GameoverScreen extends Screen{
 	
 	private void drawCanvas(GraphicsContext gc){
 		gc.setFill(Color.web("#929292"));
+		gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.save();
 		//gc.translate((SCREEN_WIDTH-1000)/2, (SCREEN_HEIGHT-800)/2);
@@ -96,10 +107,13 @@ public class GameoverScreen extends Screen{
 		gc.setFill(Color.web("#E7D6D6"));
 		gc.setFont(Font.loadFont(MAIN_FONT, 40));
 		gc.fillText(displayText, 160, 250);
+		gc.setFill(Color.web("#384ACA"));
+		gc.setFont(Font.loadFont(MAIN_FONT, 40));
+		gc.fillText(xpText+"\nTot:"+xpTotal+"xp", 20, 250);
 		if (displayFinished){
 			gc.setFill(Color.web("#1B8344"));
 			gc.setFont(Font.loadFont(MAIN_FONT, 33));
-			gc.fillText("Press SPACE to continue", 150, 700);
+			gc.fillText("Press SPACE to continue", 150, 750);
 		}
 		gc.restore();
 	}
@@ -122,8 +136,52 @@ public class GameoverScreen extends Screen{
 		builder.append("Bosses killed: ").append(userGamedata.getOrDefault("bosses", 0.0).intValue()).append("\n");
 		builder.append("Bonus points: ").append(userGamedata.getOrDefault("bonusPoints", 0.0).intValue()).append("\n");
 		builder.append("Bonus missed: ").append(userGamedata.getOrDefault("bonusMissed", 0.0).intValue()).append("\n");
-		builder.append("Grenades launched: ").append(userGamedata.getOrDefault("explosions", 0.0).intValue()).append("\n");
+		builder.append("Grenades shot: ").append(userGamedata.getOrDefault("explosions", 0.0).intValue()).append("\n");
 		builder.append("HP Recharged times: ").append(userGamedata.getOrDefault("recharges", 0.0).intValue());
 		return builder.toString();
+	}
+	
+	private static int[] getXPData(){
+		/*
+		 * XP:
+		 * 10xp/100score
+		 * 1xp/enemy killed
+		 * 1xp/3sec played
+		 * 5xp if aim ratio > 0.7
+		 * 30xp/boss killed
+		 * 10xp/bonus point taken
+		 * -10xp/bonus point missed
+		 * 1xp/grenade shot
+		 * 2xp/hp recharged
+		 */
+		int[] xp = new int[9];
+		xp[0] = userGamedata.get("score").intValue()/10;
+		xp[1] = userGamedata.getOrDefault("enemies", 0.0).intValue()*1;
+		xp[2] = userGamedata.get("gameTime").intValue()/3000;
+		xp[3] = userGamedata.get("damageRatio") > 0.7 ? 5 : 0;
+		xp[4] = userGamedata.getOrDefault("bosses", 0.0).intValue()*30;
+		xp[5] = userGamedata.getOrDefault("bonusPoints", 0.0).intValue()*10;
+		xp[6] = userGamedata.getOrDefault("bonusMissed", 0.0).intValue()*(-10);
+		xp[7] = userGamedata.getOrDefault("explosions", 0.0).intValue();
+		xp[8] = userGamedata.getOrDefault("recharges", 0.0).intValue()*2;
+		
+		for (int i = 0; i < xp.length; i++){
+			switch (difficulty){
+				case "easy":
+					xp[i] *= 1;
+					break;
+				case "medium":
+					xp[i] = (int)Math.round(xp[i]*1.2);
+					break;
+				case "hard":
+					xp[i] = (int)Math.round(xp[i]*1.3);
+					break;
+				case "extreme":
+					xp[i] = (int)Math.round(xp[i]*1.5);
+					break;
+			}
+		}
+		
+		return xp;
 	}
 }

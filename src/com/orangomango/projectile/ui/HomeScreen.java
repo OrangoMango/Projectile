@@ -230,7 +230,7 @@ public class HomeScreen extends Screen{
 		return false;
 	}
 	
-	private void update(GraphicsContext gc, Cursor cursor){
+	private synchronized void update(GraphicsContext gc, Cursor cursor){
 		gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		gc.setFill(Color.web("#383535"));
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);

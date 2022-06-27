@@ -36,6 +36,7 @@ public class LoadingScreen{
 		"audio/explosion.wav",
 		"audio/extra_life.wav",
 		"audio/fast_gun.wav",
+		"audio/gameover_background.wav",
 		"audio/machine_gun.wav",
 		"audio/menu_background.wav",
 		"audio/notification.wav",

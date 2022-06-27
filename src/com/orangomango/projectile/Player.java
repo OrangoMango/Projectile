@@ -90,7 +90,11 @@ public class Player extends Entity{
 	}
 	
 	public static void doGameOver(){
-		MainApplication.userGamedata.put("damageRatio", (double)MainApplication.enemyDamageCount/MainApplication.bulletCount);
+		double ratio = (double)MainApplication.enemyDamageCount/MainApplication.bulletCount;
+		MainApplication.userGamedata.put("damageRatio", ratio);
+		MainApplication.taskState.put("damageRatio", MainApplication.bulletCount == 0 ? 0 : ratio);
+		MainApplication.taskState.put("totalDamage", MainApplication.enemyDamageCount);
+		MainApplication.taskState.put("bulletsShot", MainApplication.bulletCount);
 		Logger.info("Game data: "+userGamedata);
 		MainApplication.playSound(DEATH_SOUND, false, null, false);
 		MainApplication.loop.stop();

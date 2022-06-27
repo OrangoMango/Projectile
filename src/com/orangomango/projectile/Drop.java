@@ -21,7 +21,7 @@ public class Drop implements Serializable{
 		this.startTime = System.currentTimeMillis();
 		switch (this.rarity){
 			case COMMON:
-				this.color = "#14F7C4";
+				this.color = "#209003";
 				break;
 			case EPIC:
 				this.color = "#8200FF";
