@@ -98,6 +98,7 @@ public class BonusPoint implements Serializable{
 			if (difference >= TIME_TO_TAKE && (client == null || host)){
 				setRandomPosition(new Random());
 				userGamedata.put("bonusMissed", userGamedata.getOrDefault("bonusMissed", 0.0)+1);
+				incrementAchievement(9, 1);
 				if (MainApplication.score <= 150){
 					MainApplication.score = 0;
 				} else {

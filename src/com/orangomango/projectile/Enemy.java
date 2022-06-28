@@ -61,6 +61,10 @@ public class Enemy extends Entity{
 			die();
 			MainApplication.taskState.getJSONObject("enemies").put(this.shoots ? "green" : "red", MainApplication.taskState.getJSONObject("enemies").getInt(this.shoots ? "green" : "red")+1);	
 			userGamedata.put("enemies", userGamedata.getOrDefault("enemies", 0.0)+1);
+			MainApplication.incrementAchievement(0, 1);
+			if (this.shoots){
+				MainApplication.incrementAchievement(3, 1);
+			}
 			if (this.boss && random.nextInt(100) <= 15+this.damage2player){ // 15% probability + extra %
 				MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 				if (player.hp <= player.getStartHP()-10){

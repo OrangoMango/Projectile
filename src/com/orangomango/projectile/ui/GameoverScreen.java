@@ -24,6 +24,7 @@ public class GameoverScreen extends Screen{
 	public GameoverScreen(){
 		int score = userGamedata.get("score").intValue();
 		int timePlayed = userGamedata.get("gameTime").intValue();
+		incrementAchievement(4, timePlayed);
 		ProfileManager pm = new ProfileManager();
 		int savedScore = pm.getJSON().getJSONObject("highscore").getInt(difficulty);
 		int savedTime = pm.getJSON().getJSONObject("bestTime").getInt(difficulty);

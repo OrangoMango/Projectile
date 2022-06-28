@@ -12,6 +12,7 @@ public class Notification {
 	private GraphicsContext gc;
 	private String text;
 	public boolean mustShow;
+	private boolean scheduled;
 	
 	public Notification(GraphicsContext gc){
 		this.gc = gc;
@@ -31,6 +32,12 @@ public class Notification {
 		gc.setFill(Color.web("#7B390E"));
 		gc.fillText(this.text, SCREEN_WIDTH-290, 62);
 		gc.restore();
-		MainApplication.schedule(() -> mustShow = false, 2000);
+		if (!scheduled){
+			MainApplication.schedule(() -> {
+				mustShow = false;
+				scheduled = false;
+			}, 2000);
+			scheduled = true;
+		}
 	}
 }

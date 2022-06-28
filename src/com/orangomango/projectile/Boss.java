@@ -136,6 +136,7 @@ public class Boss extends Entity{
 			player.hp = player.getStartHP();
 			userGamedata.put("bosses", userGamedata.getOrDefault("bosses", 0.0)+1);
 			taskState.put("bossesKilled", taskState.getInt("bossesKilled")+1);
+			MainApplication.incrementAchievement(2, 1);
 			MainApplication.playSound(EXTRA_LIFE_SOUND, false, null, false);
 			MainApplication.score += 100;
 			Logger.info("Boss defeated");

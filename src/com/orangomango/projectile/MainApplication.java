@@ -76,6 +76,8 @@ public class MainApplication extends Application {
 	public static int bulletCount;
 	public static int enemyDamageCount;
 	public static Notification notification;
+	private static AchievementsScreen.AchievementNotification acNotification;
+	private static AchievementsManager am;
 	private static boolean hpCheck;
 	public static boolean bossCheck;
 	public static String difficulty;
@@ -226,6 +228,15 @@ public class MainApplication extends Application {
 		showingTutorialMessage = true;
 	}
 	
+	public static void incrementAchievement(int id, long value){
+		boolean out = am.incrementPoints(id, value);
+		if (out){
+			acNotification.id = id;
+			acNotification.mustShow = true;
+			// play achievement sound
+		}
+	}
+	
 	private static int gunByName(String name){
 		int i = 0;
 		for (BulletConfig c : availableGuns){
@@ -317,6 +328,8 @@ public class MainApplication extends Application {
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
 		notification = new Notification(gc);
+		am = new AchievementsManager();
+		acNotification = new AchievementsScreen.AchievementNotification(gc, am);
 		
 		ProfileManager pm = new ProfileManager();
 		Player tPlayer = new Player(gc, 400, 400, "#0000ff", "#E2F5F6", pm);
@@ -1069,6 +1082,7 @@ public class MainApplication extends Application {
 							score += 50;
 							userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
 							taskState.getJSONObject("collected").put("bonusPoints", taskState.getJSONObject("collected").getInt("bonusPoints")+1);
+							incrementAchievement(1, 1);
 							playSound(SCORE_SOUND, false, null, false);
 						}
 						if (point2.isOnPlayer((Player)entities.get(i))){
@@ -1079,6 +1093,7 @@ public class MainApplication extends Application {
 							score += 50;
 							userGamedata.put("bonusPoints", userGamedata.getOrDefault("bonusPoints", 0.0)+1);
 							taskState.getJSONObject("collected").put("bonusPoints", taskState.getJSONObject("collected").getInt("bonusPoints")+1);
+							incrementAchievement(1, 1);
 							playSound(SCORE_SOUND, false, null, false);
 						}
 					}
@@ -1270,6 +1285,22 @@ public class MainApplication extends Application {
 			gc.strokeRect(20, 85, 200, 15);
 			
 			// Draw score
+			int taskId = -1;
+			switch (difficulty){
+				case "easy":
+					taskId = 5;
+					break;
+				case "medium":
+					taskId = 6;
+					break;
+				case "hard":
+					taskId = 7;
+					break;
+				case "extreme":
+					taskId = 8;
+					break;
+			}
+			MainApplication.incrementAchievement(taskId, score-taskState.getInt("score"));
 			userGamedata.put("score", (double)score);
 			taskState.put("score", score);
 			gc.setFill(Color.WHITE);
@@ -1341,8 +1372,9 @@ public class MainApplication extends Application {
 				hpCheck = false;
 			}
 
-			// Show notification if notification.mustShow = true
+			// Show notifications if notification.mustShow = true
 			notification.show();
+			acNotification.show();
 			
 			// Auto recharge ammo
 			if (reloading == null && player.ammo == 0){

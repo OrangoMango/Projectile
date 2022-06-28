@@ -91,6 +91,7 @@ public class TasksScreen extends Screen{
 						break;
 					case SPACE:
 						if (selectedX == 2 && selectedY == 2){
+							playSound(CONFIRM_SOUND, false, null, true);
 							achievementsPage.run();
 							return;
 						}
@@ -180,7 +181,7 @@ public class TasksScreen extends Screen{
 					break;
 			}
 			
-			drawTask(100, 100, 250, 150, type, number, tm, gc, -1, -1, expired);
+			drawTask(100, 80, 250, 150, type, number, tm, gc, -1, -1, expired);
 			gc.restore();
 			if (progress >= 1.0 || expired){
 				int completedXP = 0;
