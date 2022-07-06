@@ -28,11 +28,12 @@ public class AchievementsScreen extends Screen{
 		public void show(){
 			if (!this.mustShow) return;
 			this.y += 1;
-			gc.setFill(Color.YELLOW);
-			gc.fillRect(400, 740-this.y, 250, 50);
+			//gc.setFill(Color.YELLOW);
+			//gc.fillRect(400, 740-this.y, 250, 50);
+			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/achievement_notification.png"), 400, 740-this.y, 250, 50);
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 22));
-			gc.fillText(AchievementsManager.getAchievement(this.id).getString("name").replace("-", " ")+"("+this.am.getLevel(this.id)+")", 420, 760-this.y);
+			gc.fillText(AchievementsManager.getAchievement(this.id).getString("name").replace("-", " ")+"\n+1000xp", 420, 760-this.y);
 			if (!scheduled){
 				schedule(() -> {
 					this.mustShow = false;
@@ -50,7 +51,7 @@ public class AchievementsScreen extends Screen{
 		
 		AchievementsManager am = new AchievementsManager();
 		
-		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+		Canvas canvas = new Canvas(RENDER_WIDTH, RENDER_HEIGHT);
 		canvas.setFocusTraversable(true);
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		layout.getChildren().add(canvas);
@@ -62,9 +63,9 @@ public class AchievementsScreen extends Screen{
 		});
 		
 		gc.setFill(Color.web("#676C69"));
-		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
 		
-		gc.scale((double)SCREEN_WIDTH/DEFAULT_WIDTH, (double)SCREEN_HEIGHT/DEFAULT_HEIGHT);
+		gc.scale(xScale, yScale);
 		
 		final int width = 250;
 		final int height = 130;
@@ -84,7 +85,7 @@ public class AchievementsScreen extends Screen{
 			gc.setFill(Color.web("#D3F79B"));
 			long p1 = i == 4 ? am.getJSON().getLong("id-"+i)/(1000*60*60) : am.getJSON().getLong("id-"+i);
 			int p2 = i == 4 ? value/(1000*60*60) : value;
-			gc.fillText(AchievementsManager.getAchievement(i).getString("name").replace("-", " ")+"("+lvl+")"+String.format("\n(%s/%s)", p1, p2), x+15, y+25);
+			gc.fillText(AchievementsManager.getAchievement(i).getString("name").replace("-", " ")+String.format("\n(%s/%s)", p1, p2), x+15, y+25);
 			gc.setFont(Font.loadFont(MAIN_FONT, 15));
 			gc.setFill(Color.web("#B6C998"));
 			String desc = AchievementsManager.getAchievement(i).getString("description");
@@ -99,9 +100,14 @@ public class AchievementsScreen extends Screen{
 			// Draw progress bar
 			gc.setLineWidth(2);
 			gc.setFill(Color.web("#7DE002"));
-			gc.fillRect(x+140, y+110, 100*((double)p1/p2), 10);
+			gc.fillRect(x+140, y+110, 100*((double)p1/p2 > 1.0 ? 1 : (double)p1/p2), 10);
 			gc.setStroke(Color.web("#375B0B"));
 			gc.strokeRect(x+140, y+110, 100, 10);
+			
+			// Draw bullets
+			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/bullet_"+(lvl > 0 ? "on" : "off")+".png"), x+15, y+87, 25, 35);
+			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/bullet_"+(lvl > 1 ? "on" : "off")+".png"), x+45, y+87, 25, 35);
+			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/bullet_"+(lvl > 2 ? "on" : "off")+".png"), x+75, y+87, 25, 35);
 		}
 		
 		gc.setFill(Color.web("#FDE4C8"));

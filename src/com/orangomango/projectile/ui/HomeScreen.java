@@ -42,7 +42,7 @@ public class HomeScreen extends Screen{
 	@Override
 	public TilePane getScene(){
 		TilePane layout = new TilePane();
-		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+		Canvas canvas = new Canvas(RENDER_WIDTH, RENDER_HEIGHT);
 		canvas.setFocusTraversable(true);
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		if (doingTutorial){
@@ -231,13 +231,14 @@ public class HomeScreen extends Screen{
 	}
 	
 	private synchronized void update(GraphicsContext gc, Cursor cursor){
-		gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		gc.setFill(Color.web("#383535"));
-		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
 		gc.save();
 		
-		gc.scale((double)SCREEN_WIDTH/DEFAULT_WIDTH, (double)SCREEN_HEIGHT/DEFAULT_HEIGHT);
+		gc.clearRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+		gc.setFill(Color.web("#383535"));
+		gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+		
+		gc.scale(xScale, yScale);
 		
 		gc.drawImage(LOGO_IMG, 90, 10, 650, 169);
 		gc.translate(0, -70);

@@ -36,12 +36,12 @@ public class AchievementsManager{
 		}
 	}
 	
-	public synchronized boolean incrementPoints(int id, long value){
+	public synchronized int incrementPoints(int id, long value){
 		int lvl = this.getLevel(id);
 		this.json.put("id-"+id, this.json.getLong("id-"+id)+value);
 		int newlvl = this.getLevel(id);
 		this.updateOnFile();
-		return lvl != newlvl;
+		return newlvl-lvl;
 	}
 	
 	public int getLevel(int id){

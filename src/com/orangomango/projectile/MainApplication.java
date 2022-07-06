@@ -43,10 +43,6 @@ public class MainApplication extends Application {
 	private static List<FloatingText> floatingTexts = Collections.synchronizedList(new ArrayList<FloatingText>());
 	public static List<Drop> drops = Collections.synchronizedList(new ArrayList<Drop>());
 	public static HashMap<String, Double> userGamedata = new HashMap<>();
-	public static final int DEFAULT_WIDTH = 1000;
-	public static final int DEFAULT_HEIGHT = 800;
-	public static int SCREEN_WIDTH =  DEFAULT_WIDTH;
-	public static int SCREEN_HEIGHT = DEFAULT_HEIGHT;
 	public static final int FPS = 40;
 	public static Runnable startPage;
 	public static Runnable gameoverPage;
@@ -56,6 +52,15 @@ public class MainApplication extends Application {
 	public static Runnable achievementsPage;
 	private static Canvas currentCanvas;
 	private static Stage currentStage;
+	
+	public static final int DEFAULT_WIDTH = 1000;
+	public static final int DEFAULT_HEIGHT = 800;
+	public static int SCREEN_WIDTH = 836; //DEFAULT_WIDTH; // 836
+	public static int SCREEN_HEIGHT = 411; //DEFAULT_HEIGHT; // 411
+	public static int RENDER_WIDTH = SCREEN_WIDTH < SCREEN_HEIGHT ? SCREEN_WIDTH : (int)Math.round(SCREEN_HEIGHT/0.8);
+	public static int RENDER_HEIGHT = SCREEN_HEIGHT < SCREEN_WIDTH ? SCREEN_HEIGHT : (int)Math.round(SCREEN_WIDTH*0.8);
+	public static double xScale = (double)RENDER_WIDTH/DEFAULT_WIDTH;
+	public static double yScale = (double)RENDER_HEIGHT/DEFAULT_HEIGHT;
 
 	private static boolean audioAllowed = true;
 	public static int score;
@@ -229,11 +234,17 @@ public class MainApplication extends Application {
 	}
 	
 	public static void incrementAchievement(int id, long value){
-		boolean out = am.incrementPoints(id, value);
-		if (out){
+		int out = am.incrementPoints(id, value);
+		TaskManager tm = new TaskManager();
+		if (out > 0){
 			acNotification.id = id;
 			acNotification.mustShow = true;
 			// play achievement sound
+			tm.getJSON().put("xp", tm.getJSON().getInt("xp")+1000);
+			tm.updateOnFile();
+		} else if (out < 0){
+			tm.getJSON().put("xp", tm.getJSON().getInt("xp")-1000);
+			tm.updateOnFile();
 		}
 	}
 	
@@ -297,8 +308,8 @@ public class MainApplication extends Application {
 		
 		// Setup SCREEN_WIDTH and SCREEN_HEIGHT based on the device resolution
 		Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-		if (bounds.getWidth() < SCREEN_WIDTH) SCREEN_WIDTH = (int)Math.round(bounds.getWidth());
-		if (bounds.getHeight() < SCREEN_HEIGHT) SCREEN_HEIGHT = (int)Math.round(bounds.getHeight());
+		if (bounds.getWidth() < DEFAULT_WIDTH) SCREEN_WIDTH = (int)Math.round(bounds.getWidth());
+		if (bounds.getHeight() < DEFAULT_HEIGHT) SCREEN_HEIGHT = (int)Math.round(bounds.getHeight());
 
 		if (!currentStage.isFullScreen()){
 			currentStage.setFullScreenExitHint("Press F to exit fullscreen");
@@ -320,12 +331,13 @@ public class MainApplication extends Application {
 		
 		if (playWithTutorial) currentDiff = diffEasy;
 		
-		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+		Canvas canvas = new Canvas(RENDER_WIDTH, RENDER_HEIGHT);
 		canvas.setFocusTraversable(true);
 		currentCanvas = canvas;
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(Color.web("#CFFF59"));
-		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+		gc.scale(xScale, yScale);
 		
 		notification = new Notification(gc);
 		am = new AchievementsManager();
@@ -337,8 +349,6 @@ public class MainApplication extends Application {
 		player = tPlayer;
 		
 		if (!playWithTutorial){
-			gc.save();
-			gc.translate((SCREEN_WIDTH-DEFAULT_WIDTH)/2, (SCREEN_HEIGHT-DEFAULT_HEIGHT)/2);
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
 			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
@@ -346,7 +356,6 @@ public class MainApplication extends Application {
 				gc.setFill(Color.RED);
 				gc.fillText("Warning: your difficulty is "+difficulty+". Enemies and boss\nare stronger and deal more damage", 70, 550);
 			}
-			gc.restore();
 		} else {
 			gameStarted = true;
 			update(gc);
@@ -357,9 +366,9 @@ public class MainApplication extends Application {
 		
 		Random random = new Random();
 		
-		point = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20, playWithTutorial);
+		point = new BonusPoint(gc, random.nextInt(RENDER_WIDTH-20)+10, random.nextInt(RENDER_HEIGHT-95)+95-20, playWithTutorial);
 		point.show = !playWithTutorial;
-		point2 = new BonusPoint(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-95)+95-20, playWithTutorial);
+		point2 = new BonusPoint(gc, random.nextInt(RENDER_WIDTH-20)+10, random.nextInt(RENDER_HEIGHT-95)+95-20, playWithTutorial);
 		point2.show = !playWithTutorial;
 
 		pointer1 = new Pointer(gc, player, point);
@@ -527,12 +536,12 @@ public class MainApplication extends Application {
 								counter--;
 							}
 							gc.setFill(Color.web("#FA8808"));
-							gc.fillRect(SCREEN_WIDTH/2-60, SCREEN_HEIGHT/2-60, 130, 130);
+							gc.fillRect(DEFAULT_WIDTH/2-60, RENDER_HEIGHT/2-60, 130, 130);
 							gc.setStroke(Color.web("#EED828"));
-							gc.strokeRect(SCREEN_WIDTH/2-60, SCREEN_HEIGHT/2-60, 130, 130);
+							gc.strokeRect(DEFAULT_WIDTH/2-60, RENDER_HEIGHT/2-60, 130, 130);
 							gc.setFont(new Font("sans-serif", 60));
 							gc.setFill(Color.WHITE);
-							gc.fillText(text, SCREEN_WIDTH/2-60+15, SCREEN_HEIGHT/2-60+90);
+							gc.fillText(text, RENDER_WIDTH/2-60+15, RENDER_HEIGHT/2-60+90);
 						}));
 						resume.setCycleCount(4);
 						resume.setOnFinished(rE -> {
@@ -570,7 +579,7 @@ public class MainApplication extends Application {
 		player.ammo = config.getAmmo();
 		
 		// Shoot eventhandler
-		EventHandler<MouseEvent> eventHandler = e -> {
+		EventHandler<MouseEvent> eventHandler = e -> {			
 			if (!gameStarted || paused || showingTutorialMessage || !player.shootingAllowed) return;
 			if (!player.shooting){
 				player.shooting = true;
@@ -686,10 +695,14 @@ public class MainApplication extends Application {
 		stage.setScene(new Scene(new TilePane(new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT)), SCREEN_WIDTH, SCREEN_HEIGHT));
 		stage.widthProperty().addListener((o, oldV, newV) -> {
 			SCREEN_WIDTH = newV.intValue();
+			xScale = (double)RENDER_WIDTH/DEFAULT_WIDTH;
+			RENDER_WIDTH = SCREEN_WIDTH < SCREEN_HEIGHT ? SCREEN_WIDTH : (int)Math.round(SCREEN_HEIGHT/0.8);
 			if (currentCanvas != null) currentCanvas.setWidth(SCREEN_WIDTH);
 		});
 		stage.heightProperty().addListener((o, oldV, newV) -> {
 			SCREEN_HEIGHT = newV.intValue();
+			yScale = (double)RENDER_HEIGHT/DEFAULT_HEIGHT;
+			RENDER_HEIGHT = SCREEN_HEIGHT < SCREEN_WIDTH ? SCREEN_HEIGHT : (int)Math.round(SCREEN_WIDTH*0.8);
 			if (currentCanvas != null) currentCanvas.setHeight(SCREEN_HEIGHT);
 		});
 		
@@ -818,9 +831,9 @@ public class MainApplication extends Application {
 				bossInGame = bossFound;
 				boolean shoots = random.nextInt(100) <= 20 && score >= 650 ? true : false;
 				shoots = shoots && (!bossInGame || score >= 3500);
-				Enemy en = new Enemy(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, shoots ? "#90F501" : "#ff0000", shoots ? "#E1FDB8" : "#FFA3B2", player, shoots);
+				Enemy en = new Enemy(gc, random.nextInt(RENDER_WIDTH-20)+10, random.nextInt(RENDER_HEIGHT-20)+10, shoots ? "#90F501" : "#ff0000", shoots ? "#E1FDB8" : "#FFA3B2", player, shoots);
 				if (score >= 1700 && score >= bossCount+1500 && !bossFound){
-					Boss boss = new Boss(gc, random.nextInt(SCREEN_WIDTH-20)+10, random.nextInt(SCREEN_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
+					Boss boss = new Boss(gc, random.nextInt(RENDER_WIDTH-20)+10, random.nextInt(RENDER_HEIGHT-20)+10, "#F69E43", "#F4C99C", player);
 					bossFound = true;
 					bossInGame = bossFound;
 					entities.add(boss);
@@ -1028,9 +1041,9 @@ public class MainApplication extends Application {
 			long cooldown = now-explosionStart < 4500 ? now-explosionStart : 4500;
 			long cooldown2 = now-rechargeStart < currentDiff[15] ? now-rechargeStart : currentDiff[15];
 			
-			gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			gc.clearRect(0, 0, (double)RENDER_WIDTH/xScale, (double)RENDER_HEIGHT/yScale);
 			gc.setFill(Color.BLACK);
-			gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			gc.fillRect(0, 0, (double)RENDER_WIDTH/xScale, (double)RENDER_HEIGHT/yScale);
 			
 			//System.out.println("==== MAIN START ====");
 			
@@ -1146,7 +1159,7 @@ public class MainApplication extends Application {
 							if (client != null){
 								b.setGC(gc);
 							}
-							if ((b.getX() <= 0 || b.getX() >= SCREEN_WIDTH || b.getY() <= 0 || b.getY() >= SCREEN_HEIGHT) && !b.config.willBounce()){
+							if ((b.getX() <= 0 || b.getX() >= RENDER_WIDTH || b.getY() <= 0 || b.getY() >= RENDER_HEIGHT) && !b.config.willBounce()){
 								iterator.remove();
 								removed = true;
 							}
@@ -1260,22 +1273,22 @@ public class MainApplication extends Application {
 				}
 			}
 			
-			gc.translate(0, 10);
-			
+			gc.translate(0, 20);
+
 			// Draw hp bar
 			gc.setFill(Color.web(getHPColor(player.hp, player.getStartHP())));
 			gc.fillRect(20, 20, 200*player.hp/player.getStartHP() <= 0 ? 0 : 200*player.hp/player.getStartHP(), 30);
 			gc.setFill(Color.web("#0148F5"));
 			gc.fillRect(20, 20, 200*player.shield/player.getStartShield() <= 0 ? 0 : 200*player.shield/player.getStartShield(), 30);
 			gc.setStroke(Color.web("#41D4DD"));
-			gc.setLineWidth(4);
+			gc.setLineWidth(4.0*SCREEN_HEIGHT/DEFAULT_HEIGHT);
 			gc.strokeRect(20, 20, 200, 30);
 			
 			// Draw cooldown bar
 			gc.setFill(Color.web("#DCCA20"));
 			gc.fillRect(20, 60, 200*((int)cooldown)/4500, 15);
 			gc.setStroke(Color.web("#7F7518"));
-			gc.setLineWidth(4);
+			gc.setLineWidth(4.0*SCREEN_HEIGHT/DEFAULT_HEIGHT);
 			gc.strokeRect(20, 60, 200, 15);
 			
 			// Draw cooldown2 bar
@@ -1348,18 +1361,16 @@ public class MainApplication extends Application {
 			gc.fillRect(230, 20+(90-ammoHeight), 30, ammoHeight);
 			gc.fillRect(230, 115, 30*config.ammoAmount/config.getStartAmmoAmount(), 15);
 			gc.setStroke(Color.web("#FF2800"));
-			gc.setLineWidth(4);
+			gc.setLineWidth(4.0*SCREEN_HEIGHT/DEFAULT_HEIGHT);
 			gc.strokeRect(230, 20, 30, 90);
 			gc.strokeRect(230, 116, 30, 14);
-			
-			gc.translate(0, -10);
 			
 			// Draw timer
 			userGamedata.put("gameTime", (double)(now-gameStart));
 			taskState.put("totalTime", now-gameStart);
 			gc.setFont(Font.loadFont(MAIN_FONT, 30));
 			gc.setFill(Color.WHITE);
-			gc.fillText(String.format("%s:%s", (now-gameStart)/60000, (now-gameStart)/1000%60), 30, SCREEN_HEIGHT-30);
+			gc.fillText(String.format("%s:%s", (now-gameStart)/60000, (now-gameStart)/1000%60), 30, DEFAULT_HEIGHT-30);
 
 			if (player.hp <= 40 && !hpCheck){
 				hpCheck = true;
@@ -1376,11 +1387,12 @@ public class MainApplication extends Application {
 			notification.show();
 			acNotification.show();
 			
+			gc.translate(0, -20);
+			
 			// Auto recharge ammo
 			if (reloading == null && player.ammo == 0){
 				reloadAmmo();
-			}
-			
+			}			
 		}));
 		loop.setCycleCount(Animation.INDEFINITE);
 		loop.play();

@@ -15,7 +15,7 @@ public class RecordsScreen extends Screen{
 	@Override
 	public TilePane getScene(){
 		TilePane layout = new TilePane();
-		Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
+		Canvas canvas = new Canvas(RENDER_WIDTH, RENDER_HEIGHT);
 		canvas.setFocusTraversable(true);
 		canvas.setOnKeyPressed(e -> {
 			if (e.getCode() == KeyCode.SPACE || e.getCode() == KeyCode.ESCAPE){
@@ -24,9 +24,9 @@ public class RecordsScreen extends Screen{
 		});
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(Color.web("#676C69"));
-		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
 		
-		gc.scale((double)SCREEN_WIDTH/DEFAULT_WIDTH, (double)SCREEN_HEIGHT/DEFAULT_HEIGHT);
+		gc.scale(xScale, yScale);
 		
 		ProfileManager pm = new ProfileManager();
 		gc.setStroke(Color.web("#ABCBB8"));

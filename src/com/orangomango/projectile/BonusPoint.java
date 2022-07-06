@@ -37,8 +37,8 @@ public class BonusPoint implements Serializable{
 	
 	public void setRandomPosition(Random random){
 		if (client == null || host){
-			setX(random.nextInt(SCREEN_WIDTH-20)+10);
-			setY(random.nextInt(SCREEN_HEIGHT-95)+95-20);
+			setX(random.nextInt(RENDER_WIDTH-20)+10);
+			setY(random.nextInt(RENDER_HEIGHT-95)+95-20);
 		} else {
 			setX(-50);
 			setY(-50);

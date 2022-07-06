@@ -19,12 +19,12 @@ public class BossSuper {
 		gc.setStroke(Color.web("#896717"));
 		gc.save();
 		gc.setLineWidth(10);
-		gc.strokeLine(x, y-SCREEN_HEIGHT, x, y+SCREEN_HEIGHT);
-		gc.strokeLine(x-SCREEN_WIDTH, y, x+SCREEN_WIDTH, y);
+		gc.strokeLine(x, y-RENDER_HEIGHT, x, y+RENDER_HEIGHT);
+		gc.strokeLine(x-RENDER_WIDTH, y, x+RENDER_WIDTH, y);
 		gc.restore();
 	}
 	
 	public boolean detectCollision(Entity e){
-		return ((e.x-e.w/2 >= x-5 && e.x-e.w/2 <= x+5 && e.y-e.w/2 >= y-SCREEN_HEIGHT && e.y-e.w/2 <= y+SCREEN_HEIGHT) || (e.x+e.w/2 >= x-5 && e.x+e.w/2 <= x+5 && e.y+e.w/2 >= y-SCREEN_HEIGHT && e.y+e.w/2 <= y+SCREEN_HEIGHT)) || ((e.x-e.w/2 >= x-SCREEN_WIDTH && e.x-e.w/2 <= x+SCREEN_WIDTH && e.y-e.w/2 >= y-5 && e.y-e.w/2 <= y+5) || (e.x+e.w/2 >= x-SCREEN_WIDTH && e.x+e.w/2 <= x+SCREEN_WIDTH && e.y+e.w/2 >= y-5 && e.y+e.w/2 <= y+5));
+		return ((e.x-e.w/2 >= x-5 && e.x-e.w/2 <= x+5 && e.y-e.w/2 >= y-RENDER_HEIGHT && e.y-e.w/2 <= y+RENDER_HEIGHT) || (e.x+e.w/2 >= x-5 && e.x+e.w/2 <= x+5 && e.y+e.w/2 >= y-RENDER_HEIGHT && e.y+e.w/2 <= y+RENDER_HEIGHT)) || ((e.x-e.w/2 >= x-RENDER_WIDTH && e.x-e.w/2 <= x+RENDER_WIDTH && e.y-e.w/2 >= y-5 && e.y-e.w/2 <= y+5) || (e.x+e.w/2 >= x-RENDER_WIDTH && e.x+e.w/2 <= x+RENDER_WIDTH && e.y+e.w/2 >= y-5 && e.y+e.w/2 <= y+5));
 	}
 }

@@ -63,7 +63,9 @@ public class Player extends Entity{
 		if (count == config.getCount()-1 && ammo > 0 && !explosion){
 			ammo--;
 		}
-		Bullet b = new Bullet(this.gc, this.x, this.y, Math.atan2(shootY-this.y, shootX-this.x)+Math.toRadians(config.getAngles()[count]), config);
+		final double xFactor = (double)SCREEN_WIDTH/DEFAULT_WIDTH;
+		final double yFactor = (double)SCREEN_HEIGHT/DEFAULT_HEIGHT;
+		Bullet b = new Bullet(this.gc, this.x, this.y, Math.atan2(shootY-this.y*yFactor, shootX-this.x*xFactor)+Math.toRadians(config.getAngles()[count]), config);
 		b.owner = user;
 		b.doExplosion = explosion;
 		bullets.add(b);
@@ -117,11 +119,11 @@ public class Player extends Entity{
 	@Override
 	public void draw(){
 		super.draw();
-		if (this.x <= 0 || this.x >= SCREEN_WIDTH || this.y <= 0 || this.y >= SCREEN_HEIGHT){
-			if (this.x <= 0 || this.x >= SCREEN_WIDTH){
-				this.x = Math.abs(this.x-(SCREEN_WIDTH-50));
-			} else if (this.y <= 0 || this.y >= SCREEN_HEIGHT){
-				this.y = Math.abs(this.y-(SCREEN_HEIGHT-50));
+		if (this.x <= 0 || this.x >= RENDER_WIDTH || this.y <= 0 || this.y >= RENDER_HEIGHT){
+			if (this.x <= 0 || this.x >= RENDER_WIDTH){
+				this.x = Math.abs(this.x-(RENDER_WIDTH-50));
+			} else if (this.y <= 0 || this.y >= RENDER_HEIGHT){
+				this.y = Math.abs(this.y-(RENDER_HEIGHT-50));
 			}
 		}
 	}

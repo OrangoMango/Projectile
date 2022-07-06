@@ -40,7 +40,6 @@ public class TasksScreen extends Screen{
 		layout.getChildren().add(canvas);
 		TaskManager tm = new TaskManager();
 
-		gc.scale((double)SCREEN_WIDTH/DEFAULT_WIDTH, (double)SCREEN_HEIGHT/DEFAULT_HEIGHT);
 		if (this.showCompleted){
 			if (tm.getJSON().getJSONObject("dailyTasks").getJSONObject("task-1").getJSONObject("progress").getBoolean("started")){
 				selectedTask = "0;1";
@@ -116,9 +115,11 @@ public class TasksScreen extends Screen{
 	}
 	
 	private synchronized void update(GraphicsContext gc){
-		gc.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.save();
+		gc.clearRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
 		gc.setFill(Color.web("#676C69"));
-		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+		gc.scale(xScale, yScale);
 		gc.setFill(Color.BLACK);
 		gc.setFont(Font.loadFont(MAIN_FONT, 35));
 		gc.fillText(this.showCompleted ? "Your current task:" : "Those tasks must be completed in 1 round", 50, 50);
@@ -215,6 +216,8 @@ public class TasksScreen extends Screen{
 				}
 				tm.getJSON().getJSONObject(type == 0 ? "dailyTasks" : "generalTasks").getJSONObject("task-"+number).put("task", TaskManager.createTask(type == 0));
 				tm.getJSON().put("xp", tm.getJSON().getInt("xp")+completedXP);
+				System.out.println(task.toString(4));
+				System.out.println(tm.getJSON().toString(4));
 				tm.updateOnFile();
 			}
 			if (progress > 1.0) progress = 1.0;
@@ -258,11 +261,14 @@ public class TasksScreen extends Screen{
 		
 		// Draw achievements button
 		if (!this.showCompleted){
-			gc.setFill(Color.YELLOW);
+			//gc.setFill(Color.YELLOW);
 			gc.setStroke(selectedX == 2 && selectedY == 2 ? Color.WHITE : Color.web("#906F03"));
-			gc.fillRect(685, 650, 200, 50);
+			//gc.fillRect(685, 650, 200, 50);
+			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/achievements.png"), 685, 650, 200, 50);
 			gc.strokeRect(685, 650, 200, 50);
+			
 		}
+		gc.restore();
 	}
 	
 	private void drawTask(int x, int y, int w, int h, int taskType, int taskNumber, TaskManager tm, GraphicsContext gc, int relX, int relY, boolean expired){

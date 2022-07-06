@@ -77,7 +77,7 @@ public class Boss extends Entity{
 						break;
 					case 1:
 						this.x += this.speed;
-						if (this.x+this.w >= SCREEN_WIDTH) this.x -= this.speed;
+						if (this.x+this.w >= RENDER_WIDTH) this.x -= this.speed;
 						for (Entity en : MainApplication.entities){
 							if (en != this && collided(en)){
 								this.x -= this.speed;
@@ -87,7 +87,7 @@ public class Boss extends Entity{
 						break;
 					case 2:
 						this.y += this.speed;
-						if (this.y+this.w >= SCREEN_HEIGHT) this.y -= this.speed;
+						if (this.y+this.w >= RENDER_HEIGHT) this.y -= this.speed;
 						for (Entity en : MainApplication.entities){
 							if (en != this && collided(en)){
 								this.y -= this.speed;
