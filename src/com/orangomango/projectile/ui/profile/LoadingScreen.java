@@ -93,7 +93,7 @@ public class LoadingScreen{
 		Stage stage = new Stage();
 		stage.setResizable(false);
 		stage.setOnCloseRequest(e -> {
-			deleteDirectory(new File(System.getProperty("user.home")+File.separator+".projectile"));
+			deleteDirectory(new File(MainApplication.prefixPath));
 			System.exit(0);
 		});
 		GridPane pane = new GridPane();
@@ -107,14 +107,14 @@ public class LoadingScreen{
 					updateMessage("Downloading assets...");
 					Thread.sleep(500);
 					for (int i = 0; i < files.length; i++){
-						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+files[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+files[i].replace("/", File.separator));
+						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/"+files[i], prefixPath+File.separator+"assets"+File.separator+files[i].replace("/", File.separator));
 						updateProgress(i, files.length+guns.length);
 						updateMessage(files[i]+"... "+(new DecimalFormat("##.##").format((double)i/(files.length+guns.length)*100))+"%");
 						Logger.info("Downloaded "+files[i]);
 					}
 					
 					for (int i = 0; i < guns.length; i++){
-						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/gun/"+guns[i], System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"gun"+File.separator+guns[i]);
+						downloadFile("https://github.com/OrangoMango/Projectile/raw/main/assets/gun/"+guns[i], prefixPath+File.separator+"assets"+File.separator+"gun"+File.separator+guns[i]);
 						updateProgress(files.length+i, files.length+guns.length);
 						updateMessage("gun/"+guns[i]+"... "+(new DecimalFormat("##.##").format((double)(files.length+i)/(files.length+guns.length)*100))+"%");
 						Logger.info("Downloaded gun/"+guns[i]);

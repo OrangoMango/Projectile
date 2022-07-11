@@ -92,7 +92,7 @@ public class AchievementsScreen extends Screen{
 			StringBuilder builder = new StringBuilder();
 			for (int j = 0; j < desc.length(); j++){
 				builder.append(Character.toString(desc.charAt(j)));
-				if (j % (18+2*(double)SCREEN_WIDTH/DEFAULT_WIDTH) == 0 && j != 0 && j != desc.length()-1) builder.append("-\n");
+				if (j % (18+2*xScale) == 0 && j != 0 && j != desc.length()-1) builder.append("-\n");
 			}
 			desc = builder.toString();
 			gc.fillText(String.format(desc, i == 4 ? value/(1000*60*60) : value), x+15, y+65);

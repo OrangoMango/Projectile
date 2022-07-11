@@ -4,11 +4,13 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.orangomango.projectile.MainApplication;
+
 public class Logger{
 	private static File logFile;
 	
 	static {
-		logFile  = new File(System.getProperty("user.home")+File.separator+".projectile"+File.separator+"game_log.log");
+		logFile  = new File(MainApplication.prefixPath+File.separator+"game_log.log");
 	}
 	
 	private static void addLine(String line){

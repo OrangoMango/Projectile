@@ -218,7 +218,7 @@ public class MainApp extends Application{
         browse.setOnAction(ev -> {
             FileChooser fc = new FileChooser();
             fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("wav files", "*.wav"), new FileChooser.ExtensionFilter("mp3 files", "*.wav"));
-            fc.setInitialDirectory(new File(System.getProperty("user.home")+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
+            fc.setInitialDirectory(new File(MainApplication.prefixPath+File.separator+"assets"+File.separator+"audio"));
             File foundFile = fc.showOpenDialog(stage);
             if (foundFile != null){
                 boolean add = foundFile.getAbsolutePath().startsWith("/");
@@ -344,7 +344,7 @@ public class MainApp extends Application{
         saveFile.setOnAction(ev -> {
             if (this.currentFile == null){
                 FileChooser chooser = new FileChooser();
-                chooser.setInitialDirectory(new File(System.getProperty("user.home")+File.separator+".projectile"+File.separator+"userData"+File.separator+"customGuns"));
+                chooser.setInitialDirectory(new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"customGuns"));
                 chooser.setInitialFileName(this.config.gunName+".gbs");
                 chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("GunBuilder saves", "*.gbs"));
                 File f = chooser.showSaveDialog(stage);
@@ -371,7 +371,7 @@ public class MainApp extends Application{
         openFile.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN));
         openFile.setOnAction(ev -> {
             FileChooser chooser = new FileChooser();
-            chooser.setInitialDirectory(new File(System.getProperty("user.home")+File.separator+".projectile"+File.separator+"userData"+File.separator+"customGuns"));
+            chooser.setInitialDirectory(new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"customGuns"));
             chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("GunBuilder saves", "*.gbs"));
             File f = chooser.showOpenDialog(stage);
             if (f == null) return;

@@ -27,10 +27,10 @@ public class Notification {
 		gc.save();
 		gc.setFill(Color.web("#F7D79B"));
 		gc.setGlobalAlpha(0.7);
-		gc.fillRect(RENDER_WIDTH-310, 30, 290, 50);
+		gc.fillRect(DEFAULT_WIDTH-310, 30, 290, 50);
 		gc.setFont(Font.loadFont(MAIN_FONT, 25));
 		gc.setFill(Color.web("#7B390E"));
-		gc.fillText(this.text, RENDER_WIDTH-290, 62);
+		gc.fillText(this.text, DEFAULT_WIDTH-290, 62);
 		gc.restore();
 		if (!scheduled){
 			MainApplication.schedule(() -> {

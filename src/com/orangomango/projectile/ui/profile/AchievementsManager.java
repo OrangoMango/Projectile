@@ -3,13 +3,14 @@ package com.orangomango.projectile.ui.profile;
 import java.io.*;
 import org.json.*;
 
+import com.orangomango.projectile.MainApplication;
+
 public class AchievementsManager{
-	private String userHome = System.getProperty("user.home");
 	public static final int AMOUNT = 10;
 	private JSONObject json;
 	
 	public AchievementsManager(){
-		File profile = new File(userHome+File.separator+".projectile"+File.separator+"userData"+File.separator+"achievementsManager.json");
+		File profile = new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"achievementsManager.json");
 		String textData = null;
 		if (!profile.exists()){
 			try {
@@ -149,7 +150,7 @@ public class AchievementsManager{
 	 * Update file with the current {@link json}
 	 */
 	private void updateOnFile(){
-		File profile = new File(userHome+File.separator+".projectile"+File.separator+"userData"+File.separator+"achievementsManager.json");
+		File profile = new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"achievementsManager.json");
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(profile));
 			writer.write(this.json.toString(4));

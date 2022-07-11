@@ -6,7 +6,6 @@ import org.json.*;
 import com.orangomango.projectile.MainApplication;
 
 public class ProfileManager {
-	private static String home = System.getProperty("user.home");
 	private JSONObject json;
 	
 	/**
@@ -23,21 +22,21 @@ public class ProfileManager {
 	 * Setup the game main <code>.projectile</code> directory. The directory is located in the user's home
 	 */
 	public static void setupDirectory(){
-		checkAndCreateDir(new File(home+File.separator+".projectile"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"userData"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"userData"+File.separator+"customGuns"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"audio"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"font"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"image"));
-		checkAndCreateDir(new File(home+File.separator+".projectile"+File.separator+"assets"+File.separator+"gun"));
+		checkAndCreateDir(new File(MainApplication.prefixPath));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"userData"));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"customGuns"));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"assets"));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"assets"+File.separator+"audio"));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"assets"+File.separator+"font"));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"assets"+File.separator+"image"));
+		checkAndCreateDir(new File(MainApplication.prefixPath+File.separator+"assets"+File.separator+"gun"));
 	}
 
 	/**
 	 * Setup the json file that is contained in the game main directory
 	 */
 	public ProfileManager(){
-		File userData = new File(home+File.separator+".projectile"+File.separator+"userData"+File.separator+"data.json");
+		File userData = new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"data.json");
 		String textData = null;
 		if (!userData.exists()){
 			try {
@@ -75,7 +74,7 @@ public class ProfileManager {
 	 * Update file with the current {@link json}
 	 */
 	private void updateOnFile(){
-		File userData = new File(home+File.separator+".projectile"+File.separator+"userData"+File.separator+"data.json");
+		File userData = new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"data.json");
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(userData));
 			writer.write(this.json.toString(4));

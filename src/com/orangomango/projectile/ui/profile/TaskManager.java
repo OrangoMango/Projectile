@@ -4,12 +4,13 @@ import org.json.*;
 import java.io.*;
 import java.util.Random;
 
+import com.orangomango.projectile.MainApplication;
+
 public class TaskManager{
-	private static final String userHome = System.getProperty("user.home");
 	private JSONObject json;
 	
 	public TaskManager(){
-		File profile = new File(userHome+File.separator+".projectile"+File.separator+"userData"+File.separator+"taskManager.json");
+		File profile = new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"taskManager.json");
 		String textData = null;
 		if (!profile.exists()){
 			try {
@@ -62,7 +63,7 @@ public class TaskManager{
 	 * Update file with the current {@link json}
 	 */
 	public synchronized void updateOnFile(){
-		File profile = new File(userHome+File.separator+".projectile"+File.separator+"userData"+File.separator+"taskManager.json");
+		File profile = new File(MainApplication.prefixPath+File.separator+"userData"+File.separator+"taskManager.json");
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(profile));
 			writer.write(this.json.toString(4));

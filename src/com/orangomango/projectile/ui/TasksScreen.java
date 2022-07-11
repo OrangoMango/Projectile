@@ -282,7 +282,7 @@ public class TasksScreen extends Screen{
 		
 		gc.strokeRect(x, y, w, h);
 		String task = TaskManager.getTextForTask(tm.getJSON().getJSONObject(taskType == 0 ? "dailyTasks" : "generalTasks").getJSONObject("task-"+taskNumber).getJSONObject("task"));
-		double maxAmount = 15+2*(double)SCREEN_WIDTH/DEFAULT_WIDTH;
+		double maxAmount = 15+2*xScale;
 		int yOffset = 0;
 		if (task.length() > maxAmount){
 			StringBuilder builder = new StringBuilder();

@@ -36,6 +36,7 @@ import com.orangomango.projectile.multiplayer.*;
 public class MainApplication extends Application {
 	
 	public static String userHome = "";
+	public static String prefixPath = "";
 	
 	public static List<Entity> entities = Collections.synchronizedList(new ArrayList<Entity>());
 	private static List<Explosion> explosions = Collections.synchronizedList(new ArrayList<Explosion>());
@@ -155,6 +156,7 @@ public class MainApplication extends Application {
 		}
 		userHome = home.replace("\\", "/");
 		MAIN_FONT = "file://"+userHome+"/.projectile/assets/font/main_font.ttf";
+		prefixPath = home+File.separator+".projectile";
 	}
 	
 	/**
@@ -178,7 +180,7 @@ public class MainApplication extends Application {
 	 * Application main method. Here it will start the setup for the user directory
 	 */
 	public static void main(String[] args){
-		firstTime = !((new File(System.getProperty("user.home")+File.separator+".projectile")).exists());
+		firstTime = !((new File(prefixPath)).exists());
 		ProfileManager.setupDirectory();
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> Logger.info("Application (and server) closed")));
 		try {
@@ -274,7 +276,7 @@ public class MainApplication extends Application {
 	
 	private static Canvas getCanvas(){
 		
-		// Reset static variables
+		// Reset static variables (why are they all static ?!?)
 		score = 0;
 		bossCount = 0;
 		bulletCount = 0;
@@ -536,12 +538,12 @@ public class MainApplication extends Application {
 								counter--;
 							}
 							gc.setFill(Color.web("#FA8808"));
-							gc.fillRect(DEFAULT_WIDTH/2-60, RENDER_HEIGHT/2-60, 130, 130);
+							gc.fillRect(DEFAULT_WIDTH/2-60, DEFAULT_HEIGHT/2-60, 130, 130);
 							gc.setStroke(Color.web("#EED828"));
-							gc.strokeRect(DEFAULT_WIDTH/2-60, RENDER_HEIGHT/2-60, 130, 130);
+							gc.strokeRect(DEFAULT_WIDTH/2-60, DEFAULT_HEIGHT/2-60, 130, 130);
 							gc.setFont(new Font("sans-serif", 60));
 							gc.setFill(Color.WHITE);
-							gc.fillText(text, RENDER_WIDTH/2-60+15, RENDER_HEIGHT/2-60+90);
+							gc.fillText(text, DEFAULT_WIDTH/2-60+15, DEFAULT_HEIGHT/2-60+90);
 						}));
 						resume.setCycleCount(4);
 						resume.setOnFinished(rE -> {
@@ -1159,7 +1161,7 @@ public class MainApplication extends Application {
 							if (client != null){
 								b.setGC(gc);
 							}
-							if ((b.getX() <= 0 || b.getX() >= RENDER_WIDTH || b.getY() <= 0 || b.getY() >= RENDER_HEIGHT) && !b.config.willBounce()){
+							if ((b.getX() <= 0 || b.getX() >= DEFAULT_WIDTH || b.getY() <= 0 || b.getY() >= DEFAULT_HEIGHT) && !b.config.willBounce()){
 								iterator.remove();
 								removed = true;
 							}
