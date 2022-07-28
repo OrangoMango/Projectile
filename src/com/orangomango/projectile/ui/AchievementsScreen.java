@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.scene.input.KeyCode;
 
@@ -30,7 +31,7 @@ public class AchievementsScreen extends Screen{
 			this.y += 1;
 			//gc.setFill(Color.YELLOW);
 			//gc.fillRect(400, 740-this.y, 250, 50);
-			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/achievement_notification.png"), 400, 740-this.y, 250, 50);
+			gc.drawImage(new Image("file://"+userHome+"/.projectile/assets/image/achievement_notification.png"), 400, 740-this.y, 250, 50);
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 22));
 			gc.fillText(AchievementsManager.getAchievement(this.id).getString("name").replace("-", " ")+"\n+1000xp", 420, 760-this.y);
@@ -105,9 +106,9 @@ public class AchievementsScreen extends Screen{
 			gc.strokeRect(x+140, y+110, 100, 10);
 			
 			// Draw bullets
-			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/bullet_"+(lvl > 0 ? "on" : "off")+".png"), x+15, y+87, 25, 35);
-			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/bullet_"+(lvl > 1 ? "on" : "off")+".png"), x+45, y+87, 25, 35);
-			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/bullet_"+(lvl > 2 ? "on" : "off")+".png"), x+75, y+87, 25, 35);
+			gc.drawImage(new Image("file://"+userHome+"/.projectile/assets/image/bullet_"+(lvl > 0 ? "on" : "off")+".png"), x+15, y+87, 25, 35);
+			gc.drawImage(new Image("file://"+userHome+"/.projectile/assets/image/bullet_"+(lvl > 1 ? "on" : "off")+".png"), x+45, y+87, 25, 35);
+			gc.drawImage(new Image("file://"+userHome+"/.projectile/assets/image/bullet_"+(lvl > 2 ? "on" : "off")+".png"), x+75, y+87, 25, 35);
 		}
 		
 		gc.setFill(Color.web("#FDE4C8"));

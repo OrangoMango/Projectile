@@ -6,6 +6,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.animation.*;
 import javafx.util.Duration;
@@ -264,7 +265,7 @@ public class TasksScreen extends Screen{
 			//gc.setFill(Color.YELLOW);
 			gc.setStroke(selectedX == 2 && selectedY == 2 ? Color.WHITE : Color.web("#906F03"));
 			//gc.fillRect(685, 650, 200, 50);
-			gc.drawImage(new javafx.scene.image.Image("file:///home/paul/Documents/Projectile_Assets/achievements.png"), 685, 650, 200, 50);
+			gc.drawImage(new Image("file://"+userHome+"/.projectile/assets/image/achievements.png"), 685, 650, 200, 50);
 			gc.strokeRect(685, 650, 200, 50);
 			
 		}

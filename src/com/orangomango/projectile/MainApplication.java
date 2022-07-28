@@ -9,6 +9,7 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.canvas.*;
 import javafx.scene.control.Alert;
 import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.animation.*;
 import javafx.scene.media.*;

@@ -53,6 +53,10 @@ public class LoadingScreen{
 		"audio/super_sniper.wav",
 		"audio/triple_gun.mp3",
 		"font/main_font.ttf",
+		"image/achievements.png",
+		"image/achievement_notification.png",
+		"image/bullet_off.png",
+		"image/bullet_on.png",
 		"image/projectile_logo.png"
 	};
 	
