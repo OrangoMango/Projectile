@@ -93,7 +93,7 @@ public class LoadingScreen{
 		Stage stage = new Stage();
 		stage.setResizable(false);
 		stage.setOnCloseRequest(e -> {
-			deleteDirectory(new File(MainApplication.prefixPath));
+			deleteDirectory(new File(prefixPath));
 			System.exit(0);
 		});
 		GridPane pane = new GridPane();

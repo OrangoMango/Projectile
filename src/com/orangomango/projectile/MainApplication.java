@@ -56,8 +56,8 @@ public class MainApplication extends Application {
 	
 	public static final int DEFAULT_WIDTH = 1000;
 	public static final int DEFAULT_HEIGHT = 800;
-	public static int SCREEN_WIDTH = 836; //DEFAULT_WIDTH; // 836
-	public static int SCREEN_HEIGHT = 411; //DEFAULT_HEIGHT; // 411
+	public static int SCREEN_WIDTH = DEFAULT_WIDTH; // 836
+	public static int SCREEN_HEIGHT = DEFAULT_HEIGHT; // 411
 	public static int RENDER_WIDTH = SCREEN_WIDTH < SCREEN_HEIGHT ? SCREEN_WIDTH : (int)Math.round(SCREEN_HEIGHT/0.8);
 	public static int RENDER_HEIGHT = SCREEN_HEIGHT < SCREEN_WIDTH ? SCREEN_HEIGHT : (int)Math.round(SCREEN_WIDTH*0.8);
 	public static double xScale = (double)RENDER_WIDTH/DEFAULT_WIDTH;
@@ -1275,7 +1275,7 @@ public class MainApplication extends Application {
 				}
 			}
 			
-			gc.translate(0, 20);
+			gc.translate(10, 20);
 
 			// Draw hp bar
 			gc.setFill(Color.web(getHPColor(player.hp, player.getStartHP())));
@@ -1389,7 +1389,7 @@ public class MainApplication extends Application {
 			notification.show();
 			acNotification.show();
 			
-			gc.translate(0, -20);
+			gc.translate(-10, -20);
 			
 			// Auto recharge ammo
 			if (reloading == null && player.ammo == 0){
