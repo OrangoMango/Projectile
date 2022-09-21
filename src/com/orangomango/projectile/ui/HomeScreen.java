@@ -197,7 +197,7 @@ public class HomeScreen extends Screen{
 		buttons.add(difficultyButton);
 		buttons.add(helpButton);
 		buttons.add(controlsButton);
-		buttons.add(multiplayerButton);
+		//buttons.add(multiplayerButton);
 		if (!this.pm.getJSON().getBoolean("tutorialComplete")){
 			buttons.add(tutorialButton);
 		}
@@ -211,8 +211,8 @@ public class HomeScreen extends Screen{
 		buttons.add(extreme);
 		buttons.add(shortPress);
 		buttons.add(longPress);
-		buttons.add(configServer);
-		buttons.add(connect);
+		//buttons.add(configServer);
+		//buttons.add(connect);
 		
 		updateFinalText();
 		update(gc, cursor);
@@ -235,8 +235,9 @@ public class HomeScreen extends Screen{
 		gc.save();
 		
 		gc.clearRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
-		gc.setFill(Color.web("#383535"));
-		gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+		//gc.setFill(Color.web("#383535"));
+		//gc.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+		gc.drawImage(new Image("file://"+userHome+"/.projectile/assets/image/homescreen.png"), 0, 0, RENDER_WIDTH, RENDER_HEIGHT);
 		
 		gc.scale(xScale, yScale);
 		

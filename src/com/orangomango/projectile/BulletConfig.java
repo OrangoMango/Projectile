@@ -81,7 +81,7 @@ public class BulletConfig implements Serializable {
     }
 
     public void loadMedia() {
-        //System.out.println(this.shootSound);
+        System.out.println(this.shootSound);
         //this.shootMedia = new Media("https://github.com/OrangoMango/Projectile/raw/main/assets/audio/shoot.wav");
         this.shootMedia = new Media(getPath());
     }

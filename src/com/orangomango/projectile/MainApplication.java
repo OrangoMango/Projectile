@@ -29,7 +29,13 @@ import com.orangomango.projectile.multiplayer.*;
 
 /**
  * MainApplication for the game. This class contains the main method
- * Code entirely written by OrangoMango (orangomango.github.io)
+ * Code entirely written by OrangoMango (orangomango.github.io).
+ * 
+ * -------------------------------------------------------------------------------
+ * IMPORTANT: Multiplayer support is not working as it should. There are some code
+ * pieces for a multiplayer game, but those are never used.
+ * -------------------------------------------------------------------------------
+ * 
  * License MIT
  * @author OrangoMango
  * @version 1.1
@@ -354,7 +360,7 @@ public class MainApplication extends Application {
 		if (!playWithTutorial){
 			gc.setFill(Color.BLACK);
 			gc.setFont(Font.loadFont(MAIN_FONT, 25));
-			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\nGood luck!", 70, 250);
+			gc.fillText("Press SPACE to start\n- Collect yellow circles to earn 50 points\n- Shoot the enemies once they are completely spawned\n- Remember to use grenades\n- Defeat the boss(es) once you arrive at 1700 points\n- Recharge your hp when you think it's time to\n- Go outside the screen to come from the other side\n- Survive as much time as possible\n- Collect enemy drops for better weapons\nGood luck!", 70, 250);
 			if (!difficulty.equals("easy")){
 				gc.setFill(Color.RED);
 				gc.fillText("Warning: your difficulty is "+difficulty+". Enemies and boss\nare stronger and deal more damage", 70, 550);

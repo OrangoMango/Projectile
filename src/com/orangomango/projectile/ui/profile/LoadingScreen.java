@@ -57,6 +57,7 @@ public class LoadingScreen{
 		"image/achievement_notification.png",
 		"image/bullet_off.png",
 		"image/bullet_on.png",
+		"image/homescreen.png",
 		"image/projectile_logo.png"
 	};
 	
