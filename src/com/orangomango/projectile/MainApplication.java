@@ -158,12 +158,13 @@ public class MainApplication extends Application {
 	
 	static {
 		String home = System.getProperty("user.home");
-		if (home.contains("\\")){
-			home = "/"+home;
-		}
 		userHome = home.replace("\\", "/");
+		if (home.contains("\\")){
+			userHome = "/"+userHome;
+		}
 		MAIN_FONT = "file://"+userHome+"/.projectile/assets/font/main_font.ttf";
 		prefixPath = home+File.separator+".projectile";
+		System.out.println(home+" "+userHome+" "+prefixPath);
 	}
 	
 	/**

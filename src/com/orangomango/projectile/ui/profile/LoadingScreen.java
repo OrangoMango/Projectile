@@ -78,10 +78,14 @@ public class LoadingScreen{
 		"uzi.gbs"
 	};
 	
-	private static void downloadFile(String link, String path) throws IOException, MalformedURLException{
-		InputStream in = new URL(link).openStream();
-		Files.copy(in, Paths.get(path));
-		in.close();
+	private static void downloadFile(String link, String path){
+		try {
+			InputStream in = new URL(link).openStream();
+			Files.copy(in, Paths.get(path));
+			in.close();
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
 	}
 	
 	private static void deleteDirectory(File f){
