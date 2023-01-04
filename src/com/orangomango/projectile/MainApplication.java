@@ -164,7 +164,6 @@ public class MainApplication extends Application {
 		}
 		MAIN_FONT = "file://"+userHome+"/.projectile/assets/font/main_font.ttf";
 		prefixPath = home+File.separator+".projectile";
-		System.out.println(home+" "+userHome+" "+prefixPath);
 	}
 	
 	/**
