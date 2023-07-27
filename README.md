@@ -1,7 +1,12 @@
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/OrangoMango/Projectile?include_prereleases&label=Latest%20version&style=for-the-badge) ![GitHub Release Date](https://img.shields.io/github/release-date/OrangoMango/Projectile?label=Release%20date&style=for-the-badge)
 ![GitHub commits since tagged version](https://img.shields.io/github/commits-since/OrangoMango/Projectile/latest?style=for-the-badge) ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/OrangoMango/Projectile?style=for-the-badge) ![GitHub last commit](https://img.shields.io/github/last-commit/OrangoMango/Projectile?style=for-the-badge)
-# Projectile by OrangoMango
 ![projectile_logo](https://user-images.githubusercontent.com/61402409/165325541-f4266a2a-9e57-4a32-95db-1ef07dd61d29.png)
+# Projectile by OrangoMango
+![Polish_20230727_082134583](https://github.com/OrangoMango/Projectile/assets/61402409/5fba1267-66e7-4312-86ed-7828b2a4dee3)
+# Warning ⚠️
+
+This game is no longer supported, I made an improved version of it, called Retoohs (https://orangomango.itch.io/retoohs). I improved the graphics, the gameplay and added a reverse feature where you play as the zombies. Any other missing feature will be added in the next update. Retoohs (reversed name of shooter) is available for Linux, Windows, Mac and Browser. Play that game instead :)
+
 # How to run
 * Download the repository using these commands:
 ```bash
